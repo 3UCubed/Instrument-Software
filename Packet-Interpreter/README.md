@@ -11,6 +11,7 @@ In this folder there is a Makefile that compiles the program, the .c program its
 To run the program with the sample file:
 
 make uart
+
 ./uart screenlog.0
 
 and you should see the packets being printed out to the terminal.
