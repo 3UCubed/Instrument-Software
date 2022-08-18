@@ -1,5 +1,5 @@
 # Instrument-Software
-These are the steps to get packets to print out:
+###These are the steps to get packets to print out:
   1. Connect an STM32F051 to your machine with a USB cable. Also plug in a UART cable to your machine.
   2. Plug the yellow cable (RX) from UART to PA9. Plug the orange cable (TX) from UART to PA10. Plug in the black cable (ground) to GND. The ADCs are tied      to the STM32 as followed:
 
