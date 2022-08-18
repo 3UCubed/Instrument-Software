@@ -19,3 +19,4 @@
   5. Navigate to "Packet-Interpreter".
   6. Use `screen -L /dev/cu.usbserial-FT61T5FW 115200` to populate screenlog.0.
   7. Use `make uart` and then `./uart screenlog.0` to see the outputted packets.
+![Screen Shot 2022-08-18 at 4 37 37 PM](https://user-images.githubusercontent.com/94400363/185490226-4144273a-c581-47ca-bd33-58f767a845b1.png)
