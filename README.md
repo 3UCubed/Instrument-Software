@@ -16,7 +16,7 @@
 	 	- Vref: (internally connected) = ADC_IN17, VREFINT
   3. Clone the repository using `git clone https://github.com/3UCubed/Instrument-Software.git`
   4. Open "STM32-Firmware" with the STM32CubeIDE, and run main.c.
-  5. Navigate to "Packet-Interpreter".
+  5. In Terminal, navigate to "Packet-Interpreter".
   6. Use `screen -L /dev/cu.usbserial-FT61T5FW 115200` to populate screenlog.0.
   7. Use `make uart` and then `./uart screenlog.0` to see the outputted packets.
 
