@@ -35,7 +35,7 @@ double intToCelsius(int value, int resolution, int ref)
   return temperature;
 }
 
-int main(int argc, char **argv[])
+int main(int argc, char **argv)
 {
   FILE *input = fopen(argv[1], "rb");
 
