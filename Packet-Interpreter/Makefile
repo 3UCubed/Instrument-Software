@@ -1,8 +1,13 @@
-uart: uart.o
-		gcc uart.o -o uart
+CC = gcc
+CFLAGS = -g --std=c99 -Wall
+RM = rm
 
-uart.o: uart_interpreter.c
-		gcc -c -g --std=c99 -Wall uart_interpreter.c -o uart.o
+TARGET = interpreter
+
+all: $(TARGET)
+
+$(TARGET): $(TARGET).c
+				$(CC) $(CLFAGS) $(TARGET).c -o $(TARGET)
 
 clean:
-		rm -f uart uart.o
+		$(RM) $(TARGET)
