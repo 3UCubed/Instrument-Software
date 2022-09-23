@@ -18,7 +18,7 @@
 	 	- temp: (internally connected) = ADC_IN16, VSENSE
 	 	- Vref: (internally connected) = ADC_IN17, VREFINT
   3. Clone the repository using `git clone https://github.com/3UCubed/Instrument-Software.git`
-  4. Open "STM32-Firmware" with the STM32CubeIDE, and run main.c.
+  4. Open "Firmware" with the STM32CubeIDE, and run main.c.
   5. In Terminal, navigate to "Packet-Interpreter".
   6. Use `rm screenlog.0` to remove screenlog.0, so a new one can replace it.
   7. Use `screen -L /dev/cu.usbserial-FT61T5FW 115200` to populate screenlog.0. Let it run for a few seconds, and use "control" + "a" + "\\" to exit.
