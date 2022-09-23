@@ -22,7 +22,6 @@
   5. In Terminal, navigate to "Packet-Interpreter".
   6. Use `rm screenlog.0` to remove screenlog.0, so a new one can replace it.
   7. Use `screen -L /dev/cu.usbserial-FT61T5FW 115200` to populate screenlog.0. 
-
   	- If you would like to put it in Stop Mode, type "s" in the terminal. To then wake it, type "£" in the terminal.
   8. Let it run for a few seconds, and use "control" + "a" + "\\" to exit.
   9. Use `make` and then `./interpreter screenlog.0` to see the outputted packets.
