@@ -176,6 +176,9 @@ int main(int argc, char **argv)
         hkValues[hkIndex] = ((sync[0] & 0xFF) << 8) | (sync[1] & 0xFF);
         switch (hkIndex)
         {
+          char *hkLabels[13] = {"SYNC", "SEQ", "BUSvmon", "BUSimon", "2.5vmon",
+                                "3.3vmon", "5vmon", "5vref", "15v",
+                                "n3v3", "n5v", "MCU_TEMP", "MCU_VREF"};
         case 0:
           /* SEQ Bytes; should be 0xCCCC */
           printf("+-------------+\n");
@@ -239,4 +242,3 @@ int main(int argc, char **argv)
   fclose(input);
   return 0;
 }
-
