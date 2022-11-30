@@ -290,7 +290,7 @@ int main(void)
 
   /* USER CODE BEGIN Init */
   HAL_StatusTypeDef ret;
-  uint8_t buf[12];
+  uint8_t buf[2];
   int16_t val;
   float temp_c;
 
@@ -347,19 +347,20 @@ int main(void)
 
     	// Tell TMP102 that we want to read from the temperature register
 		buf[0] = REG_TEMP;
-		ret = HAL_I2C_Master_Transmit(&hi2c1, TMP102_ADDR, buf, 1, HAL_MAX_DELAY);
+		ret = HAL_I2C_Master_Transmit(&hi2c1, TMP102_ADDR, buf, 1, 1000);
+		//I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
 		if ( ret != HAL_OK ) {
 		  strcpy((char*)buf, "Error Tx\r\n");
 		} else {
 
 		  // Read 2 bytes from the temperature register
-		  ret = HAL_I2C_Master_Receive(&hi2c1, TMP102_ADDR, buf, 2, HAL_MAX_DELAY);
+		  ret = HAL_I2C_Master_Receive(&hi2c1, TMP102_ADDR, buf, 2, 1000);
 		  if ( ret != HAL_OK ) {
 			strcpy((char*)buf, "Error Rx\r\n");
 		  } else {
 
-			//Combine the bytes
-			val = ((int16_t)buf[0] << 4) | (buf[1] >> 4);
+			val = (int16_t)(buf[0] << 8);
+			val = (val | buf[1]) >> 3;
 
 			// Convert to 2's complement, since temperature can be negative
 			if ( val > 0x7FF ) {
