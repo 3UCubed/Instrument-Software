@@ -60,8 +60,8 @@ all: main-build
 main-build: Firmware.elf secondary-outputs
 
 # Tool invocations
-Firmware.elf Firmware.map: $(OBJS) $(USER_OBJS) /Users/jaredking/OneDrive\ -\ USNH/NASA/Firmware/STM32F051R8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Firmware.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"/Users/jaredking/OneDrive - USNH/NASA/Firmware/STM32F051R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Firmware.elf Firmware.map: $(OBJS) $(USER_OBJS) /Users/shanewoods/Instrument-Software/Firmware/STM32F051R8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Firmware.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"/Users/shanewoods/Instrument-Software/Firmware/STM32F051R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

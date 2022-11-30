@@ -176,6 +176,7 @@ int main(int argc, char **argv)
         hkValues[hkIndex] = ((sync[0] & 0xFF) << 8) | (sync[1] & 0xFF);
         switch (hkIndex)
         {
+
         case 0:
           /* SEQ Bytes; should be 0xCCCC */
           printf("+-------------+\n");
@@ -239,4 +240,3 @@ int main(int argc, char **argv)
   fclose(input);
   return 0;
 }
-
