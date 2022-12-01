@@ -57,7 +57,8 @@ UART_HandleTypeDef huart1;
 UART_WakeUpTypeDef WakeUpSelection;
 uint8_t Rx_data[1];  //  creating a buffer of 1 bytes
 
-static const uint8_t TMP102_ADDR = 0x48 << 1; // Use 8-bit address
+static const uint8_t ADT7410_1 = 0x48 << 1; // Use 8-bit address
+static const uint8_t ADT7410_2 = 0x49 << 1;
 static const uint8_t REG_TEMP = 0x00;
 /* USER CODE END PV */
 
@@ -345,16 +346,17 @@ int main(void)
   /* USER CODE BEGIN WHILE */
     while (1) {
 
-    	// Tell TMP102 that we want to read from the temperature register
+
+    	// Tell ADT7410_1 that we want to read from the temperature register
 		buf[0] = REG_TEMP;
-		ret = HAL_I2C_Master_Transmit(&hi2c1, TMP102_ADDR, buf, 1, 1000);
+		ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_1, buf, 1, 1000);
 		//I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
 		if ( ret != HAL_OK ) {
 		  strcpy((char*)buf, "Error Tx\r\n");
 		} else {
 
 		  // Read 2 bytes from the temperature register
-		  ret = HAL_I2C_Master_Receive(&hi2c1, TMP102_ADDR, buf, 2, 1000);
+		  ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_1, buf, 2, 1000);
 		  if ( ret != HAL_OK ) {
 			strcpy((char*)buf, "Error Rx\r\n");
 		  } else {
@@ -374,7 +376,44 @@ int main(void)
 			temp_c *= 100;
 
 			sprintf((char*)buf,
-						  "%u.%u C\r\n",
+						  "ADT7410_1: %u.%u C\r\n",
+						  ((unsigned int)temp_c / 100),
+						  ((unsigned int)temp_c % 100));
+		  }
+	   }
+
+		HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
+
+		// Tell ADT7410_2 that we want to read from the temperature register
+		buf[0] = REG_TEMP;
+		ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_2, buf, 1, 1000);
+		//I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
+		if ( ret != HAL_OK ) {
+		  strcpy((char*)buf, "Error Tx\r\n");
+		} else {
+
+		  // Read 2 bytes from the temperature register
+		  ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_2, buf, 2, 1000);
+		  if ( ret != HAL_OK ) {
+			strcpy((char*)buf, "Error Rx\r\n");
+		  } else {
+
+			val = (int16_t)(buf[0] << 8);
+			val = (val | buf[1]) >> 3;
+
+			// Convert to 2's complement, since temperature can be negative
+			if ( val > 0x7FF ) {
+			  val |= 0xF000;
+			}
+
+			// Convert to float temperature value (Celsius)
+			temp_c = val * 0.0625;
+
+			// Convert temperature to decimal value
+			temp_c *= 100;
+
+			sprintf((char*)buf,
+						  "ADT7410 2: %u.%u C\r\n",
 						  ((unsigned int)temp_c / 100),
 						  ((unsigned int)temp_c % 100));
 		  }
