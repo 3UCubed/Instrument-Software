@@ -130,7 +130,7 @@ int startupTimer = 0;
 
 uint8_t *fillErpaBuffer(erpaData data) {
 
-	uint8_t erpa_ret[16];
+	uint8_t *erpa_ret = malloc(16 * sizeof(uint8_t));
 
 	erpa_ret[0] = data.sync; // ERPA SYNC 0xAA MSB
 	erpa_ret[1] = data.sync; // ERPA SYNC 0xAA LSB
@@ -192,7 +192,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 
             erpa_buf = fillErpaBuffer(data);
 
-            HAL_UART_Transmit(&huart1, erpa_buf, sizeof(erpa_buf), 100);
+            //HAL_UART_Transmit(&huart1, erpa_buf, sizeof(erpa_buf), 100);
 
             if (step == 5) {
                 up = 0;
@@ -244,7 +244,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
                 hk_buf[24] = ((MCU_VREF & 0xFF00) >> 8); // VREFINT MSB
                 hk_buf[25] = (MCU_VREF & 0xFF); // VREFINT LSB
 
-                HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), 100);
+                //HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), 100);
 
                 hk_counter = 1;
 
@@ -281,7 +281,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 
             pmt_seq++;
 
-            HAL_UART_Transmit(&huart1, pmt_buf, sizeof(pmt_buf), 100);
+            //HAL_UART_Transmit(&huart1, pmt_buf, sizeof(pmt_buf), 100);
 
 
         }
@@ -377,79 +377,79 @@ int main(void)
     while (1) {
 
 
-//    	// Tell ADT7410_1 that we want to read from the temperature register
-//		buf[0] = REG_TEMP;
-//		ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_1, buf, 1, 1000);
-//		//I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
-//		if ( ret != HAL_OK ) {
-//		  strcpy((char*)buf, "Error Tx\r\n");
-//		} else {
-//
-//		  // Read 2 bytes from the temperature register
-//		  ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_1, buf, 2, 1000);
-//		  if ( ret != HAL_OK ) {
-//			strcpy((char*)buf, "Error Rx\r\n");
-//		  } else {
-//
-//			val = (int16_t)(buf[0] << 8);
-//			val = (val | buf[1]) >> 3;
-//
-//			// Convert to 2's complement, since temperature can be negative
-//			if ( val > 0x7FF ) {
-//			  val |= 0xF000;
-//			}
-//
-//			// Convert to float temperature value (Celsius)
-//			temp_c = val * 0.0625;
-//
-//			// Convert temperature to decimal value
-//			temp_c *= 100;
-//
-//			sprintf((char*)buf,
-//						  "ADT7410_1: %u.%u C\r\n",
-//						  ((unsigned int)temp_c / 100),
-//						  ((unsigned int)temp_c % 100));
-//		  }
-//	   }
-//
-//		HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
-//
-//		// Tell ADT7410_2 that we want to read from the temperature register
-//		buf[0] = REG_TEMP;
-//		ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_2, buf, 1, 1000);
-//		//I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
-//		if ( ret != HAL_OK ) {
-//		  strcpy((char*)buf, "Error Tx\r\n");
-//		} else {
-//
-//		  // Read 2 bytes from the temperature register
-//		  ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_2, buf, 2, 1000);
-//		  if ( ret != HAL_OK ) {
-//			strcpy((char*)buf, "Error Rx\r\n");
-//		  } else {
-//
-//			val = (int16_t)(buf[0] << 8);
-//			val = (val | buf[1]) >> 3;
-//
-//			// Convert to 2's complement, since temperature can be negative
-//			if ( val > 0x7FF ) {
-//			  val |= 0xF000;
-//			}
-//
-//			// Convert to float temperature value (Celsius)
-//			temp_c = val * 0.0625;
-//
-//			// Convert temperature to decimal value
-//			temp_c *= 100;
-//
-//			sprintf((char*)buf,
-//						  "ADT7410 2: %u.%u C\r\n",
-//						  ((unsigned int)temp_c / 100),
-//						  ((unsigned int)temp_c % 100));
-//		  }
-//	   }
-//
-//	HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
+    	// Tell ADT7410_1 that we want to read from the temperature register
+		buf[0] = REG_TEMP;
+		ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_1, buf, 1, 1000);
+		//I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
+		if ( ret != HAL_OK ) {
+		  strcpy((char*)buf, "Error Tx\r\n");
+		} else {
+
+		  // Read 2 bytes from the temperature register
+		  ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_1, buf, 2, 1000);
+		  if ( ret != HAL_OK ) {
+			strcpy((char*)buf, "Error Rx\r\n");
+		  } else {
+
+			val = (int16_t)(buf[0] << 8);
+			val = (val | buf[1]) >> 3;
+
+			// Convert to 2's complement, since temperature can be negative
+			if ( val > 0x7FF ) {
+			  val |= 0xF000;
+			}
+
+			// Convert to float temperature value (Celsius)
+			temp_c = val * 0.0625;
+
+			// Convert temperature to decimal value
+			temp_c *= 100;
+
+			sprintf((char*)buf,
+						  "ADT7410_1: %u.%u C\r\n",
+						  ((unsigned int)temp_c / 100),
+						  ((unsigned int)temp_c % 100));
+		  }
+	   }
+
+		HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
+
+		// Tell ADT7410_2 that we want to read from the temperature register
+		buf[0] = REG_TEMP;
+		ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_2, buf, 1, 1000);
+		//I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
+		if ( ret != HAL_OK ) {
+		  strcpy((char*)buf, "Error Tx\r\n");
+		} else {
+
+		  // Read 2 bytes from the temperature register
+		  ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_2, buf, 2, 1000);
+		  if ( ret != HAL_OK ) {
+			strcpy((char*)buf, "Error Rx\r\n");
+		  } else {
+
+			val = (int16_t)(buf[0] << 8);
+			val = (val | buf[1]) >> 3;
+
+			// Convert to 2's complement, since temperature can be negative
+			if ( val > 0x7FF ) {
+			  val |= 0xF000;
+			}
+
+			// Convert to float temperature value (Celsius)
+			temp_c = val * 0.0625;
+
+			// Convert temperature to decimal value
+			temp_c *= 100;
+
+			sprintf((char*)buf,
+						  "ADT7410 2: %u.%u C\r\n",
+						  ((unsigned int)temp_c / 100),
+						  ((unsigned int)temp_c % 100));
+		  }
+	   }
+
+	HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
 
 
     /* USER CODE END WHILE */
