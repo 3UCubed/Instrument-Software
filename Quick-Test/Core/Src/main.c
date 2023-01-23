@@ -21,6 +21,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "string.h"
+#include "stdio.h"
+#include "stdlib.h"
 
 /* USER CODE END Includes */
 
@@ -55,6 +58,7 @@ const gpio_pins gpios[] = {
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc;
+DMA_HandleTypeDef hdma_adc;
 
 UART_HandleTypeDef huart1;
 
@@ -64,13 +68,14 @@ UART_HandleTypeDef huart1;
 uint8_t rx_buf[BUFFER_SIZE];
 uint8_t rx_index;
 int gpio_count = 0;
-volatile uint16_t adcResultsDMA[8];
+volatile uint16_t adcResultsDMA[16];
 const int adcChannelCount = sizeof(adcResultsDMA) / sizeof(adcResultsDMA[0]);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_ADC_Init(void);
 /* USER CODE BEGIN PFP */
@@ -82,26 +87,40 @@ static void MX_ADC_Init(void);
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	if (huart->Instance == USART1) {
-		 HAL_UART_Transmit(&huart1, rx_buf, 1, 100);
 		 HAL_UART_Receive_IT(&huart1, rx_buf, 1);
 		 if (rx_buf[0] == 'k') {
-			 if (HAL_GPIO_ReadPin(gpios[gpio_count].gpio, gpios[gpio_count].pin) == GPIO_PIN_SET){
-				HAL_GPIO_WritePin(gpios[gpio_count].gpio, gpios[gpio_count].pin, GPIO_PIN_RESET);
-			 }
-			 gpio_count == 7 ? gpio_count = 0 : gpio_count++;
-			 HAL_GPIO_TogglePin(gpios[gpio_count].gpio, gpios[gpio_count].pin);
+
 			 HAL_ADC_Start_DMA(&hadc, (uint32_t *) adcResultsDMA, adcChannelCount);
-			 uint16_t adc = adcResultsDMA[gpio_count];
+
+			 uint16_t adc = adcResultsDMA[(gpio_count * 2)];
 			 uint8_t adcval[2];
 			 adcval[0] = ((adc & 0xFF00) >> 8); // BUS_Vmon MSB
 			 adcval[1] = (adc & 0xFF); // BUS_Vmon LSB
 			 float voltage = adc * (3.3/4095);
+			 char value[10];
+			 sprintf(value, "%f", voltage);
 			 int c = gpio_count;
-			 HAL_UART_Transmit(&huart1, adcval , sizeof(adcval), 100);
-			 HAL_UART_Transmit(&huart1, "\x1B" , 1, 100);
-			 HAL_UART_Transmit(&huart1, "\x5B" , 1, 100);
-			 HAL_UART_Transmit(&huart1, "\x32" , 1, 100);
-			 HAL_UART_Transmit(&huart1, "\x4A" , 1, 100);
+			 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
+			 char count[1];
+			 sprintf(count, "%d", gpio_count);
+			 HAL_UART_Transmit(&huart1, count, 1, 100);
+			 HAL_UART_Transmit(&huart1, ": ", 2, 100);
+			 HAL_UART_Transmit(&huart1, value, 10, 100);
+			 HAL_UART_Transmit(&huart1, "\r\n", 2, 100);
+
+			 if (HAL_GPIO_ReadPin(gpios[gpio_count].gpio, gpios[gpio_count].pin) == GPIO_PIN_SET){
+				HAL_GPIO_WritePin(gpios[gpio_count].gpio, gpios[gpio_count].pin, GPIO_PIN_RESET);
+			 }
+
+			 gpio_count == 7 ? gpio_count = 0 : gpio_count++;
+
+			 HAL_GPIO_TogglePin(gpios[gpio_count].gpio, gpios[gpio_count].pin);
+
+//			 HAL_UART_Transmit(&huart1, adcval , sizeof(adcval), 100);
+//			 HAL_UART_Transmit(&huart1, "\x1B" , 1, 100);
+//			 HAL_UART_Transmit(&huart1, "\x5B" , 1, 100);
+//			 HAL_UART_Transmit(&huart1, "\x32" , 1, 100);
+//			 HAL_UART_Transmit(&huart1, "\x4A" , 1, 100);
 
 		 }
 
@@ -138,6 +157,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART1_UART_Init();
   MX_ADC_Init();
   /* USER CODE BEGIN 2 */
@@ -232,7 +252,7 @@ static void MX_ADC_Init(void)
   hadc.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc.Init.LowPowerAutoWait = DISABLE;
   hadc.Init.LowPowerAutoPowerOff = DISABLE;
-  hadc.Init.ContinuousConvMode = ENABLE;
+  hadc.Init.ContinuousConvMode = DISABLE;
   hadc.Init.DiscontinuousConvMode = DISABLE;
   hadc.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
@@ -346,6 +366,22 @@ static void MX_USART1_UART_Init(void)
   /* USER CODE BEGIN USART1_Init 2 */
 
   /* USER CODE END USART1_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
 
 }
 
