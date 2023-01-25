@@ -68,7 +68,7 @@ UART_HandleTypeDef huart1;
 uint8_t rx_buf[BUFFER_SIZE];
 uint8_t rx_index;
 int gpio_count = 0;
-volatile uint16_t adcResultsDMA[16];
+volatile uint32_t adcResultsDMA[10];
 const int adcChannelCount = sizeof(adcResultsDMA) / sizeof(adcResultsDMA[0]);
 /* USER CODE END PV */
 
@@ -90,24 +90,66 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		 HAL_UART_Receive_IT(&huart1, rx_buf, 1);
 		 if (rx_buf[0] == 'k') {
 
+			 // Read all the ADCs (adcResultsDMA needs to be uint32_t!!!)
 			 HAL_ADC_Start_DMA(&hadc, (uint32_t *) adcResultsDMA, adcChannelCount);
 
-			 uint16_t adc = adcResultsDMA[(gpio_count * 2)];
-			 uint8_t adcval[2];
-			 adcval[0] = ((adc & 0xFF00) >> 8); // BUS_Vmon MSB
-			 adcval[1] = (adc & 0xFF); // BUS_Vmon LSB
-			 float voltage = adc * (3.3/4095);
-			 char value[10];
-			 sprintf(value, "%f", voltage);
-			 int c = gpio_count;
-			 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
-			 char count[1];
-			 sprintf(count, "%d", gpio_count);
-			 HAL_UART_Transmit(&huart1, count, 1, 100);
-			 HAL_UART_Transmit(&huart1, ": ", 2, 100);
-			 HAL_UART_Transmit(&huart1, value, 10, 100);
+			 for (int i = 0; i < adcChannelCount; i++) {
+				 // Parsing ADCs value based on gpio_count
+				 uint16_t adc = adcResultsDMA[i];
+				 uint8_t adcval[2];
+				 adcval[0] = ((adc & 0xFF00) >> 8); // BUS_Vmon MSB
+				 adcval[1] = (adc & 0xFF); // BUS_Vmon LSB
+
+				 // Processing results for UART
+				 if (i < 8) {
+					 float voltage = adc * (3.3/4095);
+					 char value[10];
+					 sprintf(value, "%f", voltage);
+					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
+					 char count[1];
+					 sprintf(count, "%d", i);
+					 HAL_UART_Transmit(&huart1, count, 1, 100);
+					 HAL_UART_Transmit(&huart1, ": ", 2, 100);
+					 HAL_UART_Transmit(&huart1, value, 10, 100);
+					 HAL_UART_Transmit(&huart1, "\r\n", 2, 100);
+
+				 } else if (i == 8) {
+					 // Should be 3.3 for our actual Signal Board
+					 float voltage = adc * (3.0/4095);
+					 char value[10];
+					 sprintf(value, "%f", voltage);
+					 HAL_UART_Transmit(&huart1, "TMPSENSE", 8, 100);
+					 HAL_UART_Transmit(&huart1, ": ", 2, 100);
+					 HAL_UART_Transmit(&huart1, value, 10, 100);
+					 HAL_UART_Transmit(&huart1, "\r\n", 2, 100);
+
+				 } else if (i == 9) {
+					 // Should be 3.3 for our actual Signal Board
+					 float voltage = adc * (3.0/4095);
+					 char value[10];
+					 sprintf(value, "%f", voltage);
+					 HAL_UART_Transmit(&huart1, "VREFINT", 7, 100);
+					 HAL_UART_Transmit(&huart1, ": ", 2, 100);
+					 HAL_UART_Transmit(&huart1, value, 10, 100);
+					 HAL_UART_Transmit(&huart1, "\r\n", 2, 100);
+
+				 }
+
+			 }
+
+
+			 /**
+			  * Here we need to add I2C reading
+			  * Already doing this in the main firmware
+			  */
+
+
 			 HAL_UART_Transmit(&huart1, "\r\n", 2, 100);
 
+
+
+
+			 // Changing to the next GPIO
 			 if (HAL_GPIO_ReadPin(gpios[gpio_count].gpio, gpios[gpio_count].pin) == GPIO_PIN_SET){
 				HAL_GPIO_WritePin(gpios[gpio_count].gpio, gpios[gpio_count].pin, GPIO_PIN_RESET);
 			 }
@@ -121,6 +163,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 //			 HAL_UART_Transmit(&huart1, "\x5B" , 1, 100);
 //			 HAL_UART_Transmit(&huart1, "\x32" , 1, 100);
 //			 HAL_UART_Transmit(&huart1, "\x4A" , 1, 100);
+
 
 		 }
 
@@ -324,6 +367,22 @@ static void MX_ADC_Init(void)
   /** Configure for the selected ADC regular channel to be converted.
   */
   sConfig.Channel = ADC_CHANNEL_7;
+  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel to be converted.
+  */
+  sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
+  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel to be converted.
+  */
+  sConfig.Channel = ADC_CHANNEL_VREFINT;
   if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
   {
     Error_Handler();
