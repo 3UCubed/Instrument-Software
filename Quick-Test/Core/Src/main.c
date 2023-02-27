@@ -35,14 +35,16 @@ typedef struct {
 } gpio_pins;
 
 const gpio_pins gpios[] = {
+ { GPIOB, GPIO_PIN_6 },
+ { GPIOB, GPIO_PIN_5 },
+ { GPIOC, GPIO_PIN_10 },
+ { GPIOC, GPIO_PIN_13 },
+ { GPIOF, GPIO_PIN_7 },
+ { GPIOF, GPIO_PIN_6 },
  { GPIOC, GPIO_PIN_7 },
- { GPIOC, GPIO_PIN_6 },
  { GPIOC, GPIO_PIN_8 },
  { GPIOC, GPIO_PIN_9 },
- { GPIOC, GPIO_PIN_13 },
- { GPIOC, GPIO_PIN_10 },
- { GPIOF, GPIO_PIN_7 },
- { GPIOF, GPIO_PIN_6 }
+ { GPIOC, GPIO_PIN_6 }
 };
 
 /* USER CODE END PTD */
@@ -68,7 +70,7 @@ UART_HandleTypeDef huart1;
 uint8_t rx_buf[BUFFER_SIZE];
 uint8_t rx_index;
 int gpio_count = 0;
-volatile uint32_t adcResultsDMA[10];
+volatile uint32_t adcResultsDMA[15];
 const int adcChannelCount = sizeof(adcResultsDMA) / sizeof(adcResultsDMA[0]);
 /* USER CODE END PV */
 
@@ -93,47 +95,158 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 			 // Read all the ADCs (adcResultsDMA needs to be uint32_t!!!)
 			 HAL_ADC_Start_DMA(&hadc, (uint32_t *) adcResultsDMA, adcChannelCount);
 
+			 // For each ADC get its voltage
 			 for (int i = 0; i < adcChannelCount; i++) {
+
 				 // Parsing ADCs value based on gpio_count
 				 uint16_t adc = adcResultsDMA[i];
 				 uint8_t adcval[2];
-				 adcval[0] = ((adc & 0xFF00) >> 8); // BUS_Vmon MSB
-				 adcval[1] = (adc & 0xFF); // BUS_Vmon LSB
+				 adcval[0] = ((adc & 0xFF00) >> 8); // ADC reading MSB
+				 adcval[1] = (adc & 0xFF); // ADC reading LSB
 
-				 // Processing results for UART
-				 if (i < 8) {
+				 // Processing results for UART Transmission
+
+				 char value[8];
+				 if (i == 0) { // When i is < 8 you read from one of the ADC channels
 					 float voltage = adc * (3.3/4095);
-					 char value[10];
 					 sprintf(value, "%f", voltage);
 					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
-					 char count[1];
+					 char count[2];
 					 sprintf(count, "%d", i);
-					 HAL_UART_Transmit(&huart1, count, 1, 100);
-					 HAL_UART_Transmit(&huart1, ": ", 2, 100);
-					 HAL_UART_Transmit(&huart1, value, 10, 100);
-					 HAL_UART_Transmit(&huart1, "\r\n", 2, 100);
+
+					 // Transmit the parsed data
+					 HAL_UART_Transmit(&huart1, count, 2, 100);
+
+				 } else if (i == 1) {
+					 float voltage = adc * (3.3/4095);
+					 sprintf(value, "%f", voltage);
+					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
+					 char count[2];
+					 sprintf(count, "%d", i);
+
+					 // Transmit the parsed data
+					 HAL_UART_Transmit(&huart1, count, 2, 100);
+
+				 } else if (i == 2) {
+					 float voltage = adc * (3.3/4095);
+					 sprintf(value, "%f", voltage);
+					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
+					 char count[2];
+					 sprintf(count, "%d", i);
+
+					 // Transmit the parsed data
+					 HAL_UART_Transmit(&huart1, count, 2, 100);
+
+				 } else if (i == 3) {
+					 float voltage = adc * (3.3/4095);
+					 sprintf(value, "%f", voltage);
+					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
+					 char count[2];
+					 sprintf(count, "%d", i);
+
+					 // Transmit the parsed data
+					 HAL_UART_Transmit(&huart1, count, 2, 100);
+
+				 } else if (i == 4) {
+					 float voltage = adc * (3.3/4095);
+					 sprintf(value, "%f", voltage);
+					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
+					 char count[2];
+					 sprintf(count, "%d", i);
+
+					 // Transmit the parsed data
+					 HAL_UART_Transmit(&huart1, count, 2, 100);
+
+				 } else if (i == 5) {
+					 float voltage = adc * (3.3/4095);
+					 sprintf(value, "%f", voltage);
+					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
+					 char count[2];
+					 sprintf(count, "%d", i);
+
+					 // Transmit the parsed data
+					 HAL_UART_Transmit(&huart1, count, 2, 100);
+
+				 } else if (i == 6) {
+					 float voltage = adc * (3.3/4095);
+					 sprintf(value, "%f", voltage);
+					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
+					 char count[2];
+					 sprintf(count, "%d", i);
+
+					 // Transmit the parsed data
+					 HAL_UART_Transmit(&huart1, count, 2, 100);
+
+				 } else if (i == 7) {
+					 float voltage = adc * (3.3/4095);
+					 sprintf(value, "%f", voltage);
+					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
+					 char count[2];
+					 sprintf(count, "%d", i);
+
+					 // Transmit the parsed data
+					 HAL_UART_Transmit(&huart1, count, 2, 100);
 
 				 } else if (i == 8) {
-					 // Should be 3.3 for our actual Signal Board
-					 float voltage = adc * (3.0/4095);
-					 char value[10];
+					 float voltage = adc * (3.3/4095);
 					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "TMPSENSE", 8, 100);
-					 HAL_UART_Transmit(&huart1, ": ", 2, 100);
-					 HAL_UART_Transmit(&huart1, value, 10, 100);
-					 HAL_UART_Transmit(&huart1, "\r\n", 2, 100);
+					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
+					 char count[2];
+					 sprintf(count, "%d", i);
+
+					 // Transmit the parsed data
+					 HAL_UART_Transmit(&huart1, count, 2, 100);
 
 				 } else if (i == 9) {
+					 float voltage = adc * (3.3/4095);
+					 sprintf(value, "%f", voltage);
+					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
+					 char count[2];
+					 sprintf(count, "%d", i);
+
+					 // Transmit the parsed data
+					 HAL_UART_Transmit(&huart1, count, 2, 100);
+
+				 } else if (i == 10) {
+					 float voltage = adc * (3.3/4095) * 2;
+					 sprintf(value, "%f", voltage);
+					 HAL_UART_Transmit(&huart1, "5vref_mon", 9, 100);
+				 } else if (i == 11) {
+					 float voltage = adc * (3.3/4095) * 5;
+					 sprintf(value, "%f", voltage);
+					 HAL_UART_Transmit(&huart1, "15vref_mon", 10, 100);
+
+				 } else if (i == 12) {
+					 float voltage = adc * (3.3/4095);
+					 sprintf(value, "%f", voltage);
+					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
+					 char count[2];
+					 sprintf(count, "%d", i);
+
+					 // Transmit the parsed data
+					 HAL_UART_Transmit(&huart1, count, 2, 100);
+
+				 } else if (i == 13) { // for i = 13 you read the internal temperature
+					 // Should be 1.5ish for our actual Signal Board
+					 float voltage = adc * (3.0/4095);
+					 sprintf(value, "%f", voltage);
+
+					 // Transmit the parsed data
+					 HAL_UART_Transmit(&huart1, "TMPSENSE", 8, 100);
+
+				 } else if (i == 14) { // for i = 14 you read the internal voltage
 					 // Should be 3.3 for our actual Signal Board
 					 float voltage = adc * (3.0/4095);
-					 char value[10];
 					 sprintf(value, "%f", voltage);
+
+					 // Transmit the parsed data
 					 HAL_UART_Transmit(&huart1, "VREFINT", 7, 100);
-					 HAL_UART_Transmit(&huart1, ": ", 2, 100);
-					 HAL_UART_Transmit(&huart1, value, 10, 100);
-					 HAL_UART_Transmit(&huart1, "\r\n", 2, 100);
 
 				 }
+
+				 HAL_UART_Transmit(&huart1, ": ", 2, 100);
+				 HAL_UART_Transmit(&huart1, value, 8, 100);
+				 HAL_UART_Transmit(&huart1, "\r\n", 2, 100);
 
 			 }
 
@@ -154,15 +267,15 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 				HAL_GPIO_WritePin(gpios[gpio_count].gpio, gpios[gpio_count].pin, GPIO_PIN_RESET);
 			 }
 
-			 gpio_count == 7 ? gpio_count = 0 : gpio_count++;
+			 gpio_count == 9 ? gpio_count = 0 : gpio_count++;
 
 			 HAL_GPIO_TogglePin(gpios[gpio_count].gpio, gpios[gpio_count].pin);
 
-//			 HAL_UART_Transmit(&huart1, adcval , sizeof(adcval), 100);
-//			 HAL_UART_Transmit(&huart1, "\x1B" , 1, 100);
-//			 HAL_UART_Transmit(&huart1, "\x5B" , 1, 100);
-//			 HAL_UART_Transmit(&huart1, "\x32" , 1, 100);
-//			 HAL_UART_Transmit(&huart1, "\x4A" , 1, 100);
+	//			 HAL_UART_Transmit(&huart1, adcval , sizeof(adcval), 100);
+	//			 HAL_UART_Transmit(&huart1, "\x1B" , 1, 100);
+	//			 HAL_UART_Transmit(&huart1, "\x5B" , 1, 100);
+	//			 HAL_UART_Transmit(&huart1, "\x32" , 1, 100);
+	//			 HAL_UART_Transmit(&huart1, "\x4A" , 1, 100);
 
 
 		 }
@@ -342,31 +455,71 @@ static void MX_ADC_Init(void)
 
   /** Configure for the selected ADC regular channel to be converted.
   */
-  sConfig.Channel = ADC_CHANNEL_4;
-  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure for the selected ADC regular channel to be converted.
-  */
-  sConfig.Channel = ADC_CHANNEL_5;
-  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure for the selected ADC regular channel to be converted.
-  */
-  sConfig.Channel = ADC_CHANNEL_6;
-  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure for the selected ADC regular channel to be converted.
-  */
   sConfig.Channel = ADC_CHANNEL_7;
+  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel to be converted.
+  */
+  sConfig.Channel = ADC_CHANNEL_8;
+  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel to be converted.
+  */
+  sConfig.Channel = ADC_CHANNEL_9;
+  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel to be converted.
+  */
+  sConfig.Channel = ADC_CHANNEL_10;
+  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel to be converted.
+  */
+  sConfig.Channel = ADC_CHANNEL_11;
+  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel to be converted.
+  */
+  sConfig.Channel = ADC_CHANNEL_12;
+  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel to be converted.
+  */
+  sConfig.Channel = ADC_CHANNEL_13;
+  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel to be converted.
+  */
+  sConfig.Channel = ADC_CHANNEL_14;
+  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel to be converted.
+  */
+  sConfig.Channel = ADC_CHANNEL_15;
   if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -456,6 +609,7 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
@@ -464,6 +618,9 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6|GPIO_PIN_7, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5|GPIO_PIN_6, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PC13 PC6 PC7 PC8
                            PC9 PC10 */
@@ -480,6 +637,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB5 PB6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_6;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
 
