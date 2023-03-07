@@ -110,121 +110,68 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 				 if (i == 0) { // When i is < 8 you read from one of the ADC channels
 					 float voltage = adc * (3.3/4095);
 					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
-					 char count[2];
-					 sprintf(count, "%d", i);
-
-					 // Transmit the parsed data
-					 HAL_UART_Transmit(&huart1, count, 2, 100);
+					 HAL_UART_Transmit(&huart1, "800HVON", 7, 100);
 
 				 } else if (i == 1) {
 					 float voltage = adc * (3.3/4095);
 					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
-					 char count[2];
-					 sprintf(count, "%d", i);
-
-					 // Transmit the parsed data
-					 HAL_UART_Transmit(&huart1, count, 2, 100);
+					 HAL_UART_Transmit(&huart1, "SYS_ON", 6, 100);
 
 				 } else if (i == 2) {
 					 float voltage = adc * (3.3/4095);
 					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
-					 char count[2];
-					 sprintf(count, "%d", i);
-
-					 // Transmit the parsed data
-					 HAL_UART_Transmit(&huart1, count, 2, 100);
+					 HAL_UART_Transmit(&huart1, "SYS_ON", 6, 100);
 
 				 } else if (i == 3) {
 					 float voltage = adc * (3.3/4095);
+					 // Need to multiply by 2
 					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
-					 char count[2];
-					 sprintf(count, "%d", i);
-
-					 // Transmit the parsed data
-					 HAL_UART_Transmit(&huart1, count, 2, 100);
+					 HAL_UART_Transmit(&huart1, "3v3_EN", 6, 100);
 
 				 } else if (i == 4) {
-					 float voltage = adc * (3.3/4095);
+					 float voltage = adc * (3.3/4095) * -60;
 					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
-					 char count[2];
-					 sprintf(count, "%d", i);
-
-					 // Transmit the parsed data
-					 HAL_UART_Transmit(&huart1, count, 2, 100);
+					 HAL_UART_Transmit(&huart1, "n150v_EN", 8, 100);
 
 				 } else if (i == 5) {
 					 float voltage = adc * (3.3/4095);
 					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
-					 char count[2];
-					 sprintf(count, "%d", i);
+					 HAL_UART_Transmit(&huart1, "SDN_2", 5, 100);
 
-					 // Transmit the parsed data
-					 HAL_UART_Transmit(&huart1, count, 2, 100);
 
 				 } else if (i == 6) {
 					 float voltage = adc * (3.3/4095);
 					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
-					 char count[2];
-					 sprintf(count, "%d", i);
-
-					 // Transmit the parsed data
-					 HAL_UART_Transmit(&huart1, count, 2, 100);
+					 HAL_UART_Transmit(&huart1, "SDN_1", 5, 100);
 
 				 } else if (i == 7) {
-					 float voltage = adc * (3.3/4095);
+					 float voltage = adc * (3.3/4095) * -2;
 					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
-					 char count[2];
-					 sprintf(count, "%d", i);
-
-					 // Transmit the parsed data
-					 HAL_UART_Transmit(&huart1, count, 2, 100);
+					 HAL_UART_Transmit(&huart1, "n5v_EN ", 6, 100);
 
 				 } else if (i == 8) {
-					 float voltage = adc * (3.3/4095);
+					 float voltage = adc * (3.3/4095) * -2;
 					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
-					 char count[2];
-					 sprintf(count, "%d", i);
-
-					 // Transmit the parsed data
-					 HAL_UART_Transmit(&huart1, count, 2, 100);
+					 HAL_UART_Transmit(&huart1, "n5v_EN ", 6, 100);
 
 				 } else if (i == 9) {
-					 float voltage = adc * (3.3/4095);
-					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
-					 char count[2];
-					 sprintf(count, "%d", i);
-
-					 // Transmit the parsed data
-					 HAL_UART_Transmit(&huart1, count, 2, 100);
-
-				 } else if (i == 10) {
 					 float voltage = adc * (3.3/4095) * 2;
 					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "5vref_mon", 9, 100);
-				 } else if (i == 11) {
-					 float voltage = adc * (3.3/4095) * 5;
+					 HAL_UART_Transmit(&huart1, "5v_EN ", 5, 100);
+
+				 } else if (i == 10) {
+					 float voltage = adc * (3.3/4095) * -1;
 					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "15vref_mon", 10, 100);
+					 HAL_UART_Transmit(&huart1, "n3v3_EN", 7, 100);
+				 } else if (i == 11) {
+					 float voltage = adc * (3.3/4095) * -60;
+					 sprintf(value, "%f", voltage);
+					 HAL_UART_Transmit(&huart1, "n150v_EN", 8, 100);
 
 				 } else if (i == 12) {
-					 float voltage = adc * (3.3/4095);
+					 float voltage = adc * (3.3/4095) * 5;
 					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "ADC ", 4, 100);
-					 char count[2];
-					 sprintf(count, "%d", i);
-
-					 // Transmit the parsed data
-					 HAL_UART_Transmit(&huart1, count, 2, 100);
+					 HAL_UART_Transmit(&huart1, "15v_EN", 6, 100);
 
 				 } else if (i == 13) { // for i = 13 you read the internal temperature
 					 // Should be 1.5ish for our actual Signal Board
