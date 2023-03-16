@@ -1,4 +1,4 @@
-This is an packet interpreter written in C by Shane Woods. 
+This is an packet interpreter written in C. 
 This file allows us to take a binary file, read its contents, and interpret them as instrument packets.
 
 The packets should be as follows:
@@ -10,8 +10,8 @@ In this folder there is a Makefile that compiles the program, the .c program its
 
 To run the program with the sample file:
 
-make uart
+make interpreter
 
-./uart screenlog.0
+./interpreter screenlog.0
 
 and you should see the packets being printed out to the terminal.
