@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2022 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2022 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -30,22 +30,16 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 typedef struct {
- GPIO_TypeDef* gpio;
- uint16_t pin;
+	GPIO_TypeDef *gpio;
+	uint16_t pin;
 } gpio_pins;
 
-const gpio_pins gpios[] = {
- { GPIOB, GPIO_PIN_6 },
- { GPIOB, GPIO_PIN_5 },
- { GPIOC, GPIO_PIN_10 },
- { GPIOC, GPIO_PIN_13 },
- { GPIOF, GPIO_PIN_7 },
- { GPIOF, GPIO_PIN_6 },
- { GPIOC, GPIO_PIN_7 },
- { GPIOC, GPIO_PIN_8 },
- { GPIOC, GPIO_PIN_9 },
- { GPIOC, GPIO_PIN_6 }
-};
+const gpio_pins gpios[] = { { GPIOB, GPIO_PIN_6 }, { GPIOB, GPIO_PIN_5 }, {
+		GPIOC, GPIO_PIN_10 }, { GPIOC, GPIO_PIN_13 }, { GPIOC, GPIO_PIN_7 }, {
+		GPIOC, GPIO_PIN_8 }, { GPIOC, GPIO_PIN_9 }, { GPIOC, GPIO_PIN_6 } };
+
+const char *gpio_names[] = { "PB6", "PB5", "PC10", "PC13", "PC7", "PC8", "PC9",
+		"PC6" };
 
 /* USER CODE END PTD */
 
@@ -62,16 +56,26 @@ const gpio_pins gpios[] = {
 ADC_HandleTypeDef hadc;
 DMA_HandleTypeDef hdma_adc;
 
+I2C_HandleTypeDef hi2c1;
+
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-
+static const uint8_t ADT7410_1 = 0x4A << 1; // Use 8-bit address
+static const uint8_t ADT7410_2 = 0x4B << 1;
+static const uint8_t REG_TEMP = 0x00;
+HAL_StatusTypeDef ret;
+uint8_t buf[2];
+int16_t val;
+float temp_c;
 #define BUFFER_SIZE 100
 uint8_t rx_buf[BUFFER_SIZE];
 uint8_t rx_index;
 int gpio_count = 0;
+int num_gpios = 7;
 volatile uint32_t adcResultsDMA[15];
 const int adcChannelCount = sizeof(adcResultsDMA) / sizeof(adcResultsDMA[0]);
+int gpio_flags[15];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -80,6 +84,7 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_ADC_Init(void);
+static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -89,144 +94,299 @@ static void MX_ADC_Init(void);
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	if (huart->Instance == USART1) {
-		 HAL_UART_Receive_IT(&huart1, rx_buf, 1);
-		 if (rx_buf[0] == 'k') {
+		HAL_UART_Receive_IT(&huart1, rx_buf, 1);
+		if (rx_buf[0] == 'k') {
 
-			 // Read all the ADCs (adcResultsDMA needs to be uint32_t!!!)
-			 HAL_ADC_Start_DMA(&hadc, (uint32_t *) adcResultsDMA, adcChannelCount);
+//			HAL_UART_Transmit(&huart1, "\x1B" , 1, 100);
+//			HAL_UART_Transmit(&huart1, "\x5B" , 1, 100);
+//			HAL_UART_Transmit(&huart1, "\x32" , 1, 100);
+//			HAL_UART_Transmit(&huart1, "\x4A" , 1, 100);
 
-			 // For each ADC get its voltage
-			 for (int i = 0; i < adcChannelCount; i++) {
-
-				 // Parsing ADCs value based on gpio_count
-				 uint16_t adc = adcResultsDMA[i];
-				 uint8_t adcval[2];
-				 adcval[0] = ((adc & 0xFF00) >> 8); // ADC reading MSB
-				 adcval[1] = (adc & 0xFF); // ADC reading LSB
-
-				 // Processing results for UART Transmission
-
-				 char value[8];
-				 if (i == 0) { // When i is < 8 you read from one of the ADC channels
-					 float voltage = adc * (3.3/4095);
-					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "800HVON", 7, 100);
-
-				 } else if (i == 1) {
-					 float voltage = adc * (3.3/4095);
-					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "SYS_ON", 6, 100);
-
-				 } else if (i == 2) {
-					 float voltage = adc * (3.3/4095);
-					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "SYS_ON", 6, 100);
-
-				 } else if (i == 3) {
-					 float voltage = adc * (3.3/4095);
-					 // Need to multiply by 2
-					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "3v3_EN", 6, 100);
-
-				 } else if (i == 4) {
-					 float voltage = adc * (3.3/4095) * -60;
-					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "n150v_EN", 8, 100);
-
-				 } else if (i == 5) {
-					 float voltage = adc * (3.3/4095);
-					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "SDN_2", 5, 100);
+			// Read all the ADCs (adcResultsDMA needs to be uint32_t!!!)
+			HAL_ADC_Start_DMA(&hadc, (uint32_t*) adcResultsDMA,
+					adcChannelCount);
+			for (int i = 0; i < num_gpios; i++) {
+				HAL_UART_Transmit(&huart1, gpio_names[i], 4, 100);
+				if (HAL_GPIO_ReadPin(gpios[i].gpio, gpios[i].pin)
+						== GPIO_PIN_SET) {
+					HAL_UART_Transmit(&huart1, ": H", 3, 100);
+				} else {
+					HAL_UART_Transmit(&huart1, ": L", 3, 100);
+				}
+				HAL_UART_Transmit(&huart1, "\r\n", 2, 100);
+			}
 
 
-				 } else if (i == 6) {
-					 float voltage = adc * (3.3/4095);
-					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "SDN_1", 5, 100);
+			HAL_UART_Transmit(&huart1, "\r\n", 2, 100);
 
-				 } else if (i == 7) {
-					 float voltage = adc * (3.3/4095) * -2;
-					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "n5v_EN ", 6, 100);
+			// For each ADC get its voltage
+			for (int i = 0; i < adcChannelCount; i++) {
 
-				 } else if (i == 8) {
-					 float voltage = adc * (3.3/4095) * -2;
-					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "n5v_EN ", 6, 100);
+				// Parsing ADCs value based on gpio_count
+				uint16_t adc = adcResultsDMA[i];
+				uint8_t adcval[2];
+				adcval[0] = ((adc & 0xFF00) >> 8); // ADC reading MSB
+				adcval[1] = (adc & 0xFF); // ADC reading LSB
 
-				 } else if (i == 9) {
-					 float voltage = adc * (3.3/4095) * 2;
-					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "5v_EN ", 5, 100);
+				// Processing results for UART Transmission
 
-				 } else if (i == 10) {
-					 float voltage = adc * (3.3/4095) * -1;
-					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "n3v3_EN", 7, 100);
-				 } else if (i == 11) {
-					 float voltage = adc * (3.3/4095) * -60;
-					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "n150v_EN", 8, 100);
+				char value[8];
+				if (i == 0) { // When i is < 8 you read from one of the ADC channels
+					float voltage = adc * (3.3 / 4095);
+					sprintf(value, "%f", voltage);
+					HAL_UART_Transmit(&huart1, "800HVON", 7, 100);
+					if (voltage < 3.4 && voltage > 3.2) {
+						gpio_flags[i] = 1;
+					} else if (voltage != 0) {
+						gpio_flags[i] = 0;
+					}
 
-				 } else if (i == 12) {
-					 float voltage = adc * (3.3/4095) * 5;
-					 sprintf(value, "%f", voltage);
-					 HAL_UART_Transmit(&huart1, "15v_EN", 6, 100);
+				} else if (i == 1) {
+					float voltage = adc * (3.3 / 4095);
+					sprintf(value, "%f", voltage);
+					HAL_UART_Transmit(&huart1, "SYS_ON", 6, 100);
+					if (voltage < 3.4 && voltage > 3.2) {
+						gpio_flags[i] = 1;
+					} else if (voltage != 0) {
+						gpio_flags[i] = 0;
+					}
 
-				 } else if (i == 13) { // for i = 13 you read the internal temperature
-					 // Should be 1.5ish for our actual Signal Board
-					 float voltage = adc * (3.0/4095);
-					 sprintf(value, "%f", voltage);
+				} else if (i == 2) {
+					float voltage = adc * (3.3 / 4095);
+					sprintf(value, "%f", voltage);
+					HAL_UART_Transmit(&huart1, "SYS_ON", 6, 100);
+					if (voltage < 3.4 && voltage > 3.2) {
+						gpio_flags[i] = 1;
+					} else if (voltage != 0) {
+						gpio_flags[i] = 0;
+					}
 
-					 // Transmit the parsed data
-					 HAL_UART_Transmit(&huart1, "TMPSENSE", 8, 100);
+				} else if (i == 3) {
+					float voltage = adc * (3.3 / 4095);
+					// Need to multiply by 2
+					sprintf(value, "%f", voltage);
+					HAL_UART_Transmit(&huart1, "3v3_MON", 7, 100);
+					if (voltage < 3.4 && voltage > 3.2) {
+						gpio_flags[i] = 1;
+					} else if (voltage != 0) {
+						gpio_flags[i] = 0;
+					}
 
-				 } else if (i == 14) { // for i = 14 you read the internal voltage
-					 // Should be 3.3 for our actual Signal Board
-					 float voltage = adc * (3.0/4095);
-					 sprintf(value, "%f", voltage);
+				} else if (i == 4) {
+					float voltage = adc * (3.3 / 4095) * -50;
+					sprintf(value, "%f", voltage);
+					HAL_UART_Transmit(&huart1, "n150v_MON", 9, 100);
+					if (voltage > -150.1 && voltage < -149.9) {
+						gpio_flags[i] = 1;
+					} else if (voltage != 0) {
+						gpio_flags[i] = 0;
+					}
 
-					 // Transmit the parsed data
-					 HAL_UART_Transmit(&huart1, "VREFINT", 7, 100);
+				} else if (i == 5) {
+					float voltage = adc * (3.3 / 4095);
+					sprintf(value, "%f", voltage);
+					HAL_UART_Transmit(&huart1, "TMP1", 4, 100);
+					if (voltage < 3.4 && voltage > 3.2) {
+						gpio_flags[i] = 1;
+					} else if (voltage != 0) {
+						gpio_flags[i] = 0;
+					}
 
-				 }
+				} else if (i == 6) {
+					float voltage = adc * (3.3 / 4095);
+					sprintf(value, "%f", voltage);
+					HAL_UART_Transmit(&huart1, "TMP2", 5, 100);
+					if (voltage < 3.4 && voltage > 3.2) {
+						gpio_flags[i] = 1;
+					} else if (voltage != 0) {
+						gpio_flags[i] = 0;
+					}
 
-				 HAL_UART_Transmit(&huart1, ": ", 2, 100);
-				 HAL_UART_Transmit(&huart1, value, 8, 100);
-				 HAL_UART_Transmit(&huart1, "\r\n", 2, 100);
+				} else if (i == 7) {
+					float voltage = adc * (3.3 / 4095);
+//					 voltage *= -2;
+					sprintf(value, "%f", voltage);
+					HAL_UART_Transmit(&huart1, "n5v_MON", 7, 100);
+					if (voltage > -5.1 && voltage < -4.9) {
+						gpio_flags[i] = 1;
+					} else if (voltage != 0) {
+						gpio_flags[i] = 0;
+					}
 
-			 }
+				} else if (i == 8) {
+					float voltage = adc * (3.3 / 4095);
+//					 voltage *= 2;
+					sprintf(value, "%f", voltage);
+					HAL_UART_Transmit(&huart1, "n5v_MON", 7, 100);
+					if (voltage > -5.1 && voltage < -4.9) {
+						gpio_flags[i] = 1;
+					} else if (voltage != 0) {
+						gpio_flags[i] = 0;
+					}
+
+				} else if (i == 9) {
+					float voltage = adc * (3.3 / 4095);
+//					 voltage *= 2;
+					sprintf(value, "%f", voltage);
+					HAL_UART_Transmit(&huart1, "5v_MON", 6, 100);
+					if (voltage < 5.1 && voltage > 4.9) {
+						gpio_flags[i] = 1;
+					} else if (voltage != 0) {
+						gpio_flags[i] = 0;
+					}
+
+				} else if (i == 10) {
+					float voltage = adc * (3.3 / 4095);
+//					 voltage *= -1;
+					sprintf(value, "%f", voltage);
+					HAL_UART_Transmit(&huart1, "n3v3_MON", 8, 100);
+					if (voltage > -3.4 && voltage < -3.2) {
+						gpio_flags[i] = 1;
+					} else if (voltage != 0) {
+						gpio_flags[i] = 0;
+					}
+				} else if (i == 11) {
+					float voltage = adc * (3.3 / 4095);
+//					 voltage *= -50;
+					sprintf(value, "%f", voltage);
+					HAL_UART_Transmit(&huart1, "n150v_MON", 9, 100);
+					if (voltage > -150.1 && voltage < -149.9) {
+						gpio_flags[i] = 1;
+					} else if (voltage != 0) {
+						gpio_flags[i] = 0;
+					}
+
+				} else if (i == 12) {
+					float voltage = adc * (3.3 / 4095);
+//					 voltage *= 5;
+					sprintf(value, "%f", voltage);
+					HAL_UART_Transmit(&huart1, "15v_MON", 7, 100);
+					if (voltage < 15.1 && voltage > 14.9) {
+						gpio_flags[i] = 1;
+					} else if (voltage != 0) {
+						gpio_flags[i] = 0;
+					}
+
+				} else if (i == 13) { // for i = 13 you read the internal temperature
+					// Should be 1.5ish for our actual Signal Board
+					float voltage = adc * (3.3 / 4095);
+					sprintf(value, "%f", voltage);
+					HAL_UART_Transmit(&huart1, "TMPSENSE", 8, 100);
+					if (voltage < 3.4 && voltage > 3.2) {
+						gpio_flags[i] = 1;
+					} else if (voltage != 0) {
+						gpio_flags[i] = 0;
+					}
+
+				} else if (i == 14) { // for i = 14 you read the internal voltage
+					// Should be 3.3 for our actual Signal Board
+					float voltage = adc * (3.3 / 4095);
+					sprintf(value, "%f", voltage);
+					HAL_UART_Transmit(&huart1, "VREFINT", 7, 100);
+					if (voltage < 3.4 && voltage > 3.2) {
+						gpio_flags[i] = 1;
+					} else if (voltage != 0) {
+						gpio_flags[i] = 0;
+					}
+
+				}
+
+				HAL_UART_Transmit(&huart1, ": ", 2, 100);
+				HAL_UART_Transmit(&huart1, value, 8, 100);
+				HAL_UART_Transmit(&huart1, "\r\n", 2, 100);
+
+			}
 
 
-			 /**
-			  * Here we need to add I2C reading
-			  * Already doing this in the main firmware
-			  */
+			HAL_UART_Transmit(&huart1, "\r\n", 2, 100);
+
+			// Changing to the next GPIO
+			if (HAL_GPIO_ReadPin(gpios[gpio_count].gpio, gpios[gpio_count].pin)
+					== GPIO_PIN_SET) {
+				HAL_GPIO_WritePin(gpios[gpio_count].gpio, gpios[gpio_count].pin,
+						GPIO_PIN_RESET);
+			}
+
+			gpio_count == num_gpios ? gpio_count = 0 : gpio_count++;
+			HAL_GPIO_TogglePin(gpios[gpio_count].gpio, gpios[gpio_count].pin);
+			if (gpio_flags[gpio_count] == 1) {
+			}
+
+			// Tell ADT7410_1 that we want to read from the temperature register
+			buf[0] = REG_TEMP;
+			ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_1, buf, 1, 1000);
+			//I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
+			if (ret != HAL_OK) {
+				strcpy((char*) buf, "Error Tx\r\n");
+			} else {
+
+				// Read 2 bytes from the temperature register
+				ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_1, buf, 2, 1000);
+				if (ret != HAL_OK) {
+					strcpy((char*) buf, "Error Rx\r\n");
+				} else {
+
+					val = (int16_t) (buf[0] << 8);
+					val = (val | buf[1]) >> 3;
+
+					// Convert to 2's complement, since temperature can be negative
+					if (val > 0x7FF) {
+						val |= 0xF000;
+					}
+
+					// Convert to float temperature value (Celsius)
+					temp_c = val * 0.0625;
+
+					// Convert temperature to decimal value
+					temp_c *= 100;
+
+					sprintf((char*) buf, "ADT7410_1: %u.%u C\r\n",
+							((unsigned int) temp_c / 100),
+							((unsigned int) temp_c % 100));
+				}
+			}
+
+			HAL_UART_Transmit(&huart1, buf, strlen((char*) buf), HAL_MAX_DELAY);
+
+			// Tell ADT7410_2 that we want to read from the temperature register
+			buf[0] = REG_TEMP;
+			ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_2, buf, 1, 1000);
+			//I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
+			if (ret != HAL_OK) {
+				strcpy((char*) buf, "Error Tx\r\n");
+			} else {
+
+				// Read 2 bytes from the temperature register
+				ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_2, buf, 2, 1000);
+				if (ret != HAL_OK) {
+					strcpy((char*) buf, "Error Rx\r\n");
+				} else {
+
+					val = (int16_t) (buf[0] << 8);
+					val = (val | buf[1]) >> 3;
+
+					// Convert to 2's complement, since temperature can be negative
+					if (val > 0x7FF) {
+						val |= 0xF000;
+					}
+
+					// Convert to float temperature value (Celsius)
+					temp_c = val * 0.0625;
+
+					// Convert temperature to decimal value
+					temp_c *= 100;
+
+					sprintf((char*) buf, "ADT7410 2: %u.%u C\r\n",
+							((unsigned int) temp_c / 100),
+							((unsigned int) temp_c % 100));
+				}
+			}
+
+			HAL_UART_Transmit(&huart1, buf, strlen((char*) buf), HAL_MAX_DELAY);
+			HAL_UART_Transmit(&huart1, "\r\n", 2, 100);
 
 
-			 HAL_UART_Transmit(&huart1, "\r\n", 2, 100);
-
-
-
-
-			 // Changing to the next GPIO
-			 if (HAL_GPIO_ReadPin(gpios[gpio_count].gpio, gpios[gpio_count].pin) == GPIO_PIN_SET){
-				HAL_GPIO_WritePin(gpios[gpio_count].gpio, gpios[gpio_count].pin, GPIO_PIN_RESET);
-			 }
-
-			 gpio_count == 9 ? gpio_count = 0 : gpio_count++;
-
-			 HAL_GPIO_TogglePin(gpios[gpio_count].gpio, gpios[gpio_count].pin);
-
-	//			 HAL_UART_Transmit(&huart1, adcval , sizeof(adcval), 100);
-	//			 HAL_UART_Transmit(&huart1, "\x1B" , 1, 100);
-	//			 HAL_UART_Transmit(&huart1, "\x5B" , 1, 100);
-	//			 HAL_UART_Transmit(&huart1, "\x32" , 1, 100);
-	//			 HAL_UART_Transmit(&huart1, "\x4A" , 1, 100);
-
-
-		 }
-
+		}
 	}
 }
 
@@ -249,6 +409,8 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 
+  /* USER CODE BEGIN Init */
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -263,7 +425,12 @@ int main(void)
   MX_DMA_Init();
   MX_USART1_UART_Init();
   MX_ADC_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
+
+	for (int i = 0; i < 15; i++) {
+		gpio_flags[i] = 1;
+	}
 
   /* USER CODE END 2 */
 
@@ -273,9 +440,10 @@ int main(void)
   HAL_UART_Receive_IT(&huart1, rx_buf, 1);
   HAL_GPIO_WritePin(gpios[0].gpio, gpios[0].pin, GPIO_PIN_SET);
 
+	/* USER CODE BEGIN WHILE */
+	while (1) {
 
-  while (1)
-  {
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -319,8 +487,9 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_I2C1;
   PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
+  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_HSI;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
@@ -494,6 +663,54 @@ static void MX_ADC_Init(void)
 }
 
 /**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x2000090E;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
   * @brief USART1 Initialization Function
   * @param None
   * @retval None
@@ -605,11 +822,10 @@ static void MX_GPIO_Init(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
+	/* User can add his own implementation to report the HAL error return state */
+	__disable_irq();
+	while (1) {
+	}
   /* USER CODE END Error_Handler_Debug */
 }
 
