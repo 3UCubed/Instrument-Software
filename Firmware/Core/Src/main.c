@@ -53,6 +53,7 @@ TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 
 UART_HandleTypeDef huart1;
+
 /* USER CODE BEGIN PV */
 UART_WakeUpTypeDef WakeUpSelection;
 uint8_t Rx_data[1];  //  creating a buffer of 1 bytes
@@ -118,7 +119,7 @@ int startupTimer = 0;
 
 
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
-	if (htim == &htim1) {
+	if (htim == &htim2) {
         if (!(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8))) { //check pin state
 
             /**
@@ -225,7 +226,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
             }
 
         }
-    } else if (htim == &htim2) {
+    } else if (htim == &htim1) {
         if (!(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11))) { //check pin state
 
             /**
@@ -264,13 +265,13 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	char sleepChar = Rx_data;
-	if (Rx_data[0] == 's') { // should be "¶" in the future
-		HAL_SuspendTick();
-		HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
-		NVIC_SystemReset();
-	}
-	HAL_UART_Receive_IT(&huart1, Rx_data, 1);
+//	char sleepChar = Rx_data;
+//	if (Rx_data[0] == 's') { // should be "¶" in the future
+//		HAL_SuspendTick();
+//		HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+//		NVIC_SystemReset();
+//	}
+//	HAL_UART_Receive_IT(&huart1, Rx_data, 1);
 }
 
 /* USER CODE END 0 */
@@ -324,22 +325,22 @@ int main(void)
     HAL_TIM_OC_Start_IT(&htim1, TIM_CHANNEL_1);
     HAL_TIM_OC_Start_IT(&htim2, TIM_CHANNEL_4);
 
-
-    while (__HAL_UART_GET_FLAG(&huart1, USART_ISR_BUSY) == SET);
-    while (__HAL_UART_GET_FLAG(&huart1, USART_ISR_REACK) == RESET);
-
-    WakeUpSelection.WakeUpEvent = UART_WAKEUP_ON_ADDRESS;
-    WakeUpSelection.AddressLength = UART_ADDRESS_DETECT_7B;
-    WakeUpSelection.Address = 0x23; // send "£"
-
-    if (HAL_UARTEx_StopModeWakeUpSourceConfig(&huart1, WakeUpSelection) != HAL_OK) {
-        Error_Handler();
-    }
-    /* Enable the LPUART Wake UP from stop mode Interrupt */
-    __HAL_UART_ENABLE_IT(&huart1, UART_IT_WUF);
-    /* enable MCU wake-up by LPUART */
-    HAL_UARTEx_EnableStopMode(&huart1);
-    HAL_UART_Receive_IT(&huart1, Rx_data, 1);
+//
+//    while (__HAL_UART_GET_FLAG(&huart1, USART_ISR_BUSY) == SET);
+//    while (__HAL_UART_GET_FLAG(&huart1, USART_ISR_REACK) == RESET);
+//
+//    WakeUpSelection.WakeUpEvent = UART_WAKEUP_ON_ADDRESS;
+//    WakeUpSelection.AddressLength = UART_ADDRESS_DETECT_7B;
+//    WakeUpSelection.Address = 0x23; // send "£"
+//
+//    if (HAL_UARTEx_StopModeWakeUpSourceConfig(&huart1, WakeUpSelection) != HAL_OK) {
+//        Error_Handler();
+//    }
+//    /* Enable the LPUART Wake UP from stop mode Interrupt */
+//    __HAL_UART_ENABLE_IT(&huart1, UART_IT_WUF);
+//    /* enable MCU wake-up by LPUART */
+//    HAL_UARTEx_EnableStopMode(&huart1);
+//    HAL_UART_Receive_IT(&huart1, Rx_data, 1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -347,7 +348,7 @@ int main(void)
     while (1) {
 
 
-    	// Tell ADT7410_1 that we want to read from the temperature register
+//    	 Tell ADT7410_1 that we want to read from the temperature register
 //		buf[0] = REG_TEMP;
 //		ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_1, buf, 1, 1000);
 //		//I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
@@ -547,6 +548,22 @@ static void MX_ADC_Init(void)
   /** Configure for the selected ADC regular channel to be converted.
   */
   sConfig.Channel = ADC_CHANNEL_3;
+  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel to be converted.
+  */
+  sConfig.Channel = ADC_CHANNEL_5;
+  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel to be converted.
+  */
+  sConfig.Channel = ADC_CHANNEL_6;
   if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -820,7 +837,7 @@ static void MX_TIM1_Init(void)
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = 100 - 1;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 24000;
+  htim1.Init.Period = 30000 - 1;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
@@ -844,7 +861,7 @@ static void MX_TIM1_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_TOGGLE;
-  sConfigOC.Pulse = 12000 - 1;
+  sConfigOC.Pulse = 6000 - 1;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
@@ -894,7 +911,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 100 - 1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 30000 - 1;
+  htim2.Init.Period = 24000 - 1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -917,7 +934,7 @@ static void MX_TIM2_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_TOGGLE;
-  sConfigOC.Pulse = 6000 - 1;
+  sConfigOC.Pulse = 12000 - 1;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_OC_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
