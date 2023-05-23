@@ -60,8 +60,8 @@ all: main-build
 main-build: Quick-Test.elf secondary-outputs
 
 # Tool invocations
-Quick-Test.elf Quick-Test.map: $(OBJS) $(USER_OBJS) /Users/shanewoods/cubesat/workspace/Instrument-Software/Quick-Test/STM32F051R8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Quick-Test.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"/Users/shanewoods/cubesat/workspace/Instrument-Software/Quick-Test/STM32F051R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Quick-Test.map" -Wl,--gc-sections -static -u _print_float --specs=nano.specs -mfloat-abi=soft -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Quick-Test.elf Quick-Test.map: $(OBJS) $(USER_OBJS) /Users/3ucubed/Desktop/Instrument-Software/Quick-Test/STM32F051R8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Quick-Test.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"/Users/3ucubed/Desktop/Instrument-Software/Quick-Test/STM32F051R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Quick-Test.map" -Wl,--gc-sections -static -u _print_float --specs=nano.specs -mfloat-abi=soft -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

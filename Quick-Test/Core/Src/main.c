@@ -71,8 +71,8 @@ float temp_c;
 #define BUFFER_SIZE 100
 uint8_t rx_buf[BUFFER_SIZE];
 uint8_t rx_index;
-int gpio_count = 0;
-int num_gpios = 7;
+//int gpio_count = 0;
+int num_gpios = 8;
 volatile uint32_t adcResultsDMA[15];
 const int adcChannelCount = sizeof(adcResultsDMA) / sizeof(adcResultsDMA[0]);
 int gpio_flags[15];
@@ -95,17 +95,61 @@ static void MX_I2C1_Init(void);
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	if (huart->Instance == USART1) {
 		HAL_UART_Receive_IT(&huart1, rx_buf, 1);
-		if (rx_buf[0] == 'k') {
+		if (rx_buf[0] == 'a' || rx_buf[0] == 'b' || rx_buf[0] == 'c' || rx_buf[0] == 'd' || rx_buf[0] == 'e' || rx_buf[0] == 'f' || rx_buf[0] == 'g' || rx_buf[0] == 'h') {
+			int charNum = -1;
+			switch (rx_buf[0]) {
+			    case 'a':
+			    	charNum = 0;
+			        break;
+			    case 'b':
+			    	charNum = 1;
+			        break;
+			    case 'c':
+			    	charNum = 2;
+			        break;
+			    case 'd':
+			    	charNum = 3;
+			        break;
+			    case 'e':
+			    	charNum = 4;
+			        break;
+			    case 'f':
+			    	charNum = 5;
+			        break;
+			    case 'g':
+			    	charNum = 6;
+			        break;
+			    case 'h':
+			    	charNum = 7;
+			        break;
+			}
 
 //			HAL_UART_Transmit(&huart1, "\x1B" , 1, 100);
 //			HAL_UART_Transmit(&huart1, "\x5B" , 1, 100);
 //			HAL_UART_Transmit(&huart1, "\x32" , 1, 100);
 //			HAL_UART_Transmit(&huart1, "\x4A" , 1, 100);
-
 			// Read all the ADCs (adcResultsDMA needs to be uint32_t!!!)
 			HAL_ADC_Start_DMA(&hadc, (uint32_t*) adcResultsDMA,
 					adcChannelCount);
 			for (int i = 0; i < num_gpios; i++) {
+
+
+				// Changing to the next GPIO
+				if (i == charNum) {
+					if (HAL_GPIO_ReadPin(gpios[i].gpio, gpios[i].pin)
+							== GPIO_PIN_SET) {
+						HAL_GPIO_WritePin(gpios[i].gpio, gpios[i].pin,
+								GPIO_PIN_RESET);
+					} else {
+
+			//			gpio_count == num_gpios - 1 ? gpio_count = 0 : gpio_count++;
+						HAL_GPIO_TogglePin(gpios[i].gpio, gpios[i].pin);
+						if (gpio_flags[i] == 1) {
+						}
+					}
+				}
+
+
 				HAL_UART_Transmit(&huart1, gpio_names[i], 4, 100);
 				if (HAL_GPIO_ReadPin(gpios[i].gpio, gpios[i].pin)
 						== GPIO_PIN_SET) {
@@ -300,27 +344,17 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 			HAL_UART_Transmit(&huart1, "\r\n", 2, 100);
 
-			// Changing to the next GPIO
-			if (HAL_GPIO_ReadPin(gpios[gpio_count].gpio, gpios[gpio_count].pin)
-					== GPIO_PIN_SET) {
-				HAL_GPIO_WritePin(gpios[gpio_count].gpio, gpios[gpio_count].pin,
-						GPIO_PIN_RESET);
-			}
 
-			gpio_count == num_gpios ? gpio_count = 0 : gpio_count++;
-			HAL_GPIO_TogglePin(gpios[gpio_count].gpio, gpios[gpio_count].pin);
-			if (gpio_flags[gpio_count] == 1) {
-			}
 
 			// Tell ADT7410_1 that we want to read from the temperature register
 			buf[0] = REG_TEMP;
 			ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_1, buf, 1, 1000);
-			//I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
+//			I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
 			if (ret != HAL_OK) {
 				strcpy((char*) buf, "Error Tx\r\n");
 			} else {
 
-				// Read 2 bytes from the temperature register
+//				 Read 2 bytes from the temperature register
 				ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_1, buf, 2, 1000);
 				if (ret != HAL_OK) {
 					strcpy((char*) buf, "Error Rx\r\n");
@@ -351,12 +385,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 			// Tell ADT7410_2 that we want to read from the temperature register
 			buf[0] = REG_TEMP;
 			ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_2, buf, 1, 1000);
-			//I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
+//			I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
 			if (ret != HAL_OK) {
 				strcpy((char*) buf, "Error Tx\r\n");
 			} else {
 
-				// Read 2 bytes from the temperature register
+//				 Read 2 bytes from the temperature register
 				ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_2, buf, 2, 1000);
 				if (ret != HAL_OK) {
 					strcpy((char*) buf, "Error Rx\r\n");

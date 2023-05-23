@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -g --std=c99 -Wall
+CFLAGS = -g --std=c99 -Wall -arch x86_64
 RM = rm
 
 TARGET = interpreter
