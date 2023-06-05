@@ -911,3 +911,46 @@
 2023-06-05 12:23:45,682 [INFO] CADModel:165 - CPN selected for project levelSTM32F051R8T6
 2023-06-05 12:23:45,682 [INFO] CADModel:114 - Register for checkConnection events
 2023-06-05 12:23:45,725 [INFO] OpenFileManager:328 - Restore cursor
+2023-06-05 12:42:01,515 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 284210888 Bytes (452984832)
+2023-06-05 12:42:03,282 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 369977864 Bytes (452984832)
+2023-06-05 12:42:05,752 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 225318720 Bytes (452984832)
+2023-06-05 12:42:06,413 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: ADC
+2023-06-05 12:42:06,414 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: NVIC
+2023-06-05 12:42:06,414 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: USART
+2023-06-05 12:42:06,414 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: DMA
+2023-06-05 12:42:06,414 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: GPIO
+2023-06-05 12:42:06,414 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: RCC
+2023-06-05 12:42:06,414 [INFO] BlockDiagram:2759 - set Specific Code input for plugin: I2C
+2023-06-05 12:42:06,415 [INFO] CodeGenerator:793 - code generatio: config db path: /Users/jaredmorrison/.stm32cubemx/databases/DB.6.0.60/db/
+2023-06-05 12:42:06,806 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/MXTmpFiles/license.tmp_save
+2023-06-05 12:42:07,336 [INFO] CodeEngine:279 - Generated code: /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/MXTmpFiles/license.tmp
+2023-06-05 12:42:07,716 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/MXTmpFiles/gpio.tmp_save
+2023-06-05 12:42:07,867 [INFO] CodeEngine:279 - Generated code: /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/MXTmpFiles/gpio.tmp
+2023-06-05 12:42:08,695 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/MXTmpFiles/dma.tmp_save
+2023-06-05 12:42:08,918 [INFO] CodeEngine:279 - Generated code: /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/MXTmpFiles/dma.tmp
+2023-06-05 12:42:08,923 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/MXTmpFiles/dma_GV.tmp_save
+2023-06-05 12:42:09,073 [INFO] CodeEngine:279 - Generated code: /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/MXTmpFiles/dma_GV.tmp
+2023-06-05 12:42:09,086 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/Core/Src/stm32f0xx_it.c_save
+2023-06-05 12:42:09,333 [INFO] CodeEngine:279 - Generated code: /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/Core/Src/stm32f0xx_it.c
+2023-06-05 12:42:09,339 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/Core/Inc/stm32f0xx_it.h_save
+2023-06-05 12:42:09,459 [INFO] CodeEngine:279 - Generated code: /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/Core/Inc/stm32f0xx_it.h
+2023-06-05 12:42:09,627 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/Core/Src/stm32f0xx_hal_msp.c_save
+2023-06-05 12:42:09,868 [INFO] CodeEngine:279 - Generated code: /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/Core/Src/stm32f0xx_hal_msp.c
+2023-06-05 12:42:09,874 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/MXTmpFiles/system.tmp_save
+2023-06-05 12:42:09,987 [INFO] CodeEngine:279 - Generated code: /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/MXTmpFiles/system.tmp
+2023-06-05 12:42:10,000 [INFO] CodeEngine:311 - oldGeneratedFile, /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/Core/Inc/stm32f0xx_hal_conf.h_save
+2023-06-05 12:42:10,151 [INFO] CodeEngine:335 - Generated code: /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/Core/Inc/stm32f0xx_hal_conf.h
+2023-06-05 12:42:10,209 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/Core/Inc/main.h_save
+2023-06-05 12:42:10,380 [INFO] CodeEngine:279 - Generated code: /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/Core/Inc/main.h
+2023-06-05 12:42:10,386 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/Core/Src/main.c_save
+2023-06-05 12:42:10,683 [INFO] CodeEngine:279 - Generated code: /Users/jaredmorrison/Desktop/sanjSoftware/Quick-Test/Core/Src/main.c
+2023-06-05 12:42:12,461 [INFO] ProjectBuilder:2996 - Time for Copy HAL[1] : 470mS.
+2023-06-05 12:42:12,480 [INFO] ProjectBuilder:4304 - Project Generator version: 3.19.2
+2023-06-05 12:42:13,339 [INFO] ConfigFileManager:1483 - The Die is : DIE440
+2023-06-05 12:42:13,369 [INFO] ApiDbMcu:507 - Load IP Config File for FATFS
+2023-06-05 12:42:13,471 [INFO] ApiDbMcu:507 - Load IP Config File for FREERTOS
+2023-06-05 12:42:13,956 [INFO] ApiDbMcu:507 - Load IP Config File for TOUCHSENSING
+2023-06-05 12:42:15,855 [INFO] LogOutputStream:77 - [STDOUT_REDIRECT] 
+2023-06-05 12:42:16,968 [INFO] ProjectBuilder:4505 - Time for Generating toolchain IDE Files: 4487mS.
+2023-06-05 12:42:16,969 [INFO] ProjectBuilder:2867 - Time for Copy CMSIS : 1mS.
+2023-06-05 12:42:16,971 [INFO] ProjectBuilder:2867 - Time for Copy CMSIS : 0mS.
