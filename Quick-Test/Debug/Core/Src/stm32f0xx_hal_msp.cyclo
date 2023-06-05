@@ -1,0 +1,7 @@
+stm32f0xx_hal_msp.c:64:6:HAL_MspInit	1
+stm32f0xx_hal_msp.c:86:6:HAL_ADC_MspInit	3
+stm32f0xx_hal_msp.c:162:6:HAL_ADC_MspDeInit	2
+stm32f0xx_hal_msp.c:210:6:HAL_I2C_MspInit	2
+stm32f0xx_hal_msp.c:246:6:HAL_I2C_MspDeInit	2
+stm32f0xx_hal_msp.c:277:6:HAL_UART_MspInit	2
+stm32f0xx_hal_msp.c:316:6:HAL_UART_MspDeInit	2
