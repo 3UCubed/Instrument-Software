@@ -36,8 +36,9 @@ const gpio_pins gpios[] = { { GPIOB, GPIO_PIN_5 }, { GPIOB, GPIO_PIN_6 }, {
 GPIOC, GPIO_PIN_10 }, { GPIOC, GPIO_PIN_13 }, { GPIOC, GPIO_PIN_7 }, {
 GPIOC, GPIO_PIN_8 }, { GPIOC, GPIO_PIN_9 }, { GPIOC, GPIO_PIN_6 } };
 
-const char *gpio_names[] = { "sys_on PB5", "800v_en PB6", "3v3_en PC10", "n150v_en PC13", "15v_en PC7", "n5v_en PC8", "5v_en PC9",
-		"n3v3_en PC6" };
+const char *gpio_names[] =
+		{ "sys_on PB5", "800v_en PB6", "3v3_en PC10", "n150v_en PC13",
+				"15v_en PC7", "n5v_en PC8", "5v_en PC9", "n3v3_en PC6" };
 
 /* USER CODE END PTD */
 
@@ -123,7 +124,7 @@ uint16_t erpa_seq = 0;
 uint8_t pmt_buf[6];
 const uint8_t pmt_sync = 0xBB;
 uint16_t pmt_seq = 0;
-uint8_t hk_buf[26];
+uint8_t hk_buf[30];
 const uint8_t hk_sync = 0xCC;
 uint16_t hk_seq = 0;
 int hk_counter = 0;
@@ -131,6 +132,7 @@ int startupTimer = 0;
 uint8_t PMT_ON = 1;
 uint8_t ERPA_ON = 1;
 uint8_t HK_ON = 1;
+
 
 void add_to_gpiobuf(const char *str) {
 	int len = strlen(str);
@@ -143,149 +145,160 @@ void add_to_gpiobuf(const char *str) {
 }
 
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
-
 	if (htim == &htim2) {
 		if (!(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8))) { //check pin state
+			if (ERPA_ON) {
+				/**
+				 * TIM1_CH1 Interrupt
+				 * Sets CNV and samples ERPA's ADC
+				 * Steps DAC
+				 * +/- 0.5v Every 100ms
+				 */
 
-			/**
-			 * TIM1_CH1 Interrupt
-			 * Sets CNV and samples ERPA's ADC
-			 * Steps DAC
-			 * +/- 0.5v Every 100ms
-			 */
+				/* Write to SPI (begin transfer?) */
+				HAL_SPI_Transmit(&hspi1, (uint8_t*) &WRITE, 1, 1);
 
-			/* Write to SPI (begin transfer?) */
-			HAL_SPI_Transmit(&hspi1, (uint8_t*) &WRITE, 1, 1);
+				while (!(SPI1->SR))
+					;
 
-			while (!(SPI1->SR))
-				;
+				raw = SPI1->DR;
 
-			raw = SPI1->DR;
+				DAC->DHR12R1 = DAC_OUT[step];
 
-			DAC->DHR12R1 = DAC_OUT[step];
-
-			HAL_ADC_Start_DMA(&hadc, (uint32_t*) adcResultsDMA,
-					adcChannelCount);
-			uint16_t PA0 = adcResultsDMA[0]; //ADC_IN0, END_mon: entrance/collimator monitor
-			uint16_t PA7 = adcResultsDMA[4]; //ADC_IN7, SWP_mon: Sweep voltage monitor
-			uint16_t PB0 = adcResultsDMA[5]; //ADC_IN8, TMP 1: Sweep temperature
-			uint16_t PB1 = adcResultsDMA[6]; //ADC_IN9, TMP 2: feedbacks
-
-			erpa_buf[0] = erpa_sync; // ERPA SYNC 0xAA MSB
-			erpa_buf[1] = erpa_sync; // ERPA SYNC 0xAA LSB
-			erpa_buf[2] = ((erpa_seq & 0xFF00) >> 8); // ERPA SEQ # MSB
-			erpa_buf[3] = (erpa_seq & 0xFF); // ERPA SEQ # MSB
-			erpa_buf[4] = ((raw & 0xFF00) >> 8); // ERPA eADC MSB
-			erpa_buf[5] = (raw & 0xFF); // ERPA eADC LSB
-			erpa_buf[6] = ((DAC_OUT[step] & 0xFF00) >> 8); //SWP Commanded MSB
-			erpa_buf[7] = (DAC_OUT[step] & 0xFF); //SWP Commanded LSB
-			erpa_buf[8] = ((PA7 & 0xFF00) >> 8); // SWP Monitored MSB
-			erpa_buf[9] = (PA7 & 0xFF); // SWP Monitored LSB
-			erpa_buf[10] = ((PB0 & 0xFF00) >> 8); // TEMPURATURE 1 MSB
-			erpa_buf[11] = (PB0 & 0xFF); // TEMPURATURE 1 LSB
-			erpa_buf[12] = ((PB1 & 0xFF00) >> 8); // TEMPURATURE 2 MSB
-			erpa_buf[13] = (PB1 & 0xFF); // TEMPURATURE 2 LSB
-			erpa_buf[14] = ((PA0 & 0xFF00) >> 8); // ENDmon MSB
-			erpa_buf[15] = (PA0 & 0xFF); // ENDmon LSB
-
-			erpa_seq++;
-			HAL_UART_Transmit(&huart1, erpa_buf, sizeof(erpa_buf), 100);
-
-			if (step == 5) {
-				up = 0;
-			} else if (step == 0) {
-				up = 1;
-			}
-
-			up == 1 ? step++ : step--;
-
-			if (hk_counter == 5) {
 				HAL_ADC_Start_DMA(&hadc, (uint32_t*) adcResultsDMA,
 						adcChannelCount);
+				uint16_t PA0 = adcResultsDMA[0]; //ADC_IN0, END_mon: entrance/collimator monitor
+				uint16_t PA7 = adcResultsDMA[6]; //ADC_IN7, SWP_mon: Sweep voltage monitor
+				uint16_t PB0 = adcResultsDMA[7]; //ADC_IN8, TMP 1: Sweep temperature
+				uint16_t PB1 = adcResultsDMA[8]; //ADC_IN9, TMP 2: feedbacks
 
-				uint16_t PA1 = adcResultsDMA[1]; //ADC_IN1, BUS_Vmon: instrument bus voltage monitor
-				uint16_t PA2 = adcResultsDMA[2]; //ADC_IN2, BUS_Imon: instrument bus current monitor
-				uint16_t PA3 = adcResultsDMA[3]; //ADC_IN3, 5vref_mon: Accurate 5V for ADC monitor
-				uint16_t PC0 = adcResultsDMA[7]; //ADC_IN10, 2v5_mon: power monitor
-				uint16_t PC1 = adcResultsDMA[8]; //ADC_IN11, 3v3_mon: power monitor
-				uint16_t PC2 = adcResultsDMA[9]; //ADC_IN12, 5v_mon: power monitor
-				uint16_t PC3 = adcResultsDMA[10]; //ADC_IN13, n3v3_mon: power monitor
-				uint16_t PC4 = adcResultsDMA[11]; //ADC_IN14, n5v_mon: power monitor
-				uint16_t PC5 = adcResultsDMA[12]; //ADC_IN15, 15v_mon: power monitor
-				uint16_t MCU_TEMP = adcResultsDMA[13]; //(internally connected) ADC_IN16, VSENSE
-				uint16_t MCU_VREF = adcResultsDMA[14]; //(internally connected) ADC_IN17, VREFINT
+				erpa_buf[0] = erpa_sync; // ERPA SYNC 0xAA MSB
+				erpa_buf[1] = erpa_sync; // ERPA SYNC 0xAA LSB
+				erpa_buf[2] = ((erpa_seq & 0xFF00) >> 8); // ERPA SEQ # MSB
+				erpa_buf[3] = (erpa_seq & 0xFF); // ERPA SEQ # MSB
+				erpa_buf[4] = ((raw & 0xFF00) >> 8); // ERPA eADC MSB
+				erpa_buf[5] = (raw & 0xFF); // ERPA eADC LSB
+				erpa_buf[6] = ((DAC_OUT[step] & 0xFF00) >> 8); //SWP Commanded MSB
+				erpa_buf[7] = (DAC_OUT[step] & 0xFF); //SWP Commanded LSB
+				erpa_buf[8] = ((PA7 & 0xFF00) >> 8); // SWP Monitored MSB
+				erpa_buf[9] = (PA7 & 0xFF); // SWP Monitored LSB
+				erpa_buf[10] = ((PB0 & 0xFF00) >> 8); // TEMPURATURE 1 MSB
+				erpa_buf[11] = (PB0 & 0xFF); // TEMPURATURE 1 LSB
+				erpa_buf[12] = ((PB1 & 0xFF00) >> 8); // TEMPURATURE 2 MSB
+				erpa_buf[13] = (PB1 & 0xFF); // TEMPURATURE 2 LSB
+				erpa_buf[14] = ((PA0 & 0xFF00) >> 8); // ENDmon MSB
+				erpa_buf[15] = (PA0 & 0xFF); // ENDmon LSB
 
-				hk_buf[0] = hk_sync; // HK SYNC 0xCC MSB
-				hk_buf[1] = hk_sync; // HK SYNC 0xCC LSB
-				hk_buf[2] = ((hk_seq & 0xFF00) >> 8); // HK SEQ # MSB
-				hk_buf[3] = (hk_seq & 0xFF); // HK SEQ # LSB
-				hk_buf[4] = ((PA1 & 0xFF00) >> 8); // BUS_Vmon MSB
-				hk_buf[5] = (PA1 & 0xFF); // BUS_Vmon LSB
-				hk_buf[6] = ((PA2 & 0xFF00) >> 8); // BUS_Imon MSB
-				hk_buf[7] = (PA2 & 0xFF); // BUS_Imon LSB
-				hk_buf[8] = ((PC0 & 0xFF00) >> 8); // 2.5v_mon MSB
-				hk_buf[9] = (PC0 & 0xFF); // 2.5v_mon LSB
-				hk_buf[10] = ((PC1 & 0xFF00) >> 8); // 3v3_mon MSB
-				hk_buf[11] = (PC1 & 0xFF); // 3v3_mon LSB
-				hk_buf[12] = ((PC2 & 0xFF00) >> 8); // 5v_mon MSB
-				hk_buf[13] = (PC2 & 0xFF); // 5v_mon LSB
-				hk_buf[14] = ((PA3 & 0xFF00) >> 8); // 5vref_mon MSB
-				hk_buf[15] = (PA3 & 0xFF); // 5vref_mon LSB
-				hk_buf[16] = ((PC5 & 0xFF00) >> 8); // 15v_mon MSB
-				hk_buf[17] = (PC5 & 0xFF); // 15v_mon LSB
-				hk_buf[18] = ((PC3 & 0xFF00) >> 8); // n3v3_mon MSB
-				hk_buf[19] = (PC3 & 0xFF); // n3v3_mon LSB
-				hk_buf[20] = ((PC4 & 0xFF00) >> 8); // n5v_mon MSB
-				hk_buf[21] = (PC4 & 0xFF); // n5v_mon LSB
-				hk_buf[22] = ((MCU_TEMP & 0xFF00) >> 8); // VSENSE MSB
-				hk_buf[23] = (MCU_TEMP & 0xFF); // VSENSE LSB
-				hk_buf[24] = ((MCU_VREF & 0xFF00) >> 8); // VREFINT MSB
-				hk_buf[25] = (MCU_VREF & 0xFF); // VREFINT LSB
+				erpa_seq++;
+				if (ERPA_ON) {
+					HAL_UART_Transmit(&huart1, erpa_buf, sizeof(erpa_buf), 100);
+				}
 
-				HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), 100);
+				if (step == 5) {
+					up = 0;
+				} else if (step == 0) {
+					up = 1;
+				}
 
-				hk_counter = 1;
-
-				hk_seq++;
-
-			} else {
-				hk_counter++;
+				up == 1 ? step++ : step--;
 			}
+			if (HK_ON) {
+				if (hk_counter == 1) {
+					HAL_ADC_Start_DMA(&hadc, (uint32_t*) adcResultsDMA,
+							adcChannelCount);
 
+					uint16_t PA1 = adcResultsDMA[1]; //ADC_IN1, BUS_Imon: instrument bus current monitor
+					uint16_t PA2 = adcResultsDMA[2]; //ADC_IN2, BUS_Vmon: instrument bus voltage monitor
+					uint16_t PA3 = adcResultsDMA[3]; //ADC_IN3, 3v3_mon: Accurate 5V for ADC monitor
+					uint16_t PA5 = adcResultsDMA[4]; //ADC_IN5, n150v_mon: n150 voltage monitor
+					uint16_t PA6 = adcResultsDMA[5]; //ADC_IN6, n800v_mon: n800 voltage monitor
+
+					uint16_t PC0 = adcResultsDMA[9]; //ADC_IN10, 2v5_mon: 2.5v voltage monitor
+					uint16_t PC1 = adcResultsDMA[10]; //ADC_IN11, n5v_mon: n5v voltage monitor
+					uint16_t PC2 = adcResultsDMA[11]; //ADC_IN12, 5v_mon: 5v voltage monitor
+					uint16_t PC3 = adcResultsDMA[12]; //ADC_IN13, n3v3_mon: n3v3 voltage monitor
+					uint16_t PC4 = adcResultsDMA[13]; //ADC_IN14, 5vref_mon: 5v reference voltage monitor
+					uint16_t PC5 = adcResultsDMA[14]; //ADC_IN15, 15v_mon: 15v voltage monitor
+					uint16_t MCU_TEMP = adcResultsDMA[15]; //(internally connected) ADC_IN16, VSENSE
+					uint16_t MCU_VREF = adcResultsDMA[16]; //(internally connected) ADC_IN17, VREFINT
+
+					hk_buf[0] = hk_sync; // HK SYNC 0xCC MSB					0 SYNC
+					hk_buf[1] = hk_sync; // HK SYNC 0xCC LSB
+					hk_buf[2] = ((hk_seq & 0xFF00) >> 8); // HK SEQ # MSB		1 SEQUENCE
+					hk_buf[3] = (hk_seq & 0xFF); // HK SEQ # LSB
+					hk_buf[4] = ((PA1 & 0xFF00) >> 8); // BUS_Imon MSB			2 BUS_IMON PA1
+					hk_buf[5] = (PA1 & 0xFF); // BUS_Imon LSB
+					hk_buf[6] = ((PA2 & 0xFF00) >> 8); // BUS_Vmon MSB			3 BUS_VMON PA2
+					hk_buf[7] = (PA2 & 0xFF); // BUS_Vmon LSB
+					hk_buf[8] = ((PA3 & 0xFF00) >> 8); // 3v3_mon MSB			4 3v3_MON PA3
+					hk_buf[9] = (PA3 & 0xFF); // 3v3_mon LSB
+					hk_buf[10] = ((PA5 & 0xFF00) >> 8); // n150v_mon MSB		5 N150V_MON PA5
+					hk_buf[11] = (PA5 & 0xFF); // n150v_mon LSB
+					hk_buf[12] = ((PA6 & 0xFF00) >> 8); // n800v_mon MSB		6 N800V_MON PA6
+					hk_buf[13] = (PA6 & 0xFF); // n800v_mon LSB
+					hk_buf[14] = ((PC0 & 0xFF00) >> 8); // 2v5_mon MSB			7 2V5_MON PC0
+					hk_buf[15] = (PC0 & 0xFF); // 2v5_mon LSB
+					hk_buf[16] = ((PC1 & 0xFF00) >> 8); // n5v_mon MSB			8 N5V_MON PC1
+					hk_buf[17] = (PC1 & 0xFF); // n5v_mon LSB
+					hk_buf[18] = ((PC2 & 0xFF00) >> 8); // 5v_mon MSB			9 5V_MON PC2
+					hk_buf[19] = (PC2 & 0xFF); // 5v_mon LSB
+					hk_buf[20] = ((PC3 & 0xFF00) >> 8); // n3v3_mon MSB			10 N3V3_MON PC3
+					hk_buf[21] = (PC3 & 0xFF); // n3v3_mon LSB
+					hk_buf[22] = ((PC4 & 0xFF00) >> 8); // 5vref_mon MSB		11 5VREF_MON PC4
+					hk_buf[23] = (PC4 & 0xFF); // 5vref_mon LSB
+					hk_buf[24] = ((PC5 & 0xFF00) >> 8); // 15v_mon MSB			12 15V_MON PC5
+					hk_buf[25] = (PC5 & 0xFF); // 15v_mon LSB
+
+					hk_buf[26] = ((MCU_TEMP & 0xFF00) >> 8); // VSENSE MSB		13 VSENSE
+					hk_buf[27] = (MCU_TEMP & 0xFF); // VSENSE LSB
+					hk_buf[28] = ((MCU_VREF & 0xFF00) >> 8); // VREFINT MSB		14 VREFINT
+					hk_buf[29] = (MCU_VREF & 0xFF); // VREFINT LSB
+					if (HK_ON) {
+						HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), 100);
+					}
+					hk_counter = 1;
+
+					hk_seq++;
+
+				} else {
+					hk_counter++;
+				}
+
+			}
 		}
 
 	} else if (htim == &htim1) {
+		if (PMT_ON) {
+			if (!(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11))) { //check pin state
 
-		if (!(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11))) { //check pin state
+				/**
+				 * TIM2_CH4 Interrupt
+				 * Sets CNV and samples UVPMT's ADC
+				 * Every 125ms
+				 */
 
-			/**
-			 * TIM2_CH4 Interrupt
-			 * Sets CNV and samples UVPMT's ADC
-			 * Every 125ms
-			 */
+				/* Write to SPI (begin transfer?) */
+				HAL_SPI_Transmit(&hspi2, (uint8_t*) &WRITE, 1, 1);
 
-			/* Write to SPI (begin transfer?) */
-			HAL_SPI_Transmit(&hspi2, (uint8_t*) &WRITE, 1, 1);
+				while (!(SPI2->SR))
+					;
 
-			while (!(SPI2->SR))
+				raw = SPI2->DR;
+
+				pmt_buf[0] = pmt_sync;
+				pmt_buf[1] = pmt_sync;
+				pmt_buf[2] = ((pmt_seq & 0xFF00) >> 8);
+				pmt_buf[3] = (pmt_seq & 0xFF);
 				;
+				pmt_buf[4] = ((raw & 0xFF00) >> 8);
+				pmt_buf[5] = (raw & 0xFF);
 
-			raw = SPI2->DR;
+				pmt_seq++;
+				HAL_UART_Transmit(&huart1, pmt_buf, sizeof(pmt_buf), 100);
 
-			pmt_buf[0] = pmt_sync;
-			pmt_buf[1] = pmt_sync;
-			pmt_buf[2] = ((pmt_seq & 0xFF00) >> 8);
-			pmt_buf[3] = (pmt_seq & 0xFF);
-			;
-			pmt_buf[4] = ((raw & 0xFF00) >> 8);
-			pmt_buf[5] = (raw & 0xFF);
-
-			pmt_seq++;
-
-			HAL_UART_Transmit(&huart1, pmt_buf, sizeof(pmt_buf), 100);
+			}
 		}
 	}
-
 	/* Timer 3 also called but doesn't need to do anything on IT */
 }
 
@@ -425,7 +438,6 @@ int main(void) {
 	/* USER CODE BEGIN WHILE */
 	while (1) {
 		HAL_UART_Receive_IT(&huart1, rx_buf, 1);
-
 
 		/* USER CODE END WHILE */
 
@@ -977,7 +989,7 @@ static void MX_GPIO_Init(void) {
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOC,
-			GPIO_PIN_13 | GPIO_PIN_6 | GPIO_PIN_7 | BLUE_LED_Pin | GREEN_LED_Pin
+			GPIO_PIN_13 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9
 					| GPIO_PIN_10, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
@@ -986,10 +998,10 @@ static void MX_GPIO_Init(void) {
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5 | GPIO_PIN_6, GPIO_PIN_RESET);
 
-	/*Configure GPIO pins : PC13 PC6 PC7 BLUE_LED_Pin
-	 GREEN_LED_Pin PC10 */
-	GPIO_InitStruct.Pin = GPIO_PIN_13 | GPIO_PIN_6 | GPIO_PIN_7 | BLUE_LED_Pin
-			| GREEN_LED_Pin | GPIO_PIN_10;
+	/*Configure GPIO pins : PC13 PC6 PC7 PC8
+	 PC9 PC10 */
+	GPIO_InitStruct.Pin = GPIO_PIN_13 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8
+			| GPIO_PIN_9 | GPIO_PIN_10;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

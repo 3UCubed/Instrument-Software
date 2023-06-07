@@ -1,10 +1,10 @@
-17:09:07 **** Incremental Build of configuration Debug for project Firmware ****
+15:44:58 **** Incremental Build of configuration Debug for project Firmware ****
 make -j7 all 
 arm-none-eabi-size   Firmware.elf 
    text	   data	    bss	    dec	    hex	filename
-  26468	     88	   2576	  29132	   71cc	Firmware.elf
+  26592	     88	   2584	  29264	   7250	Firmware.elf
 Finished building: default.size.stdout
  
 
-17:09:08 Build Finished. 0 errors, 0 warnings. (took 239ms)
+15:44:59 Build Finished. 0 errors, 0 warnings. (took 517ms)
 

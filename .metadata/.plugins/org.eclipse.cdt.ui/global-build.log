@@ -8398,3 +8398,703 @@ arm-none-eabi-size   Quick-Test.elf
   49992	    524	   2164	  52680	   cdc8	Quick-Test.elf
 Finished building: default.size.stdout
  
+13:09:29 **** Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_adc.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_adc.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_adc.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_adc.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_adc_ex.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_adc_ex.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_adc_ex.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_adc_ex.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_cortex.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_cortex.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_cortex.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_cortex.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dac.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dac.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dac.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dac.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dac_ex.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dac_ex.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dac_ex.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dac_ex.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dma.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dma.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dma.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dma.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_exti.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_exti.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_exti.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_exti.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash_ex.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash_ex.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash_ex.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash_ex.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_gpio.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_gpio.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_gpio.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_gpio.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c_ex.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c_ex.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c_ex.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c_ex.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr_ex.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr_ex.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr_ex.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr_ex.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc_ex.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc_ex.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc_ex.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc_ex.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi_ex.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi_ex.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi_ex.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi_ex.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tim.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tim.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tim.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tim.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tim_ex.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tim_ex.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tim_ex.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tim_ex.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart.o"
+arm-none-eabi-gcc "../Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart_ex.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart_ex.d" -MT"Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart_ex.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart_ex.o"
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'add_to_gpiobuf':
+../Core/Src/main.c:136:12: warning: implicit declaration of function 'strlen' [-Wimplicit-function-declaration]
+  136 |  int len = strlen(str);
+      |            ^~~~~~
+../Core/Src/main.c:136:12: warning: incompatible implicit declaration of built-in function 'strlen'
+../Core/Src/main.c:22:1: note: include '<string.h>' or provide a declaration of 'strlen'
+   21 | #include "main.h"
+  +++ |+#include <string.h>
+   22 | 
+../Core/Src/main.c:139:3: warning: implicit declaration of function 'strncpy' [-Wimplicit-function-declaration]
+  139 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |   ^~~~~~~
+../Core/Src/main.c:139:3: warning: incompatible implicit declaration of built-in function 'strncpy'
+../Core/Src/main.c:139:3: note: include '<string.h>' or provide a declaration of 'strncpy'
+../Core/Src/main.c:139:11: warning: pointer targets in passing argument 1 of 'strncpy' differ in signedness [-Wpointer-sign]
+  139 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |           ^~~~~~~~~~~~~~~~~~~~~
+      |           |
+      |           uint8_t * {aka unsigned char *}
+../Core/Src/main.c:139:11: note: expected 'char *' but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+../Core/Src/main.c: In function 'HAL_TIM_OC_DelayElapsedCallback':
+../Core/Src/main.c:210:14: warning: unused variable 'PA6' [-Wunused-variable]
+  210 |     uint16_t PA6 = adcResultsDMA[5]; //ADC_IN6, n800v_mon: n800 voltage monitor
+      |              ^~~
+../Core/Src/main.c:209:14: warning: unused variable 'PA5' [-Wunused-variable]
+  209 |     uint16_t PA5 = adcResultsDMA[4]; //ADC_IN5, n150v_mon: n150 voltage monitor
+      |              ^~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:397:8: warning: unused variable 'temp_c' [-Wunused-variable]
+  397 |  float temp_c;
+      |        ^~~~~~
+../Core/Src/main.c:396:10: warning: unused variable 'val' [-Wunused-variable]
+  396 |  int16_t val;
+      |          ^~~
+../Core/Src/main.c:395:10: warning: unused variable 'buf' [-Wunused-variable]
+  395 |  uint8_t buf[2];
+      |          ^~~
+../Core/Src/main.c:394:20: warning: unused variable 'ret' [-Wunused-variable]
+  394 |  HAL_StatusTypeDef ret;
+      |                    ^~~
+At top level:
+../Core/Src/main.c:81:22: warning: 'REG_TEMP' defined but not used [-Wunused-const-variable=]
+   81 | static const uint8_t REG_TEMP = 0x00;
+      |                      ^~~~~~~~
+../Core/Src/main.c:80:22: warning: 'ADT7410_2' defined but not used [-Wunused-const-variable=]
+   80 | static const uint8_t ADT7410_2 = 0x49 << 1;
+      |                      ^~~~~~~~~
+../Core/Src/main.c:79:22: warning: 'ADT7410_1' defined but not used [-Wunused-const-variable=]
+   79 | static const uint8_t ADT7410_1 = 0x48 << 1; // Use 8-bit address
+      |                      ^~~~~~~~~
+arm-none-eabi-gcc "../Core/Src/stm32f0xx_hal_msp.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/stm32f0xx_hal_msp.d" -MT"Core/Src/stm32f0xx_hal_msp.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/stm32f0xx_hal_msp.o"
+arm-none-eabi-gcc "../Core/Src/stm32f0xx_it.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/stm32f0xx_it.d" -MT"Core/Src/stm32f0xx_it.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/stm32f0xx_it.o"
+arm-none-eabi-gcc "../Core/Src/system_stm32f0xx.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/system_stm32f0xx.d" -MT"Core/Src/system_stm32f0xx.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/system_stm32f0xx.o"
+arm-none-eabi-gcc -o "Firmware.elf" @"objects.list"   -mcpu=cortex-m0 -T"/Users/jaredmorrison/Desktop/sanjSoftware/Firmware/STM32F051R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: Firmware.elf
+ 
+arm-none-eabi-size   Firmware.elf 
+arm-none-eabi-objdump -h -S  Firmware.elf  > "Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+  26488	     88	   2576	  29152	   71e0	Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: Firmware.list
+ 
+13:11:53 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26488	     88	   2576	  29152	   71e0	Firmware.elf
+Finished building: default.size.stdout
+ 
+15:25:46 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26488	     88	   2576	  29152	   71e0	Firmware.elf
+Finished building: default.size.stdout
+ 
+16:35:15 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'add_to_gpiobuf':
+../Core/Src/main.c:136:12: warning: implicit declaration of function 'strlen' [-Wimplicit-function-declaration]
+  136 |  int len = strlen(str);
+      |            ^~~~~~
+../Core/Src/main.c:136:12: warning: incompatible implicit declaration of built-in function 'strlen'
+../Core/Src/main.c:22:1: note: include '<string.h>' or provide a declaration of 'strlen'
+   21 | #include "main.h"
+  +++ |+#include <string.h>
+   22 | 
+../Core/Src/main.c:139:3: warning: implicit declaration of function 'strncpy' [-Wimplicit-function-declaration]
+  139 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |   ^~~~~~~
+../Core/Src/main.c:139:3: warning: incompatible implicit declaration of built-in function 'strncpy'
+../Core/Src/main.c:139:3: note: include '<string.h>' or provide a declaration of 'strncpy'
+../Core/Src/main.c:139:11: warning: pointer targets in passing argument 1 of 'strncpy' differ in signedness [-Wpointer-sign]
+  139 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |           ^~~~~~~~~~~~~~~~~~~~~
+      |           |
+      |           uint8_t * {aka unsigned char *}
+../Core/Src/main.c:139:11: note: expected 'char *' but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:402:8: warning: unused variable 'temp_c' [-Wunused-variable]
+  402 |  float temp_c;
+      |        ^~~~~~
+../Core/Src/main.c:401:10: warning: unused variable 'val' [-Wunused-variable]
+  401 |  int16_t val;
+      |          ^~~
+../Core/Src/main.c:400:10: warning: unused variable 'buf' [-Wunused-variable]
+  400 |  uint8_t buf[2];
+      |          ^~~
+../Core/Src/main.c:399:20: warning: unused variable 'ret' [-Wunused-variable]
+  399 |  HAL_StatusTypeDef ret;
+      |                    ^~~
+At top level:
+../Core/Src/main.c:81:22: warning: 'REG_TEMP' defined but not used [-Wunused-const-variable=]
+   81 | static const uint8_t REG_TEMP = 0x00;
+      |                      ^~~~~~~~
+../Core/Src/main.c:80:22: warning: 'ADT7410_2' defined but not used [-Wunused-const-variable=]
+   80 | static const uint8_t ADT7410_2 = 0x49 << 1;
+      |                      ^~~~~~~~~
+../Core/Src/main.c:79:22: warning: 'ADT7410_1' defined but not used [-Wunused-const-variable=]
+   79 | static const uint8_t ADT7410_1 = 0x48 << 1; // Use 8-bit address
+      |                      ^~~~~~~~~
+arm-none-eabi-gcc -o "Firmware.elf" @"objects.list"   -mcpu=cortex-m0 -T"/Users/jaredmorrison/Desktop/sanjSoftware/Firmware/STM32F051R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: Firmware.elf
+ 
+arm-none-eabi-size   Firmware.elf 
+arm-none-eabi-objdump -h -S  Firmware.elf  > "Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+  26540	     88	   2584	  29212	   721c	Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: Firmware.list
+ 
+16:36:31 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'add_to_gpiobuf':
+../Core/Src/main.c:136:12: warning: implicit declaration of function 'strlen' [-Wimplicit-function-declaration]
+  136 |  int len = strlen(str);
+      |            ^~~~~~
+../Core/Src/main.c:136:12: warning: incompatible implicit declaration of built-in function 'strlen'
+../Core/Src/main.c:22:1: note: include '<string.h>' or provide a declaration of 'strlen'
+   21 | #include "main.h"
+  +++ |+#include <string.h>
+   22 | 
+../Core/Src/main.c:139:3: warning: implicit declaration of function 'strncpy' [-Wimplicit-function-declaration]
+  139 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |   ^~~~~~~
+../Core/Src/main.c:139:3: warning: incompatible implicit declaration of built-in function 'strncpy'
+../Core/Src/main.c:139:3: note: include '<string.h>' or provide a declaration of 'strncpy'
+../Core/Src/main.c:139:11: warning: pointer targets in passing argument 1 of 'strncpy' differ in signedness [-Wpointer-sign]
+  139 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |           ^~~~~~~~~~~~~~~~~~~~~
+      |           |
+      |           uint8_t * {aka unsigned char *}
+../Core/Src/main.c:139:11: note: expected 'char *' but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:402:8: warning: unused variable 'temp_c' [-Wunused-variable]
+  402 |  float temp_c;
+      |        ^~~~~~
+../Core/Src/main.c:401:10: warning: unused variable 'val' [-Wunused-variable]
+  401 |  int16_t val;
+      |          ^~~
+../Core/Src/main.c:400:10: warning: unused variable 'buf' [-Wunused-variable]
+  400 |  uint8_t buf[2];
+      |          ^~~
+../Core/Src/main.c:399:20: warning: unused variable 'ret' [-Wunused-variable]
+  399 |  HAL_StatusTypeDef ret;
+      |                    ^~~
+At top level:
+../Core/Src/main.c:81:22: warning: 'REG_TEMP' defined but not used [-Wunused-const-variable=]
+   81 | static const uint8_t REG_TEMP = 0x00;
+      |                      ^~~~~~~~
+../Core/Src/main.c:80:22: warning: 'ADT7410_2' defined but not used [-Wunused-const-variable=]
+   80 | static const uint8_t ADT7410_2 = 0x49 << 1;
+      |                      ^~~~~~~~~
+../Core/Src/main.c:79:22: warning: 'ADT7410_1' defined but not used [-Wunused-const-variable=]
+   79 | static const uint8_t ADT7410_1 = 0x48 << 1; // Use 8-bit address
+      |                      ^~~~~~~~~
+arm-none-eabi-gcc -o "Firmware.elf" @"objects.list"   -mcpu=cortex-m0 -T"/Users/jaredmorrison/Desktop/sanjSoftware/Firmware/STM32F051R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: Firmware.elf
+ 
+arm-none-eabi-size   Firmware.elf 
+arm-none-eabi-objdump -h -S  Firmware.elf  > "Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+  26540	     88	   2584	  29212	   721c	Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: Firmware.list
+ 
+16:38:33 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'add_to_gpiobuf':
+../Core/Src/main.c:136:12: warning: implicit declaration of function 'strlen' [-Wimplicit-function-declaration]
+  136 |  int len = strlen(str);
+      |            ^~~~~~
+../Core/Src/main.c:136:12: warning: incompatible implicit declaration of built-in function 'strlen'
+../Core/Src/main.c:22:1: note: include '<string.h>' or provide a declaration of 'strlen'
+   21 | #include "main.h"
+  +++ |+#include <string.h>
+   22 | 
+../Core/Src/main.c:139:3: warning: implicit declaration of function 'strncpy' [-Wimplicit-function-declaration]
+  139 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |   ^~~~~~~
+../Core/Src/main.c:139:3: warning: incompatible implicit declaration of built-in function 'strncpy'
+../Core/Src/main.c:139:3: note: include '<string.h>' or provide a declaration of 'strncpy'
+../Core/Src/main.c:139:11: warning: pointer targets in passing argument 1 of 'strncpy' differ in signedness [-Wpointer-sign]
+  139 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |           ^~~~~~~~~~~~~~~~~~~~~
+      |           |
+      |           uint8_t * {aka unsigned char *}
+../Core/Src/main.c:139:11: note: expected 'char *' but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:402:8: warning: unused variable 'temp_c' [-Wunused-variable]
+  402 |  float temp_c;
+      |        ^~~~~~
+../Core/Src/main.c:401:10: warning: unused variable 'val' [-Wunused-variable]
+  401 |  int16_t val;
+      |          ^~~
+../Core/Src/main.c:400:10: warning: unused variable 'buf' [-Wunused-variable]
+  400 |  uint8_t buf[2];
+      |          ^~~
+../Core/Src/main.c:399:20: warning: unused variable 'ret' [-Wunused-variable]
+  399 |  HAL_StatusTypeDef ret;
+      |                    ^~~
+At top level:
+../Core/Src/main.c:81:22: warning: 'REG_TEMP' defined but not used [-Wunused-const-variable=]
+   81 | static const uint8_t REG_TEMP = 0x00;
+      |                      ^~~~~~~~
+../Core/Src/main.c:80:22: warning: 'ADT7410_2' defined but not used [-Wunused-const-variable=]
+   80 | static const uint8_t ADT7410_2 = 0x49 << 1;
+      |                      ^~~~~~~~~
+../Core/Src/main.c:79:22: warning: 'ADT7410_1' defined but not used [-Wunused-const-variable=]
+   79 | static const uint8_t ADT7410_1 = 0x48 << 1; // Use 8-bit address
+      |                      ^~~~~~~~~
+arm-none-eabi-gcc -o "Firmware.elf" @"objects.list"   -mcpu=cortex-m0 -T"/Users/jaredmorrison/Desktop/sanjSoftware/Firmware/STM32F051R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: Firmware.elf
+ 
+arm-none-eabi-size   Firmware.elf 
+arm-none-eabi-objdump -h -S  Firmware.elf  > "Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+  26524	     88	   2584	  29196	   720c	Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: Firmware.list
+ 
+10:53:04 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26524	     88	   2584	  29196	   720c	Firmware.elf
+Finished building: default.size.stdout
+ 
+11:03:22 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'add_to_gpiobuf':
+../Core/Src/main.c:136:12: warning: implicit declaration of function 'strlen' [-Wimplicit-function-declaration]
+  136 |  int len = strlen(str);
+      |            ^~~~~~
+../Core/Src/main.c:136:12: warning: incompatible implicit declaration of built-in function 'strlen'
+../Core/Src/main.c:22:1: note: include '<string.h>' or provide a declaration of 'strlen'
+   21 | #include "main.h"
+  +++ |+#include <string.h>
+   22 | 
+../Core/Src/main.c:139:3: warning: implicit declaration of function 'strncpy' [-Wimplicit-function-declaration]
+  139 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |   ^~~~~~~
+../Core/Src/main.c:139:3: warning: incompatible implicit declaration of built-in function 'strncpy'
+../Core/Src/main.c:139:3: note: include '<string.h>' or provide a declaration of 'strncpy'
+../Core/Src/main.c:139:11: warning: pointer targets in passing argument 1 of 'strncpy' differ in signedness [-Wpointer-sign]
+  139 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |           ^~~~~~~~~~~~~~~~~~~~~
+      |           |
+      |           uint8_t * {aka unsigned char *}
+../Core/Src/main.c:139:11: note: expected 'char *' but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:402:8: warning: unused variable 'temp_c' [-Wunused-variable]
+  402 |  float temp_c;
+      |        ^~~~~~
+../Core/Src/main.c:401:10: warning: unused variable 'val' [-Wunused-variable]
+  401 |  int16_t val;
+      |          ^~~
+../Core/Src/main.c:400:10: warning: unused variable 'buf' [-Wunused-variable]
+  400 |  uint8_t buf[2];
+      |          ^~~
+../Core/Src/main.c:399:20: warning: unused variable 'ret' [-Wunused-variable]
+  399 |  HAL_StatusTypeDef ret;
+      |                    ^~~
+At top level:
+../Core/Src/main.c:81:22: warning: 'REG_TEMP' defined but not used [-Wunused-const-variable=]
+   81 | static const uint8_t REG_TEMP = 0x00;
+      |                      ^~~~~~~~
+../Core/Src/main.c:80:22: warning: 'ADT7410_2' defined but not used [-Wunused-const-variable=]
+   80 | static const uint8_t ADT7410_2 = 0x49 << 1;
+      |                      ^~~~~~~~~
+../Core/Src/main.c:79:22: warning: 'ADT7410_1' defined but not used [-Wunused-const-variable=]
+   79 | static const uint8_t ADT7410_1 = 0x48 << 1; // Use 8-bit address
+      |                      ^~~~~~~~~
+arm-none-eabi-gcc -o "Firmware.elf" @"objects.list"   -mcpu=cortex-m0 -T"/Users/jaredmorrison/Desktop/sanjSoftware/Firmware/STM32F051R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: Firmware.elf
+ 
+arm-none-eabi-size   Firmware.elf 
+arm-none-eabi-objdump -h -S  Firmware.elf  > "Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+  26540	     88	   2584	  29212	   721c	Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: Firmware.list
+ 
+11:17:55 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'add_to_gpiobuf':
+../Core/Src/main.c:136:12: warning: implicit declaration of function 'strlen' [-Wimplicit-function-declaration]
+  136 |  int len = strlen(str);
+      |            ^~~~~~
+../Core/Src/main.c:136:12: warning: incompatible implicit declaration of built-in function 'strlen'
+../Core/Src/main.c:22:1: note: include '<string.h>' or provide a declaration of 'strlen'
+   21 | #include "main.h"
+  +++ |+#include <string.h>
+   22 | 
+../Core/Src/main.c:139:3: warning: implicit declaration of function 'strncpy' [-Wimplicit-function-declaration]
+  139 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |   ^~~~~~~
+../Core/Src/main.c:139:3: warning: incompatible implicit declaration of built-in function 'strncpy'
+../Core/Src/main.c:139:3: note: include '<string.h>' or provide a declaration of 'strncpy'
+../Core/Src/main.c:139:11: warning: pointer targets in passing argument 1 of 'strncpy' differ in signedness [-Wpointer-sign]
+  139 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |           ^~~~~~~~~~~~~~~~~~~~~
+      |           |
+      |           uint8_t * {aka unsigned char *}
+../Core/Src/main.c:139:11: note: expected 'char *' but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:405:8: warning: unused variable 'temp_c' [-Wunused-variable]
+  405 |  float temp_c;
+      |        ^~~~~~
+../Core/Src/main.c:404:10: warning: unused variable 'val' [-Wunused-variable]
+  404 |  int16_t val;
+      |          ^~~
+../Core/Src/main.c:403:10: warning: unused variable 'buf' [-Wunused-variable]
+  403 |  uint8_t buf[2];
+      |          ^~~
+../Core/Src/main.c:402:20: warning: unused variable 'ret' [-Wunused-variable]
+  402 |  HAL_StatusTypeDef ret;
+      |                    ^~~
+At top level:
+../Core/Src/main.c:81:22: warning: 'REG_TEMP' defined but not used [-Wunused-const-variable=]
+   81 | static const uint8_t REG_TEMP = 0x00;
+      |                      ^~~~~~~~
+../Core/Src/main.c:80:22: warning: 'ADT7410_2' defined but not used [-Wunused-const-variable=]
+   80 | static const uint8_t ADT7410_2 = 0x49 << 1;
+      |                      ^~~~~~~~~
+../Core/Src/main.c:79:22: warning: 'ADT7410_1' defined but not used [-Wunused-const-variable=]
+   79 | static const uint8_t ADT7410_1 = 0x48 << 1; // Use 8-bit address
+      |                      ^~~~~~~~~
+arm-none-eabi-gcc -o "Firmware.elf" @"objects.list"   -mcpu=cortex-m0 -T"/Users/jaredmorrison/Desktop/sanjSoftware/Firmware/STM32F051R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: Firmware.elf
+ 
+arm-none-eabi-size   Firmware.elf 
+arm-none-eabi-objdump -h -S  Firmware.elf  > "Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+  26576	     88	   2584	  29248	   7240	Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: Firmware.list
+ 
+11:23:02 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'add_to_gpiobuf':
+../Core/Src/main.c:137:12: warning: implicit declaration of function 'strlen' [-Wimplicit-function-declaration]
+  137 |  int len = strlen(str);
+      |            ^~~~~~
+../Core/Src/main.c:137:12: warning: incompatible implicit declaration of built-in function 'strlen'
+../Core/Src/main.c:22:1: note: include '<string.h>' or provide a declaration of 'strlen'
+   21 | #include "main.h"
+  +++ |+#include <string.h>
+   22 | 
+../Core/Src/main.c:140:3: warning: implicit declaration of function 'strncpy' [-Wimplicit-function-declaration]
+  140 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |   ^~~~~~~
+../Core/Src/main.c:140:3: warning: incompatible implicit declaration of built-in function 'strncpy'
+../Core/Src/main.c:140:3: note: include '<string.h>' or provide a declaration of 'strncpy'
+../Core/Src/main.c:140:11: warning: pointer targets in passing argument 1 of 'strncpy' differ in signedness [-Wpointer-sign]
+  140 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |           ^~~~~~~~~~~~~~~~~~~~~
+      |           |
+      |           uint8_t * {aka unsigned char *}
+../Core/Src/main.c:140:11: note: expected 'char *' but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:406:8: warning: unused variable 'temp_c' [-Wunused-variable]
+  406 |  float temp_c;
+      |        ^~~~~~
+../Core/Src/main.c:405:10: warning: unused variable 'val' [-Wunused-variable]
+  405 |  int16_t val;
+      |          ^~~
+../Core/Src/main.c:404:10: warning: unused variable 'buf' [-Wunused-variable]
+  404 |  uint8_t buf[2];
+      |          ^~~
+../Core/Src/main.c:403:20: warning: unused variable 'ret' [-Wunused-variable]
+  403 |  HAL_StatusTypeDef ret;
+      |                    ^~~
+At top level:
+../Core/Src/main.c:82:22: warning: 'REG_TEMP' defined but not used [-Wunused-const-variable=]
+   82 | static const uint8_t REG_TEMP = 0x00;
+      |                      ^~~~~~~~
+../Core/Src/main.c:81:22: warning: 'ADT7410_2' defined but not used [-Wunused-const-variable=]
+   81 | static const uint8_t ADT7410_2 = 0x49 << 1;
+      |                      ^~~~~~~~~
+../Core/Src/main.c:80:22: warning: 'ADT7410_1' defined but not used [-Wunused-const-variable=]
+   80 | static const uint8_t ADT7410_1 = 0x48 << 1; // Use 8-bit address
+      |                      ^~~~~~~~~
+arm-none-eabi-gcc -o "Firmware.elf" @"objects.list"   -mcpu=cortex-m0 -T"/Users/jaredmorrison/Desktop/sanjSoftware/Firmware/STM32F051R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: Firmware.elf
+ 
+arm-none-eabi-size   Firmware.elf 
+arm-none-eabi-objdump -h -S  Firmware.elf  > "Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: Firmware.list
+ 
+11:29:22 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'add_to_gpiobuf':
+../Core/Src/main.c:139:12: warning: implicit declaration of function 'strlen' [-Wimplicit-function-declaration]
+  139 |  int len = strlen(str);
+      |            ^~~~~~
+../Core/Src/main.c:139:12: warning: incompatible implicit declaration of built-in function 'strlen'
+../Core/Src/main.c:22:1: note: include '<string.h>' or provide a declaration of 'strlen'
+   21 | #include "main.h"
+  +++ |+#include <string.h>
+   22 | 
+../Core/Src/main.c:142:3: warning: implicit declaration of function 'strncpy' [-Wimplicit-function-declaration]
+  142 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |   ^~~~~~~
+../Core/Src/main.c:142:3: warning: incompatible implicit declaration of built-in function 'strncpy'
+../Core/Src/main.c:142:3: note: include '<string.h>' or provide a declaration of 'strncpy'
+../Core/Src/main.c:142:11: warning: pointer targets in passing argument 1 of 'strncpy' differ in signedness [-Wpointer-sign]
+  142 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |           ^~~~~~~~~~~~~~~~~~~~~
+      |           |
+      |           uint8_t * {aka unsigned char *}
+../Core/Src/main.c:142:11: note: expected 'char *' but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:412:8: warning: unused variable 'temp_c' [-Wunused-variable]
+  412 |  float temp_c;
+      |        ^~~~~~
+../Core/Src/main.c:411:10: warning: unused variable 'val' [-Wunused-variable]
+  411 |  int16_t val;
+      |          ^~~
+../Core/Src/main.c:410:10: warning: unused variable 'buf' [-Wunused-variable]
+  410 |  uint8_t buf[2];
+      |          ^~~
+../Core/Src/main.c:409:20: warning: unused variable 'ret' [-Wunused-variable]
+  409 |  HAL_StatusTypeDef ret;
+      |                    ^~~
+At top level:
+../Core/Src/main.c:82:22: warning: 'REG_TEMP' defined but not used [-Wunused-const-variable=]
+   82 | static const uint8_t REG_TEMP = 0x00;
+      |                      ^~~~~~~~
+../Core/Src/main.c:81:22: warning: 'ADT7410_2' defined but not used [-Wunused-const-variable=]
+   81 | static const uint8_t ADT7410_2 = 0x49 << 1;
+      |                      ^~~~~~~~~
+../Core/Src/main.c:80:22: warning: 'ADT7410_1' defined but not used [-Wunused-const-variable=]
+   80 | static const uint8_t ADT7410_1 = 0x48 << 1; // Use 8-bit address
+      |                      ^~~~~~~~~
+arm-none-eabi-gcc -o "Firmware.elf" @"objects.list"   -mcpu=cortex-m0 -T"/Users/jaredmorrison/Desktop/sanjSoftware/Firmware/STM32F051R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: Firmware.elf
+ 
+arm-none-eabi-size   Firmware.elf 
+arm-none-eabi-objdump -h -S  Firmware.elf  > "Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+  26640	     88	   2584	  29312	   7280	Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: Firmware.list
+ 
+11:30:47 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'add_to_gpiobuf':
+../Core/Src/main.c:138:12: warning: implicit declaration of function 'strlen' [-Wimplicit-function-declaration]
+  138 |  int len = strlen(str);
+      |            ^~~~~~
+../Core/Src/main.c:138:12: warning: incompatible implicit declaration of built-in function 'strlen'
+../Core/Src/main.c:22:1: note: include '<string.h>' or provide a declaration of 'strlen'
+   21 | #include "main.h"
+  +++ |+#include <string.h>
+   22 | 
+../Core/Src/main.c:141:3: warning: implicit declaration of function 'strncpy' [-Wimplicit-function-declaration]
+  141 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |   ^~~~~~~
+../Core/Src/main.c:141:3: warning: incompatible implicit declaration of built-in function 'strncpy'
+../Core/Src/main.c:141:3: note: include '<string.h>' or provide a declaration of 'strncpy'
+../Core/Src/main.c:141:11: warning: pointer targets in passing argument 1 of 'strncpy' differ in signedness [-Wpointer-sign]
+  141 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |           ^~~~~~~~~~~~~~~~~~~~~
+      |           |
+      |           uint8_t * {aka unsigned char *}
+../Core/Src/main.c:141:11: note: expected 'char *' but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:406:8: warning: unused variable 'temp_c' [-Wunused-variable]
+  406 |  float temp_c;
+      |        ^~~~~~
+../Core/Src/main.c:405:10: warning: unused variable 'val' [-Wunused-variable]
+  405 |  int16_t val;
+      |          ^~~
+../Core/Src/main.c:404:10: warning: unused variable 'buf' [-Wunused-variable]
+  404 |  uint8_t buf[2];
+      |          ^~~
+../Core/Src/main.c:403:20: warning: unused variable 'ret' [-Wunused-variable]
+  403 |  HAL_StatusTypeDef ret;
+      |                    ^~~
+At top level:
+../Core/Src/main.c:82:22: warning: 'REG_TEMP' defined but not used [-Wunused-const-variable=]
+   82 | static const uint8_t REG_TEMP = 0x00;
+      |                      ^~~~~~~~
+../Core/Src/main.c:81:22: warning: 'ADT7410_2' defined but not used [-Wunused-const-variable=]
+   81 | static const uint8_t ADT7410_2 = 0x49 << 1;
+      |                      ^~~~~~~~~
+../Core/Src/main.c:80:22: warning: 'ADT7410_1' defined but not used [-Wunused-const-variable=]
+   80 | static const uint8_t ADT7410_1 = 0x48 << 1; // Use 8-bit address
+      |                      ^~~~~~~~~
+arm-none-eabi-gcc -o "Firmware.elf" @"objects.list"   -mcpu=cortex-m0 -T"/Users/jaredmorrison/Desktop/sanjSoftware/Firmware/STM32F051R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: Firmware.elf
+ 
+arm-none-eabi-size   Firmware.elf 
+arm-none-eabi-objdump -h -S  Firmware.elf  > "Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: Firmware.list
+ 
+11:43:36 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+11:45:13 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+11:47:33 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+11:48:53 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+11:52:59 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+12:08:12 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+12:26:13 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+12:27:16 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+12:39:11 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+12:46:34 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+13:33:02 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+13:37:42 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+13:40:45 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+14:42:07 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+14:49:35 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+14:52:44 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+15:21:52 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+15:26:23 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
+15:44:58 **** Incremental Build of configuration Debug for project Firmware ****
+make -j7 all 
+arm-none-eabi-size   Firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26592	     88	   2584	  29264	   7250	Firmware.elf
+Finished building: default.size.stdout
+ 
