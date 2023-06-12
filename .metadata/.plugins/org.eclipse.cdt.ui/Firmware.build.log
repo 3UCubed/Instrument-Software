@@ -1,10 +1,87 @@
-15:44:58 **** Incremental Build of configuration Debug for project Firmware ****
+16:21:35 **** Incremental Build of configuration Debug for project Firmware ****
 make -j7 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F051x8 -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'add_to_gpiobuf':
+../Core/Src/main.c:138:12: warning: implicit declaration of function 'strlen' [-Wimplicit-function-declaration]
+  138 |  int len = strlen(str);
+      |            ^~~~~~
+../Core/Src/main.c:138:12: warning: incompatible implicit declaration of built-in function 'strlen'
+../Core/Src/main.c:22:1: note: include '<string.h>' or provide a declaration of 'strlen'
+   21 | #include "main.h"
+  +++ |+#include <string.h>
+   22 | 
+../Core/Src/main.c:141:3: warning: implicit declaration of function 'strncpy' [-Wimplicit-function-declaration]
+  141 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |   ^~~~~~~
+../Core/Src/main.c:141:3: warning: incompatible implicit declaration of built-in function 'strncpy'
+../Core/Src/main.c:141:3: note: include '<string.h>' or provide a declaration of 'strncpy'
+../Core/Src/main.c:141:11: warning: pointer targets in passing argument 1 of 'strncpy' differ in signedness [-Wpointer-sign]
+  141 |   strncpy(&gpio_buf[writeIndex], str, len);
+      |           ^~~~~~~~~~~~~~~~~~~~~
+      |           |
+      |           uint8_t * {aka unsigned char *}
+../Core/Src/main.c:141:11: note: expected 'char *' but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+../Core/Src/main.c: In function 'HAL_TIM_OC_DelayElapsedCallback':
+../Core/Src/main.c:220:7: warning: implicit declaration of function 'strcpy' [-Wimplicit-function-declaration]
+  220 |       strcpy((char*) buf, "Error Tx\r\n");
+      |       ^~~~~~
+../Core/Src/main.c:220:7: warning: incompatible implicit declaration of built-in function 'strcpy'
+../Core/Src/main.c:220:7: note: include '<string.h>' or provide a declaration of 'strcpy'
+../Core/Src/main.c:227:8: warning: incompatible implicit declaration of built-in function 'strcpy'
+  227 |        strcpy((char*) buf, "Error Rx\r\n");
+      |        ^~~~~~
+../Core/Src/main.c:227:8: note: include '<string.h>' or provide a declaration of 'strcpy'
+../Core/Src/main.c:257:7: warning: incompatible implicit declaration of built-in function 'strcpy'
+  257 |       strcpy((char*) buf, "Error Tx\r\n");
+      |       ^~~~~~
+../Core/Src/main.c:257:7: note: include '<string.h>' or provide a declaration of 'strcpy'
+../Core/Src/main.c:264:8: warning: incompatible implicit declaration of built-in function 'strcpy'
+  264 |        strcpy((char*) buf, "Error Rx\r\n");
+      |        ^~~~~~
+../Core/Src/main.c:264:8: note: include '<string.h>' or provide a declaration of 'strcpy'
+../Core/Src/main.c:210:12: warning: unused variable 'temp_c' [-Wunused-variable]
+  210 |      float temp_c;
+      |            ^~~~~~
+../Core/Src/main.c:208:14: warning: unused variable 'val' [-Wunused-variable]
+  208 |      int16_t val;
+      |              ^~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:493:8: warning: unused variable 'temp_c' [-Wunused-variable]
+  493 |  float temp_c;
+      |        ^~~~~~
+../Core/Src/main.c:492:10: warning: unused variable 'val' [-Wunused-variable]
+  492 |  int16_t val;
+      |          ^~~
+../Core/Src/main.c:491:10: warning: unused variable 'buf' [-Wunused-variable]
+  491 |  uint8_t buf[2];
+      |          ^~~
+../Core/Src/main.c:490:20: warning: unused variable 'ret' [-Wunused-variable]
+  490 |  HAL_StatusTypeDef ret;
+      |                    ^~~
+../Core/Src/main.c: In function 'HAL_TIM_OC_DelayElapsedCallback':
+../Core/Src/main.c:220:7: warning: '__builtin_memcpy' writing 11 bytes into a region of size 2 overflows the destination [-Wstringop-overflow=]
+  220 |       strcpy((char*) buf, "Error Tx\r\n");
+      |       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:227:8: warning: '__builtin_memcpy' writing 11 bytes into a region of size 2 overflows the destination [-Wstringop-overflow=]
+  227 |        strcpy((char*) buf, "Error Rx\r\n");
+      |        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:257:7: warning: '__builtin_memcpy' writing 11 bytes into a region of size 2 overflows the destination [-Wstringop-overflow=]
+  257 |       strcpy((char*) buf, "Error Tx\r\n");
+      |       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:264:8: warning: '__builtin_memcpy' writing 11 bytes into a region of size 2 overflows the destination [-Wstringop-overflow=]
+  264 |        strcpy((char*) buf, "Error Rx\r\n");
+      |        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+arm-none-eabi-gcc -o "Firmware.elf" @"objects.list"   -mcpu=cortex-m0 -T"/Users/jaredmorrison/Desktop/sanjSoftware/Firmware/STM32F051R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: Firmware.elf
+ 
 arm-none-eabi-size   Firmware.elf 
+arm-none-eabi-objdump -h -S  Firmware.elf  > "Firmware.list"
    text	   data	    bss	    dec	    hex	filename
-  26592	     88	   2584	  29264	   7250	Firmware.elf
+  29024	     88	   2616	  31728	   7bf0	Firmware.elf
 Finished building: default.size.stdout
  
+Finished building: Firmware.list
+ 
 
-15:44:59 Build Finished. 0 errors, 0 warnings. (took 517ms)
+16:21:37 Build Finished. 0 errors, 20 warnings. (took 1s.933ms)
 

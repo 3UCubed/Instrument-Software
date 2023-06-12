@@ -61,8 +61,8 @@ I2C_HandleTypeDef hi2c1;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-static const uint8_t ADT7410_1 = 0x4A << 1; // Use 8-bit address
-static const uint8_t ADT7410_2 = 0x4B << 1;
+static const uint8_t ADT7410_1 = 0x48 << 1; // Use 8-bit address
+static const uint8_t ADT7410_2 = 0x4A << 1;
 static const uint8_t REG_TEMP = 0x00;
 HAL_StatusTypeDef ret;
 uint8_t buf[2];
@@ -361,7 +361,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 			HAL_UART_Transmit(&huart1, "\r\n", 2, 100);
 
-			/* COMMENT OUT IF NOT USING EXTERNAL ADC'S
 			 // Tell ADT7410_1 that we want to read from the temperature register
 			 buf[0] = REG_TEMP;
 			 ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_1, buf, 1, 1000);
@@ -434,7 +433,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 			 HAL_UART_Transmit(&huart1, buf, strlen((char*) buf), 100);
 			 HAL_UART_Transmit(&huart1, "\r\n", 2, 100);
-			 */
+
 		}
 	}
 }
