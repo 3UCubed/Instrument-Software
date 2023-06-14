@@ -105,7 +105,7 @@ static void MX_I2C1_Init(void);
 //#define TS_CAL1 *((uint16_t*) 0x1FFFF7B8)
 //#define TS_CAL2 *((uint16_t*) 0x1FFFF7C2)
 /* ADC DMA */
-volatile uint16_t adcResultsDMA[16];
+volatile uint16_t adcResultsDMA[17];
 const int adcChannelCount = sizeof(adcResultsDMA) / sizeof(adcResultsDMA[0]);
 
 /* DAC Variables */
@@ -125,11 +125,16 @@ uint16_t erpa_seq = 0;
 uint8_t pmt_buf[6];
 const uint8_t pmt_sync = 0xBB;
 uint16_t pmt_seq = 0;
-uint8_t hk_buf[64];
+uint8_t hk_buf[32];
 const uint8_t hk_sync = 0xCC;
 uint16_t hk_seq = 0;
 int hk_counter = 0;
 int startupTimer = 0;
+uint8_t temps_buf[8];
+const uint8_t temps_sync = 0xDD;
+uint16_t temps_seq = 0;
+
+
 uint8_t PMT_ON = 1;
 uint8_t ERPA_ON = 1;
 uint8_t HK_ON = 1;
@@ -285,6 +290,10 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 									*/
 						}
 					}
+
+
+
+
 					HAL_ADC_Start_DMA(&hadc, (uint32_t*) adcResultsDMA,
 							adcChannelCount);
 
@@ -302,6 +311,16 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 					uint16_t PC5 = adcResultsDMA[14]; //ADC_IN15, 15v_mon: 15v voltage monitor
 					uint16_t MCU_TEMP = adcResultsDMA[15]; //(internally connected) ADC_IN16, VSENSE
 					uint16_t MCU_VREF = adcResultsDMA[16]; //(internally connected) ADC_IN17, VREFINT
+
+					temps_buf[0] = temps_sync;
+					temps_buf[1] = temps_sync;
+					temps_buf[2] = ((MCU_VREF & 0xFF00) >> 8);
+					temps_buf[3] = (MCU_VREF & 0xFF);
+					temps_buf[4] = ((output1 & 0xFF00) >> 8);
+					temps_buf[5] = (output1 & 0xFF);
+					temps_buf[6] = ((output2 & 0xFF00) >> 8);
+					temps_buf[7] = (output2 & 0xFF);
+
 
 					hk_buf[0] = hk_sync; // HK SYNC 0xCC MSB					0 SYNC
 					hk_buf[1] = hk_sync; // HK SYNC 0xCC LSB
@@ -329,18 +348,14 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 					hk_buf[23] = (PC4 & 0xFF); // 5vref_mon LSB
 					hk_buf[24] = ((PC5 & 0xFF00) >> 8); // 15v_mon MSB			12 15V_MON PC5
 					hk_buf[25] = (PC5 & 0xFF); // 15v_mon LSB
-
 					hk_buf[26] = ((MCU_TEMP & 0xFF00) >> 8); // VSENSE MSB		13 VSENSE
 					hk_buf[27] = (MCU_TEMP & 0xFF); // VSENSE LSB
-					hk_buf[28] = ((MCU_VREF & 0xFF00) >> 8); // VREFINT MSB		14 VREFINT
-					hk_buf[29] = (MCU_VREF & 0xFF); // VREFINT LSB
-
-					hk_buf[30] = ((output1 & 0xFF00) >> 8); // tmp1 MSB		15 TMP1
-					hk_buf[31] = (output1 & 0xFF); // tmp1 LSB
 
 
 					if (HK_ON) {
-						HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), 100);
+						HAL_UART_Transmit(&huart1, temps_buf, sizeof(temps_buf), 100);
+						HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), HAL_MAX_DELAY);
+
 					}
 					hk_counter = 1;
 
