@@ -79,6 +79,10 @@ uint8_t Rx_data[1];  //  creating a buffer of 1 bytes
 
 static const uint8_t ADT7410_1 = 0x48 << 1; // Use 8-bit address
 static const uint8_t ADT7410_2 = 0x4A << 1;
+static const uint8_t ADT7410_3 = 0x49 << 1;
+static const uint8_t ADT7410_4 = 0x4B << 1;
+
+
 static const uint8_t REG_TEMP = 0x00;
 /* USER CODE END PV */
 
@@ -130,7 +134,7 @@ const uint8_t hk_sync = 0xCC;
 uint16_t hk_seq = 0;
 int hk_counter = 0;
 int startupTimer = 0;
-uint8_t temps_buf[8];
+uint8_t temps_buf[12];
 const uint8_t temps_sync = 0xDD;
 uint16_t temps_seq = 0;
 
@@ -215,6 +219,8 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 					float temp_c;
 					int16_t output1;
 					int16_t output2;
+					int16_t output3;
+					int16_t output4;
 
 
 					buf[0] = REG_TEMP;
@@ -234,22 +240,6 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 
 							output1 = (int16_t) (buf[0] << 8);
 							output1 = (output1 | buf[1]) >> 3;
-							/*
-							// Convert to 2's complement, since temperature can be negative
-							if (val > 0x7FF) {
-								val |= 0xF000;
-							}
-
-							// Convert to float temperature value (Celsius)
-							temp_c = val * 0.0625;
-
-							// Convert temperature to decimal value
-							temp_c *= 100;
-
-							sprintf(output1, "%u.%u",
-									((unsigned int) temp_c / 100),
-									((unsigned int) temp_c % 100));
-									*/
 						}
 					}
 
@@ -271,26 +261,48 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 
 							output2 = (int16_t) (buf[0] << 8);
 							output2 = (output2 | buf[1]) >> 3;
-
-							/*
-							// Convert to 2's complement, since temperature can be negative
-							if (val > 0x7FF) {
-								val |= 0xF000;
-							}
-
-							// Convert to float temperature value (Celsius)
-							temp_c = val * 0.0625;
-
-							// Convert temperature to decimal value
-							temp_c *= 100;
-
-							sprintf(output2, "ADT7410 2: %u.%u C\r\n",
-									((unsigned int) temp_c / 100),
-									((unsigned int) temp_c % 100));
-									*/
 						}
 					}
+					// TEMP SENSOR 3
+					buf[0] = REG_TEMP;
+					ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_3, buf, 1,
+							1000);
+					//			I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
+					if (ret != HAL_OK) {
+						strcpy((char*) buf, "Error Tx\r\n");
+					} else {
 
+						//				 Read 2 bytes from the temperature register
+						ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_3, buf, 2,
+								1000);
+						if (ret != HAL_OK) {
+							strcpy((char*) buf, "Error Rx\r\n");
+						} else {
+
+							output3 = (int16_t) (buf[0] << 8);
+							output3 = (output3 | buf[1]) >> 3;
+						}
+					}
+					// TEMP SENSOR 4
+					buf[0] = REG_TEMP;
+					ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_4, buf, 1,
+							1000);
+					//			I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
+					if (ret != HAL_OK) {
+						strcpy((char*) buf, "Error Tx\r\n");
+					} else {
+
+						//				 Read 2 bytes from the temperature register
+						ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_4, buf, 2,
+								1000);
+						if (ret != HAL_OK) {
+							strcpy((char*) buf, "Error Rx\r\n");
+						} else {
+
+							output4 = (int16_t) (buf[0] << 8);
+							output4 = (output4 | buf[1]) >> 3;
+						}
+					}
 
 
 
@@ -320,6 +332,10 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 					temps_buf[5] = (output1 & 0xFF);
 					temps_buf[6] = ((output2 & 0xFF00) >> 8);
 					temps_buf[7] = (output2 & 0xFF);
+					temps_buf[8] = ((output3 & 0xFF00) >> 8);
+					temps_buf[9] = (output3 & 0xFF);
+					temps_buf[10] = ((output4 & 0xFF00) >> 8);
+					temps_buf[11] = (output4 & 0xFF);
 
 
 					hk_buf[0] = hk_sync; // HK SYNC 0xCC MSB					0 SYNC
