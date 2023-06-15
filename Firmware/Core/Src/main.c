@@ -428,54 +428,91 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 	switch (key) {
 	case 'a': {
-		HAL_GPIO_TogglePin(gpios[0].gpio, gpios[0].pin);
+	    HAL_GPIO_WritePin(gpios[0].gpio, gpios[0].pin, GPIO_PIN_SET);
+		break;
+	}
+	case '$': {
+	    HAL_GPIO_WritePin(gpios[0].gpio, gpios[0].pin, GPIO_PIN_RESET);
 		break;
 	}
 	case 'b': {
-		HAL_GPIO_TogglePin(gpios[1].gpio, gpios[1].pin);
+		HAL_GPIO_WritePin(gpios[1].gpio, gpios[1].pin, GPIO_PIN_SET);
 		break;
-
+	}
+	case '%': {
+		HAL_GPIO_WritePin(gpios[1].gpio, gpios[1].pin, GPIO_PIN_RESET);
+		break;
 	}
 	case 'c': {
-		HAL_GPIO_TogglePin(gpios[2].gpio, gpios[2].pin);
+		HAL_GPIO_WritePin(gpios[2].gpio, gpios[2].pin, GPIO_PIN_SET);
 		break;
-
+	}
+	case '^': {
+		HAL_GPIO_WritePin(gpios[2].gpio, gpios[2].pin, GPIO_PIN_RESET);
+		break;
 	}
 	case 'd': {
-		HAL_GPIO_TogglePin(gpios[3].gpio, gpios[3].pin);
+		HAL_GPIO_WritePin(gpios[3].gpio, gpios[3].pin, GPIO_PIN_SET);
 		break;
-
+	}
+	case '&': {
+		HAL_GPIO_WritePin(gpios[3].gpio, gpios[3].pin, GPIO_PIN_RESET);
+		break;
 	}
 	case 'e': {
-		HAL_GPIO_TogglePin(gpios[4].gpio, gpios[4].pin);
+		HAL_GPIO_WritePin(gpios[4].gpio, gpios[4].pin, GPIO_PIN_SET);
 		break;
-
+	}
+	case '*': {
+		HAL_GPIO_WritePin(gpios[4].gpio, gpios[4].pin, GPIO_PIN_RESET);
+		break;
 	}
 	case 'f': {
-		HAL_GPIO_TogglePin(gpios[5].gpio, gpios[5].pin);
+		HAL_GPIO_WritePin(gpios[5].gpio, gpios[5].pin, GPIO_PIN_SET);
 		break;
-
+	}
+	case '(': {
+		HAL_GPIO_WritePin(gpios[5].gpio, gpios[5].pin, GPIO_PIN_RESET);
+		break;
 	}
 	case 'g': {
-		HAL_GPIO_TogglePin(gpios[6].gpio, gpios[6].pin);
+		HAL_GPIO_WritePin(gpios[6].gpio, gpios[6].pin, GPIO_PIN_SET);
 		break;
-
+	}
+	case ')': {
+		HAL_GPIO_WritePin(gpios[6].gpio, gpios[6].pin, GPIO_PIN_RESET);
+		break;
 	}
 	case 'h': {
-		HAL_GPIO_TogglePin(gpios[7].gpio, gpios[7].pin);
+		HAL_GPIO_WritePin(gpios[7].gpio, gpios[7].pin, GPIO_PIN_SET);
 		break;
-
+	}
+	case '-': {
+		HAL_GPIO_WritePin(gpios[7].gpio, gpios[7].pin, GPIO_PIN_RESET);
+		break;
 	}
 	case '1': {
-		PMT_ON = (PMT_ON == 1) ? 0 : 1;
+		PMT_ON = 1;
+		break;
+	}
+	case '!': {
+		PMT_ON = 0;
 		break;
 	}
 	case '2': {
-		ERPA_ON = (ERPA_ON == 1) ? 0 : 1;
+		ERPA_ON = 1;
+		break;
+	}
+	case '@': {
+		ERPA_ON = 0;
 		break;
 	}
 	case '3': {
-		HK_ON = (HK_ON == 1) ? 0 : 1;
+		HK_ON = 1;
+		break;
+	}
+	case '#': {
+		HK_ON = 0;
 		break;
 	}
 	}
