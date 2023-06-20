@@ -235,7 +235,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 					}
 
 				} else if (i == 6) {
-					float voltage = adc * (3.3 / 4095) * -50;
+					float voltage = adc * (3.3 / 4095);
 					sprintf(value, "%f", voltage);
 					HAL_UART_Transmit(&huart1, "SWP_mon PA7", 11, 100);
 					if (voltage < 3.4 && voltage > 3.2) {
