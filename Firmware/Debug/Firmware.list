@@ -1324,17 +1324,17 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
  8000938:	781b      	ldrb	r3, [r3, #0]
  800093a:	2b00      	cmp	r3, #0
  800093c:	d00c      	beq.n	8000958 <HAL_TIM_OC_DelayElapsedCallback+0x6d0>
-						HAL_UART_Transmit(&huart1, temps_buf, sizeof(temps_buf), 100);
- 800093e:	4912      	ldr	r1, [pc, #72]	; (8000988 <HAL_TIM_OC_DelayElapsedCallback+0x700>)
- 8000940:	4815      	ldr	r0, [pc, #84]	; (8000998 <HAL_TIM_OC_DelayElapsedCallback+0x710>)
- 8000942:	2364      	movs	r3, #100	; 0x64
- 8000944:	220c      	movs	r2, #12
- 8000946:	f005 fa0d 	bl	8005d64 <HAL_UART_Transmit>
-						HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), HAL_MAX_DELAY);
- 800094a:	2301      	movs	r3, #1
- 800094c:	425b      	negs	r3, r3
- 800094e:	490f      	ldr	r1, [pc, #60]	; (800098c <HAL_TIM_OC_DelayElapsedCallback+0x704>)
- 8000950:	4811      	ldr	r0, [pc, #68]	; (8000998 <HAL_TIM_OC_DelayElapsedCallback+0x710>)
+						HAL_UART_Transmit(&huart1, temps_buf, sizeof(temps_buf), HAL_MAX_DELAY);
+ 800093e:	2301      	movs	r3, #1
+ 8000940:	425b      	negs	r3, r3
+ 8000942:	4911      	ldr	r1, [pc, #68]	; (8000988 <HAL_TIM_OC_DelayElapsedCallback+0x700>)
+ 8000944:	4814      	ldr	r0, [pc, #80]	; (8000998 <HAL_TIM_OC_DelayElapsedCallback+0x710>)
+ 8000946:	220c      	movs	r2, #12
+ 8000948:	f005 fa0c 	bl	8005d64 <HAL_UART_Transmit>
+						HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), 100);
+ 800094c:	490f      	ldr	r1, [pc, #60]	; (800098c <HAL_TIM_OC_DelayElapsedCallback+0x704>)
+ 800094e:	4812      	ldr	r0, [pc, #72]	; (8000998 <HAL_TIM_OC_DelayElapsedCallback+0x710>)
+ 8000950:	2364      	movs	r3, #100	; 0x64
  8000952:	2220      	movs	r2, #32
  8000954:	f005 fa06 	bl	8005d64 <HAL_UART_Transmit>
 
@@ -3314,10 +3314,10 @@ static void MX_USART1_UART_Init(void)
  800148e:	4b18      	ldr	r3, [pc, #96]	; (80014f0 <MX_USART1_UART_Init+0x78>)
  8001490:	4a18      	ldr	r2, [pc, #96]	; (80014f4 <MX_USART1_UART_Init+0x7c>)
  8001492:	601a      	str	r2, [r3, #0]
-  huart1.Init.BaudRate = 9600;
+  huart1.Init.BaudRate = 115200;
  8001494:	4b16      	ldr	r3, [pc, #88]	; (80014f0 <MX_USART1_UART_Init+0x78>)
- 8001496:	2296      	movs	r2, #150	; 0x96
- 8001498:	0192      	lsls	r2, r2, #6
+ 8001496:	22e1      	movs	r2, #225	; 0xe1
+ 8001498:	0252      	lsls	r2, r2, #9
  800149a:	605a      	str	r2, [r3, #4]
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
  800149c:	4b14      	ldr	r3, [pc, #80]	; (80014f0 <MX_USART1_UART_Init+0x78>)
