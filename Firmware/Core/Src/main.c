@@ -189,14 +189,17 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 				erpa_buf[5] = (raw & 0xFF); // ERPA eADC LSB
 				erpa_buf[6] = ((DAC_OUT[step] & 0xFF00) >> 8); //SWP Commanded MSB
 				erpa_buf[7] = (DAC_OUT[step] & 0xFF); //SWP Commanded LSB
-				erpa_buf[8] = ((PA7 & 0xFF00) >> 8); // SWP Monitored MSB
-				erpa_buf[9] = (PA7 & 0xFF); // SWP Monitored LSB
+
+				erpa_buf[8] = ((PA0 & 0xFF00) >> 8); // ENDmon MSB
+				erpa_buf[9] = (PA0 & 0xFF); // ENDmon LSB
+
 				erpa_buf[10] = ((PB0 & 0xFF00) >> 8); // TEMPURATURE 1 MSB
 				erpa_buf[11] = (PB0 & 0xFF); // TEMPURATURE 1 LSB
 				erpa_buf[12] = ((PB1 & 0xFF00) >> 8); // TEMPURATURE 2 MSB
 				erpa_buf[13] = (PB1 & 0xFF); // TEMPURATURE 2 LSB
-				erpa_buf[14] = ((PA0 & 0xFF00) >> 8); // ENDmon MSB
-				erpa_buf[15] = (PA0 & 0xFF); // ENDmon LSB
+
+				erpa_buf[14] = ((PA7 & 0xFF00) >> 8); // SWP Monitored MSB
+				erpa_buf[15] = (PA7 & 0xFF); // SWP Monitored LSB
 
 				erpa_seq++;
 				if (ERPA_ON) {
@@ -1148,7 +1151,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 19200;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
