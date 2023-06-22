@@ -31,14 +31,14 @@ typedef struct {
 	uint16_t pin;
 } gpio_pins;
 int gpio_count = 0;
-int num_gpios = 8;
+int num_gpios = 10;
 const gpio_pins gpios[] = { { GPIOB, GPIO_PIN_5 }, { GPIOB, GPIO_PIN_6 }, {
 GPIOC, GPIO_PIN_10 }, { GPIOC, GPIO_PIN_13 }, { GPIOC, GPIO_PIN_7 }, {
-GPIOC, GPIO_PIN_8 }, { GPIOC, GPIO_PIN_9 }, { GPIOC, GPIO_PIN_6 } };
+GPIOC, GPIO_PIN_8 }, { GPIOC, GPIO_PIN_9 }, { GPIOC, GPIO_PIN_6 }, { GPIOF, GPIO_PIN_6 }, { GPIOF, GPIO_PIN_7 } };
 
 const char *gpio_names[] =
 		{ "sys_on PB5", "800v_en PB6", "3v3_en PC10", "n150v_en PC13",
-				"15v_en PC7", "n5v_en PC8", "5v_en PC9", "n3v3_en PC6" };
+				"15v_en PC7", "n5v_en PC8", "5v_en PC9", "n3v3_en PC6", "SDN1 PF6", "SDN2 PF7" };
 
 /* USER CODE END PTD */
 
@@ -70,8 +70,6 @@ UART_HandleTypeDef huart1;
 /* USER CODE BEGIN PV */
 uint8_t data_in = 0;
 #define BUFFER_SIZE 100
-uint8_t gpio_buf[BUFFER_SIZE];
-uint8_t writeIndex = 0;
 uint8_t rx_buf[BUFFER_SIZE];
 uint8_t rx_index;
 UART_WakeUpTypeDef WakeUpSelection;
@@ -142,16 +140,6 @@ uint16_t temps_seq = 0;
 uint8_t PMT_ON = 1;
 uint8_t ERPA_ON = 1;
 uint8_t HK_ON = 1;
-
-void add_to_gpiobuf(const char *str) {
-	int len = strlen(str);
-
-	if (writeIndex + len < BUFFER_SIZE) {
-		strncpy(&gpio_buf[writeIndex], str, len);
-		writeIndex += len;
-	}
-
-}
 
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 	if (htim == &htim2) {
@@ -426,10 +414,29 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 	HAL_UART_Receive_IT(&huart1, rx_buf, 1);
-	writeIndex = 0;
 	char key = rx_buf[0];
 
 	switch (key) {
+
+	case 'G':{
+	    HAL_GPIO_WritePin(gpios[8].gpio, gpios[8].pin, GPIO_PIN_SET);
+		break;
+	}
+	case 'H':{
+	    HAL_GPIO_WritePin(gpios[8].gpio, gpios[8].pin, GPIO_PIN_RESET);
+		break;
+	}
+
+	case 'I':{
+	    HAL_GPIO_WritePin(gpios[9].gpio, gpios[9].pin, GPIO_PIN_SET);
+		break;
+	}
+	case 'J':{
+	    HAL_GPIO_WritePin(gpios[9].gpio, gpios[9].pin, GPIO_PIN_RESET);
+		break;
+	}
+
+
 	case '<':{
 		if(step < 5){
 			step++;
@@ -531,26 +538,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		break;
 	}
 	}
-
-	for (int i = 0; i < num_gpios; i++) {
-		const char *gpioStatus =
-				(HAL_GPIO_ReadPin(gpios[i].gpio, gpios[i].pin) == GPIO_PIN_SET) ?
-						": H" : ": L";
-
-		// Add GPIO name and status to the output buffer
-		add_to_gpiobuf(gpio_names[i]);
-		add_to_gpiobuf(gpioStatus);
-		add_to_gpiobuf("\r\n");
-	}
-	add_to_gpiobuf("\r\n");
-
-	// External device is ready to receive data
-	// Proceed with sending data using RTS/CTS flow control
-
-	// ...
-
-	// Transmit the data
-	HAL_UART_Transmit(&huart1, gpio_buf, sizeof(gpio_buf), 100);
 }
 
 /* USER CODE END 0 */
