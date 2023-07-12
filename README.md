@@ -1,4 +1,40 @@
 # Instrument-Software
+
+### Accepted Commands
+- '£' ------- Exit Stop Mode
+- 's' ------- Enter Stop Mode
+- 'G' ------- Toggle PF6 (SDN1) High
+- 'H' ------- Toggle PF6 Low
+- 'I' ------- Toggle PF7 (SDN2) High
+- 'J' ------- Toggle PF7 Low
+- '<' ------- ERPA Step Up
+- '>' ------- ERPA Step Down
+- 'a' ------- Toggle PB5 (sys_on) High
+- '$' ------- Toggle PB5 Low
+- 'b' ------- Toggle PB6 (800v_en) High
+- '%' ------- Toggle PB6 Low
+- 'c' ------- Toggle PC10 (3v3_en) High
+- '^' ------- Toggle PC10 Low
+- 'd' ------- Toggle PC13 (n150v_en) High
+- '&' ------- Toggle PC13 Low
+- 'e' ------- Toggle PC7 (15v_en) High
+- '*' ------- Toggle PC7 Low
+- 'f' ------- Toggle PC8 (n5v_en) High
+- '(' ------- Toggle PC8 Low
+- 'g' ------- Toggle PC9 (5v_en) High
+- ')' ------- Toggle PC9 Low
+- 'h' ------- Toggle PC6 (n3v3_en) High
+- '-' ------- Toggle PC6 Low
+- '1' ------- Turn on PMT Packet
+- '!' ------- Turn off PMT Packet
+- '2' ------- Turn on ERPA Packet
+- '@' ------- Turn off ERPA Packet
+- '3' ------- Turn on HK Packet
+- '#' ------- Turn off HK Packet
+
+#
+
+
 ### These are the steps to get packets to print out:
   1. Connect an STM32F051 to your machine with a USB cable. Also plug in a UART cable to your machine.
   2. Plug the yellow cable (RX) from UART to PA9. Plug the orange cable (TX) from UART to PA10. Plug in the black cable (ground) to GND. The ADCs are tied      to the STM32 as followed:
