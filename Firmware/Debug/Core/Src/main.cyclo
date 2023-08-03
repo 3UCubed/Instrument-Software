@@ -1,0 +1,16 @@
+../Drivers/CMSIS/Include/core_cm0.h:856:34:__NVIC_SystemReset	1
+../Core/Src/main.c:140:6:HAL_TIM_OC_DelayElapsedCallback	1
+../Core/Src/main.c:423:6:HAL_UART_RxCpltCallback	32
+../Core/Src/main.c:595:5:main	4
+../Core/Src/main.c:674:6:SystemClock_Config	4
+../Core/Src/main.c:722:13:MX_ADC_Init	17
+../Core/Src/main.c:887:13:MX_DAC1_Init	3
+../Core/Src/main.c:926:13:MX_I2C1_Init	4
+../Core/Src/main.c:973:13:MX_SPI1_Init	2
+../Core/Src/main.c:1012:13:MX_SPI2_Init	2
+../Core/Src/main.c:1051:13:MX_TIM1_Init	7
+../Core/Src/main.c:1125:13:MX_TIM2_Init	6
+../Core/Src/main.c:1182:13:MX_USART1_UART_Init	2
+../Core/Src/main.c:1216:13:MX_DMA_Init	1
+../Core/Src/main.c:1233:13:MX_GPIO_Init	1
+../Core/Src/main.c:1283:6:Error_Handler	1

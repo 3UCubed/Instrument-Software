@@ -73,7 +73,6 @@ uint8_t data_in = 0;
 uint8_t rx_buf[BUFFER_SIZE];
 uint8_t rx_index;
 UART_WakeUpTypeDef WakeUpSelection;
-uint8_t Rx_data[1]; //  creating a buffer of 1 bytes
 
 static const uint8_t ADT7410_1 = 0x48 << 1; // Use 8-bit address
 static const uint8_t ADT7410_2 = 0x4A << 1;
@@ -424,7 +423,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 
-  HAL_UART_Receive_IT(&huart1, rx_buf, 1);
+//  HAL_UART_Receive_IT(&huart1, rx_buf, 1);
   char key = rx_buf[0];
 
   switch (key)
@@ -547,6 +546,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     HAL_GPIO_WritePin(gpios[7].gpio, gpios[7].pin, GPIO_PIN_RESET);
     break;
   }
+  case 's':
+  {
+      HAL_SuspendTick();
+      HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+      NVIC_SystemReset();
+      break;
+  }
   case '1':
   {
     PMT_ON = 1;
@@ -630,14 +636,29 @@ int main(void)
   HAL_TIM_OC_Start_IT(&htim1, TIM_CHANNEL_1);
   HAL_TIM_OC_Start_IT(&htim2, TIM_CHANNEL_4);
 
+  while (__HAL_UART_GET_FLAG(&huart1, USART_ISR_BUSY) == SET);
+  while (__HAL_UART_GET_FLAG(&huart1, USART_ISR_REACK) == RESET);
+
+  WakeUpSelection.WakeUpEvent = UART_WAKEUP_ON_ADDRESS;
+  WakeUpSelection.AddressLength = UART_ADDRESS_DETECT_7B;
+  WakeUpSelection.Address = 0x23; // send "£"
+
+  if (HAL_UARTEx_StopModeWakeUpSourceConfig(&huart1, WakeUpSelection) != HAL_OK) {
+      Error_Handler();
+  }
+  /* Enable the LPUART Wake UP from stop mode Interrupt */
+  __HAL_UART_ENABLE_IT(&huart1, UART_IT_WUF);
+
+  /* enable MCU wake-up by LPUART */
+  HAL_UARTEx_EnableStopMode(&huart1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    HAL_UART_Receive_IT(&huart1, rx_buf, 1);
-
+    HAL_UART_Receive(&huart1, rx_buf, 1, 0);
+    HAL_UART_RxCpltCallback(&huart1);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
