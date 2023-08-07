@@ -37,8 +37,8 @@ int num_gpios = 10;
 const gpio_pins gpios[] = {{GPIOB, GPIO_PIN_5}, {GPIOB, GPIO_PIN_6}, {GPIOC, GPIO_PIN_10}, {GPIOC, GPIO_PIN_13}, {GPIOC, GPIO_PIN_7}, {GPIOC, GPIO_PIN_8}, {GPIOC, GPIO_PIN_9}, {GPIOC, GPIO_PIN_6}, {GPIOF, GPIO_PIN_6}, {GPIOF, GPIO_PIN_7}};
 
 const char *gpio_names[] =
-    {"sys_on PB5", "800v_en PB6", "3v3_en PC10", "n150v_en PC13",
-     "15v_en PC7", "n5v_en PC8", "5v_en PC9", "n3v3_en PC6", "SDN1 PF6", "SDN2 PF7"};
+    {"sys_on PB5", "800v_en PB6", "5v_en PC10", "n150v_en PC13",
+     "3v3_en PC7", "n5v_en PC8", "15v_en PC9", "n3v3_en PC6", "SDN1 PF6", "SDN2 PF7"};
 
 /* USER CODE END PTD */
 
