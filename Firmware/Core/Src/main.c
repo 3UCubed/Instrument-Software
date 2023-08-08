@@ -657,8 +657,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	HAL_UART_Receive_IT(&huart1, rx_buf, 1);
+
     HAL_UART_Receive(&huart1, rx_buf, 1, 0);
-    HAL_UART_RxCpltCallback(&huart1);
+    //HAL_UART_RxCpltCallback(&huart1);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
