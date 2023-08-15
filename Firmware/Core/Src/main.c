@@ -342,10 +342,10 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
           hk_buf[1] = hk_sync;                     // HK SYNC 0xCC LSB
           hk_buf[2] = ((hk_seq & 0xFF00) >> 8);    // HK SEQ # MSB		1 SEQUENCE
           hk_buf[3] = (hk_seq & 0xFF);             // HK SEQ # LSB
-          hk_buf[4] = ((PA1 & 0xFF00) >> 8);       // BUS_Imon MSB			2 BUS_IMON PA1
-          hk_buf[5] = (PA1 & 0xFF);                // BUS_Imon LSB
-          hk_buf[6] = ((PA2 & 0xFF00) >> 8);       // BUS_Vmon MSB			3 BUS_VMON PA2
-          hk_buf[7] = (PA2 & 0xFF);                // BUS_Vmon LSB
+          hk_buf[4] = ((PA1 & 0xFF00) >> 8);       // BUS_Vmon MSB			2 BUS_VMON PA1
+          hk_buf[5] = (PA1 & 0xFF);                // BUS_Vmon LSB
+          hk_buf[6] = ((PA2 & 0xFF00) >> 8);       // BUS_Imon MSB			3 BUS_IMON PA2
+          hk_buf[7] = (PA2 & 0xFF);                // BUS_Imon LSB
           hk_buf[8] = ((PA3 & 0xFF00) >> 8);       // 3v3_mon MSB			4 3v3_MON PA3
           hk_buf[9] = (PA3 & 0xFF);                // 3v3_mon LSB
           hk_buf[10] = ((PA5 & 0xFF00) >> 8);      // n150v_mon MSB		5 N150V_MON PA5

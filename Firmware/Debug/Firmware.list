@@ -39,11 +39,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  17 .debug_line   00018650  00000000  00000000  0004edce  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    00074e66  00000000  00000000  0006741e  2**0
+ 18 .debug_str    00074e93  00000000  00000000  0006741e  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000050  00000000  00000000  000dc284  2**0
+ 19 .comment      00000050  00000000  00000000  000dc2b1  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00004894  00000000  00000000  000dc2d4  2**2
+ 20 .debug_frame  00004894  00000000  00000000  000dc304  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -1121,7 +1121,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  800079a:	b2da      	uxtb	r2, r3
  800079c:	4b61      	ldr	r3, [pc, #388]	; (8000924 <HAL_TIM_OC_DelayElapsedCallback+0x6e0>)
  800079e:	70da      	strb	r2, [r3, #3]
-          hk_buf[4] = ((PA1 & 0xFF00) >> 8);       // BUS_Imon MSB			2 BUS_IMON PA1
+          hk_buf[4] = ((PA1 & 0xFF00) >> 8);       // BUS_Vmon MSB			2 BUS_VMON PA1
  80007a0:	187b      	adds	r3, r7, r1
  80007a2:	881b      	ldrh	r3, [r3, #0]
  80007a4:	0a1b      	lsrs	r3, r3, #8
@@ -1129,13 +1129,13 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  80007a8:	b2da      	uxtb	r2, r3
  80007aa:	4b5e      	ldr	r3, [pc, #376]	; (8000924 <HAL_TIM_OC_DelayElapsedCallback+0x6e0>)
  80007ac:	711a      	strb	r2, [r3, #4]
-          hk_buf[5] = (PA1 & 0xFF);                // BUS_Imon LSB
+          hk_buf[5] = (PA1 & 0xFF);                // BUS_Vmon LSB
  80007ae:	187b      	adds	r3, r7, r1
  80007b0:	881b      	ldrh	r3, [r3, #0]
  80007b2:	b2da      	uxtb	r2, r3
  80007b4:	4b5b      	ldr	r3, [pc, #364]	; (8000924 <HAL_TIM_OC_DelayElapsedCallback+0x6e0>)
  80007b6:	715a      	strb	r2, [r3, #5]
-          hk_buf[6] = ((PA2 & 0xFF00) >> 8);       // BUS_Vmon MSB			3 BUS_VMON PA2
+          hk_buf[6] = ((PA2 & 0xFF00) >> 8);       // BUS_Imon MSB			3 BUS_IMON PA2
  80007b8:	183b      	adds	r3, r7, r0
  80007ba:	881b      	ldrh	r3, [r3, #0]
  80007bc:	0a1b      	lsrs	r3, r3, #8
@@ -1143,7 +1143,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  80007c0:	b2da      	uxtb	r2, r3
  80007c2:	4b58      	ldr	r3, [pc, #352]	; (8000924 <HAL_TIM_OC_DelayElapsedCallback+0x6e0>)
  80007c4:	719a      	strb	r2, [r3, #6]
-          hk_buf[7] = (PA2 & 0xFF);                // BUS_Vmon LSB
+          hk_buf[7] = (PA2 & 0xFF);                // BUS_Imon LSB
  80007c6:	183b      	adds	r3, r7, r0
  80007c8:	881b      	ldrh	r3, [r3, #0]
  80007ca:	b2da      	uxtb	r2, r3
@@ -4933,109 +4933,49 @@ void SystemInit(void)
 	...
 
 08001ce0 <Reset_Handler>:
-
-  .section .text.Reset_Handler
-  .weak Reset_Handler
-  .type Reset_Handler, %function
-Reset_Handler:
-  ldr   r0, =_estack
  8001ce0:	480d      	ldr	r0, [pc, #52]	; (8001d18 <LoopForever+0x2>)
-  mov   sp, r0          /* set stack pointer */
  8001ce2:	4685      	mov	sp, r0
-
-/* Copy the data segment initializers from flash to SRAM */
-  ldr r0, =_sdata
  8001ce4:	480d      	ldr	r0, [pc, #52]	; (8001d1c <LoopForever+0x6>)
-  ldr r1, =_edata
  8001ce6:	490e      	ldr	r1, [pc, #56]	; (8001d20 <LoopForever+0xa>)
-  ldr r2, =_sidata
  8001ce8:	4a0e      	ldr	r2, [pc, #56]	; (8001d24 <LoopForever+0xe>)
-  movs r3, #0
  8001cea:	2300      	movs	r3, #0
-  b LoopCopyDataInit
  8001cec:	e002      	b.n	8001cf4 <LoopCopyDataInit>
 
 08001cee <CopyDataInit>:
-
-CopyDataInit:
-  ldr r4, [r2, r3]
  8001cee:	58d4      	ldr	r4, [r2, r3]
-  str r4, [r0, r3]
  8001cf0:	50c4      	str	r4, [r0, r3]
-  adds r3, r3, #4
  8001cf2:	3304      	adds	r3, #4
 
 08001cf4 <LoopCopyDataInit>:
-
-LoopCopyDataInit:
-  adds r4, r0, r3
  8001cf4:	18c4      	adds	r4, r0, r3
-  cmp r4, r1
  8001cf6:	428c      	cmp	r4, r1
-  bcc CopyDataInit
  8001cf8:	d3f9      	bcc.n	8001cee <CopyDataInit>
-  
-/* Zero fill the bss segment. */
-  ldr r2, =_sbss
  8001cfa:	4a0b      	ldr	r2, [pc, #44]	; (8001d28 <LoopForever+0x12>)
-  ldr r4, =_ebss
  8001cfc:	4c0b      	ldr	r4, [pc, #44]	; (8001d2c <LoopForever+0x16>)
-  movs r3, #0
  8001cfe:	2300      	movs	r3, #0
-  b LoopFillZerobss
  8001d00:	e001      	b.n	8001d06 <LoopFillZerobss>
 
 08001d02 <FillZerobss>:
-
-FillZerobss:
-  str  r3, [r2]
  8001d02:	6013      	str	r3, [r2, #0]
-  adds r2, r2, #4
  8001d04:	3204      	adds	r2, #4
 
 08001d06 <LoopFillZerobss>:
-
-LoopFillZerobss:
-  cmp r2, r4
  8001d06:	42a2      	cmp	r2, r4
-  bcc FillZerobss
  8001d08:	d3fb      	bcc.n	8001d02 <FillZerobss>
-
-/* Call the clock system intitialization function.*/
-  bl  SystemInit
  8001d0a:	f7ff ffe3 	bl	8001cd4 <SystemInit>
-/* Call static constructors */
-  bl __libc_init_array
  8001d0e:	f005 fb91 	bl	8007434 <__libc_init_array>
-/* Call the application's entry point.*/
-  bl main
  8001d12:	f7fe ff6d 	bl	8000bf0 <main>
 
 08001d16 <LoopForever>:
-
-LoopForever:
-    b LoopForever
  8001d16:	e7fe      	b.n	8001d16 <LoopForever>
-  ldr   r0, =_estack
  8001d18:	20002000 	.word	0x20002000
-  ldr r0, =_sdata
  8001d1c:	20000000 	.word	0x20000000
-  ldr r1, =_edata
  8001d20:	20000028 	.word	0x20000028
-  ldr r2, =_sidata
  8001d24:	080076c8 	.word	0x080076c8
-  ldr r2, =_sbss
  8001d28:	20000028 	.word	0x20000028
-  ldr r4, =_ebss
  8001d2c:	200003ec 	.word	0x200003ec
 
 08001d30 <ADC1_COMP_IRQHandler>:
- * @retval : None
-*/
-    .section .text.Default_Handler,"ax",%progbits
-Default_Handler:
-Infinite_Loop:
-  b Infinite_Loop
  8001d30:	e7fe      	b.n	8001d30 <ADC1_COMP_IRQHandler>
 	...
 
