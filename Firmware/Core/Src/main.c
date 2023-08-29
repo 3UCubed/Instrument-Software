@@ -127,14 +127,11 @@ uint16_t erpa_seq = 0;
 uint8_t pmt_buf[6];
 const uint8_t pmt_sync = 0xBB;
 uint16_t pmt_seq = 0;
-uint8_t hk_buf[32];
+uint8_t hk_buf[38];
 const uint8_t hk_sync = 0xCC;
 uint16_t hk_seq = 0;
 int hk_counter = 0;
 int startupTimer = 0;
-uint8_t temps_buf[12];
-const uint8_t temps_sync = 0xDD;
-uint16_t temps_seq = 0;
 uint8_t PMT_ON = 1;
 uint8_t ERPA_ON = 1;
 uint8_t HK_ON = 1;
@@ -313,8 +310,8 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
           HAL_ADC_Start_DMA(&hadc, (uint32_t *)adcResultsDMA,
                             adcChannelCount);
 
-          uint16_t PA1 = adcResultsDMA[1];       // ADC_IN1, BUS_Imon: instrument bus current monitor
-          uint16_t PA2 = adcResultsDMA[2];       // ADC_IN2, BUS_Vmon: instrument bus voltage monitor
+          uint16_t PA1 = adcResultsDMA[1];       // ADC_IN1, BUS_Vmon: instrument bus voltage monitor
+          uint16_t PA2 = adcResultsDMA[2];       // ADC_IN2, BUS_Imon: instrument bus current monitor
           uint16_t PA3 = adcResultsDMA[3];       // ADC_IN3, 3v3_mon: Accurate 5V for ADC monitor
           uint16_t PA5 = adcResultsDMA[4];       // ADC_IN5, n150v_mon: n150 voltage monitor
           uint16_t PA6 = adcResultsDMA[5];       // ADC_IN6, n800v_mon: n800 voltage monitor
@@ -327,51 +324,48 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
           uint16_t MCU_TEMP = adcResultsDMA[15]; //(internally connected) ADC_IN16, VSENSE
           uint16_t MCU_VREF = adcResultsDMA[16]; //(internally connected) ADC_IN17, VREFINT
 
-          temps_buf[0] = temps_sync;
-          temps_buf[1] = temps_sync;
-          temps_buf[2] = ((MCU_VREF & 0xFF00) >> 8);
-          temps_buf[3] = (MCU_VREF & 0xFF);
-          temps_buf[4] = ((output1 & 0xFF00) >> 8);
-          temps_buf[5] = (output1 & 0xFF);
-          temps_buf[6] = ((output2 & 0xFF00) >> 8);
-          temps_buf[7] = (output2 & 0xFF);
-          temps_buf[8] = ((output3 & 0xFF00) >> 8);
-          temps_buf[9] = (output3 & 0xFF);
-          temps_buf[10] = ((output4 & 0xFF00) >> 8);
-          temps_buf[11] = (output4 & 0xFF);
 
           hk_buf[0] = hk_sync;                     // HK SYNC 0xCC MSB					0 SYNC
           hk_buf[1] = hk_sync;                     // HK SYNC 0xCC LSB
           hk_buf[2] = ((hk_seq & 0xFF00) >> 8);    // HK SEQ # MSB		1 SEQUENCE
           hk_buf[3] = (hk_seq & 0xFF);             // HK SEQ # LSB
-          hk_buf[4] = ((PA1 & 0xFF00) >> 8);       // BUS_Vmon MSB			2 BUS_VMON PA1
-          hk_buf[5] = (PA1 & 0xFF);                // BUS_Vmon LSB
-          hk_buf[6] = ((PA2 & 0xFF00) >> 8);       // BUS_Imon MSB			3 BUS_IMON PA2
-          hk_buf[7] = (PA2 & 0xFF);                // BUS_Imon LSB
-          hk_buf[8] = ((PA3 & 0xFF00) >> 8);       // 3v3_mon MSB			4 3v3_MON PA3
-          hk_buf[9] = (PA3 & 0xFF);                // 3v3_mon LSB
-          hk_buf[10] = ((PA5 & 0xFF00) >> 8);      // n150v_mon MSB		5 N150V_MON PA5
-          hk_buf[11] = (PA5 & 0xFF);               // n150v_mon LSB
-          hk_buf[12] = ((PA6 & 0xFF00) >> 8);      // n800v_mon MSB		6 N800V_MON PA6
-          hk_buf[13] = (PA6 & 0xFF);               // n800v_mon LSB
-          hk_buf[14] = ((PC0 & 0xFF00) >> 8);      // 2v5_mon MSB			7 2V5_MON PC0
-          hk_buf[15] = (PC0 & 0xFF);               // 2v5_mon LSB
-          hk_buf[16] = ((PC1 & 0xFF00) >> 8);      // n5v_mon MSB			8 N5V_MON PC1
-          hk_buf[17] = (PC1 & 0xFF);               // n5v_mon LSB
-          hk_buf[18] = ((PC2 & 0xFF00) >> 8);      // 5v_mon MSB			9 5V_MON PC2
-          hk_buf[19] = (PC2 & 0xFF);               // 5v_mon LSB
-          hk_buf[20] = ((PC3 & 0xFF00) >> 8);      // n3v3_mon MSB			10 N3V3_MON PC3
-          hk_buf[21] = (PC3 & 0xFF);               // n3v3_mon LSB
-          hk_buf[22] = ((PC4 & 0xFF00) >> 8);      // 5vref_mon MSB		11 5VREF_MON PC4
-          hk_buf[23] = (PC4 & 0xFF);               // 5vref_mon LSB
-          hk_buf[24] = ((PC5 & 0xFF00) >> 8);      // 15v_mon MSB			12 15V_MON PC5
-          hk_buf[25] = (PC5 & 0xFF);               // 15v_mon LSB
-          hk_buf[26] = ((MCU_TEMP & 0xFF00) >> 8); // VSENSE MSB		13 VSENSE
-          hk_buf[27] = (MCU_TEMP & 0xFF);          // VSENSE LSB
+          hk_buf[4] = ((MCU_TEMP & 0xFF00) >> 8); // VSENSE MSB		13 VSENSE
+          hk_buf[5] = (MCU_TEMP & 0xFF);          // VSENSE LSB
+          hk_buf[6] = ((MCU_VREF & 0xFF00) >> 8);
+          hk_buf[7] = (MCU_VREF & 0xFF);
+          hk_buf[8] = ((output1 & 0xFF00) >> 8);
+          hk_buf[9] = (output1 & 0xFF);
+          hk_buf[10] = ((output2 & 0xFF00) >> 8);
+          hk_buf[11] = (output2 & 0xFF);
+          hk_buf[12] = ((output3 & 0xFF00) >> 8);
+          hk_buf[13] = (output3 & 0xFF);
+          hk_buf[14] = ((output4 & 0xFF00) >> 8);
+          hk_buf[15] = (output4 & 0xFF);
+          hk_buf[16] = ((PA1 & 0xFF00) >> 8);       // BUS_Vmon MSB			2 BUS_VMON PA1
+          hk_buf[17] = (PA1 & 0xFF);                // BUS_Vmon LSB
+          hk_buf[18] = ((PA2 & 0xFF00) >> 8);       // BUS_Imon MSB			3 BUS_IMON PA2
+          hk_buf[19] = (PA2 & 0xFF);                // BUS_Imon LSB
+          hk_buf[20] = ((PC0 & 0xFF00) >> 8);      // 2v5_mon MSB			7 2V5_MON PC0
+          hk_buf[21] = (PC0 & 0xFF);               // 2v5_mon LSB
+          hk_buf[22] = ((PA3 & 0xFF00) >> 8);       // 3v3_mon MSB			4 3v3_MON PA3
+          hk_buf[23] = (PA3 & 0xFF);                // 3v3_mon LSB
+          hk_buf[24] = ((PC2 & 0xFF00) >> 8);      // 5v_mon MSB			9 5V_MON PC2
+          hk_buf[25] = (PC2 & 0xFF);               // 5v_mon LSB
+          hk_buf[26] = ((PC3 & 0xFF00) >> 8);      // n3v3_mon MSB			10 N3V3_MON PC3
+          hk_buf[27] = (PC3 & 0xFF);               // n3v3_mon LSB
+          hk_buf[28] = ((PC1 & 0xFF00) >> 8);      // n5v_mon MSB			8 N5V_MON PC1
+          hk_buf[29] = (PC1 & 0xFF);               // n5v_mon LSB
+          hk_buf[30] = ((PC5 & 0xFF00) >> 8);      // 15v_mon MSB			12 15V_MON PC5
+          hk_buf[31] = (PC5 & 0xFF);               // 15v_mon LSB
+          hk_buf[32] = ((PC4 & 0xFF00) >> 8);      // 5vref_mon MSB		11 5VREF_MON PC4
+          hk_buf[33] = (PC4 & 0xFF);               // 5vref_mon LSB
+          hk_buf[34] = ((PA5 & 0xFF00) >> 8);      // n150v_mon MSB		5 N150V_MON PA5
+          hk_buf[35] = (PA5 & 0xFF);               // n150v_mon LSB
+          hk_buf[36] = ((PA6 & 0xFF00) >> 8);      // n800v_mon MSB		6 N800V_MON PA6
+          hk_buf[37] = (PA6 & 0xFF);               // n800v_mon LSB
 
           if (HK_ON)
           {
-            HAL_UART_Transmit(&huart1, temps_buf, sizeof(temps_buf), HAL_MAX_DELAY);
             HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), 100);
           }
           hk_counter = 1;
