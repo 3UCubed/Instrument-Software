@@ -121,7 +121,7 @@ int erpa_raw;
 const int WRITE = 0x1;
 
 /* UART Variables */
-uint8_t erpa_buf[16];
+uint8_t erpa_buf[14];
 const uint8_t erpa_sync = 0xAA;
 uint16_t erpa_seq = 0;
 uint8_t pmt_buf[6];
@@ -172,16 +172,16 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
         erpa_buf[1] = erpa_sync;                  // ERPA SYNC 0xAA LSB
         erpa_buf[2] = ((erpa_seq & 0xFF00) >> 8); // ERPA SEQ # MSB
         erpa_buf[3] = (erpa_seq & 0xFF);          // ERPA SEQ # MSB
-        erpa_buf[4] = ((erpa_raw & 0xFF00) >> 8);      // ERPA eADC MSB
-        erpa_buf[5] = (erpa_raw & 0xFF);               // ERPA eADC LSB
-        erpa_buf[6] = ((PA0 & 0xFF00) >> 8); // ENDmon MSB
-        erpa_buf[7] = (PA0 & 0xFF);          // ENDmon LSB
+        erpa_buf[4] = ((PA0 & 0xFF00) >> 8); // ENDmon MSB
+        erpa_buf[5] = (PA0 & 0xFF);          // ENDmon LSB
+        erpa_buf[6] = ((PA7 & 0xFF00) >> 8); // SWP Monitored MSB
+        erpa_buf[7] = (PA7 & 0xFF);          // SWP Monitored LSB
         erpa_buf[8] = ((PB0 & 0xFF00) >> 8);  // TEMPURATURE 1 MSB
         erpa_buf[9] = (PB0 & 0xFF);           // TEMPURATURE 1 LSB
         erpa_buf[10] = ((PB1 & 0xFF00) >> 8); // TEMPURATURE 2 MSB
         erpa_buf[11] = (PB1 & 0xFF);          // TEMPURATURE 2 LSB
-        erpa_buf[12] = ((PA7 & 0xFF00) >> 8); // SWP Monitored MSB
-        erpa_buf[13] = (PA7 & 0xFF);          // SWP Monitored LSB
+        erpa_buf[12] = ((erpa_raw & 0xFF00) >> 8);      // ERPA eADC MSB
+        erpa_buf[13] = (erpa_raw & 0xFF);               // ERPA eADC LSB
 
         erpa_seq++;
         if (ERPA_ON)

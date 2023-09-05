@@ -21,9 +21,9 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, DATA
   8 .data         00000028  20000000  08006f44  00020000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  9 .bss          000003c0  20000028  08006f6c  00020028  2**2
+  9 .bss          000003bc  20000028  08006f6c  00020028  2**2
                   ALLOC
- 10 ._user_heap_stack 00000600  200003e8  08006f6c  000203e8  2**0
+ 10 ._user_heap_stack 00000604  200003e4  08006f6c  000203e4  2**0
                   ALLOC
  11 .ARM.attributes 00000028  00000000  00000000  00020028  2**0
                   CONTENTS, READONLY
@@ -363,72 +363,72 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  80002c4:	b2da      	uxtb	r2, r3
  80002c6:	4bc1      	ldr	r3, [pc, #772]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
  80002c8:	70da      	strb	r2, [r3, #3]
-        erpa_buf[4] = ((erpa_raw & 0xFF00) >> 8);      // ERPA eADC MSB
- 80002ca:	4bc2      	ldr	r3, [pc, #776]	; (80005d4 <HAL_TIM_OC_DelayElapsedCallback+0x390>)
- 80002cc:	681b      	ldr	r3, [r3, #0]
- 80002ce:	121b      	asrs	r3, r3, #8
- 80002d0:	b2da      	uxtb	r2, r3
- 80002d2:	4bbe      	ldr	r3, [pc, #760]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
- 80002d4:	711a      	strb	r2, [r3, #4]
-        erpa_buf[5] = (erpa_raw & 0xFF);               // ERPA eADC LSB
- 80002d6:	4bbf      	ldr	r3, [pc, #764]	; (80005d4 <HAL_TIM_OC_DelayElapsedCallback+0x390>)
- 80002d8:	681b      	ldr	r3, [r3, #0]
- 80002da:	b2da      	uxtb	r2, r3
- 80002dc:	4bbb      	ldr	r3, [pc, #748]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
- 80002de:	715a      	strb	r2, [r3, #5]
-        erpa_buf[6] = ((PA0 & 0xFF00) >> 8); // ENDmon MSB
- 80002e0:	187b      	adds	r3, r7, r1
- 80002e2:	881b      	ldrh	r3, [r3, #0]
- 80002e4:	0a1b      	lsrs	r3, r3, #8
- 80002e6:	b29b      	uxth	r3, r3
- 80002e8:	b2da      	uxtb	r2, r3
- 80002ea:	4bb8      	ldr	r3, [pc, #736]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
- 80002ec:	719a      	strb	r2, [r3, #6]
-        erpa_buf[7] = (PA0 & 0xFF);          // ENDmon LSB
- 80002ee:	187b      	adds	r3, r7, r1
- 80002f0:	881b      	ldrh	r3, [r3, #0]
- 80002f2:	b2da      	uxtb	r2, r3
- 80002f4:	4bb5      	ldr	r3, [pc, #724]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
- 80002f6:	71da      	strb	r2, [r3, #7]
+        erpa_buf[4] = ((PA0 & 0xFF00) >> 8); // ENDmon MSB
+ 80002ca:	187b      	adds	r3, r7, r1
+ 80002cc:	881b      	ldrh	r3, [r3, #0]
+ 80002ce:	0a1b      	lsrs	r3, r3, #8
+ 80002d0:	b29b      	uxth	r3, r3
+ 80002d2:	b2da      	uxtb	r2, r3
+ 80002d4:	4bbd      	ldr	r3, [pc, #756]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
+ 80002d6:	711a      	strb	r2, [r3, #4]
+        erpa_buf[5] = (PA0 & 0xFF);          // ENDmon LSB
+ 80002d8:	187b      	adds	r3, r7, r1
+ 80002da:	881b      	ldrh	r3, [r3, #0]
+ 80002dc:	b2da      	uxtb	r2, r3
+ 80002de:	4bbb      	ldr	r3, [pc, #748]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
+ 80002e0:	715a      	strb	r2, [r3, #5]
+        erpa_buf[6] = ((PA7 & 0xFF00) >> 8); // SWP Monitored MSB
+ 80002e2:	183b      	adds	r3, r7, r0
+ 80002e4:	881b      	ldrh	r3, [r3, #0]
+ 80002e6:	0a1b      	lsrs	r3, r3, #8
+ 80002e8:	b29b      	uxth	r3, r3
+ 80002ea:	b2da      	uxtb	r2, r3
+ 80002ec:	4bb7      	ldr	r3, [pc, #732]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
+ 80002ee:	719a      	strb	r2, [r3, #6]
+        erpa_buf[7] = (PA7 & 0xFF);          // SWP Monitored LSB
+ 80002f0:	183b      	adds	r3, r7, r0
+ 80002f2:	881b      	ldrh	r3, [r3, #0]
+ 80002f4:	b2da      	uxtb	r2, r3
+ 80002f6:	4bb5      	ldr	r3, [pc, #724]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
+ 80002f8:	71da      	strb	r2, [r3, #7]
         erpa_buf[8] = ((PB0 & 0xFF00) >> 8);  // TEMPURATURE 1 MSB
- 80002f8:	193b      	adds	r3, r7, r4
- 80002fa:	881b      	ldrh	r3, [r3, #0]
- 80002fc:	0a1b      	lsrs	r3, r3, #8
- 80002fe:	b29b      	uxth	r3, r3
- 8000300:	b2da      	uxtb	r2, r3
- 8000302:	4bb2      	ldr	r3, [pc, #712]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
- 8000304:	721a      	strb	r2, [r3, #8]
+ 80002fa:	193b      	adds	r3, r7, r4
+ 80002fc:	881b      	ldrh	r3, [r3, #0]
+ 80002fe:	0a1b      	lsrs	r3, r3, #8
+ 8000300:	b29b      	uxth	r3, r3
+ 8000302:	b2da      	uxtb	r2, r3
+ 8000304:	4bb1      	ldr	r3, [pc, #708]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
+ 8000306:	721a      	strb	r2, [r3, #8]
         erpa_buf[9] = (PB0 & 0xFF);           // TEMPURATURE 1 LSB
- 8000306:	193b      	adds	r3, r7, r4
- 8000308:	881b      	ldrh	r3, [r3, #0]
- 800030a:	b2da      	uxtb	r2, r3
- 800030c:	4baf      	ldr	r3, [pc, #700]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
- 800030e:	725a      	strb	r2, [r3, #9]
+ 8000308:	193b      	adds	r3, r7, r4
+ 800030a:	881b      	ldrh	r3, [r3, #0]
+ 800030c:	b2da      	uxtb	r2, r3
+ 800030e:	4baf      	ldr	r3, [pc, #700]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
+ 8000310:	725a      	strb	r2, [r3, #9]
         erpa_buf[10] = ((PB1 & 0xFF00) >> 8); // TEMPURATURE 2 MSB
- 8000310:	197b      	adds	r3, r7, r5
- 8000312:	881b      	ldrh	r3, [r3, #0]
- 8000314:	0a1b      	lsrs	r3, r3, #8
- 8000316:	b29b      	uxth	r3, r3
- 8000318:	b2da      	uxtb	r2, r3
- 800031a:	4bac      	ldr	r3, [pc, #688]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
- 800031c:	729a      	strb	r2, [r3, #10]
+ 8000312:	197b      	adds	r3, r7, r5
+ 8000314:	881b      	ldrh	r3, [r3, #0]
+ 8000316:	0a1b      	lsrs	r3, r3, #8
+ 8000318:	b29b      	uxth	r3, r3
+ 800031a:	b2da      	uxtb	r2, r3
+ 800031c:	4bab      	ldr	r3, [pc, #684]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
+ 800031e:	729a      	strb	r2, [r3, #10]
         erpa_buf[11] = (PB1 & 0xFF);          // TEMPURATURE 2 LSB
- 800031e:	197b      	adds	r3, r7, r5
- 8000320:	881b      	ldrh	r3, [r3, #0]
- 8000322:	b2da      	uxtb	r2, r3
- 8000324:	4ba9      	ldr	r3, [pc, #676]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
- 8000326:	72da      	strb	r2, [r3, #11]
-        erpa_buf[12] = ((PA7 & 0xFF00) >> 8); // SWP Monitored MSB
- 8000328:	183b      	adds	r3, r7, r0
- 800032a:	881b      	ldrh	r3, [r3, #0]
- 800032c:	0a1b      	lsrs	r3, r3, #8
- 800032e:	b29b      	uxth	r3, r3
+ 8000320:	197b      	adds	r3, r7, r5
+ 8000322:	881b      	ldrh	r3, [r3, #0]
+ 8000324:	b2da      	uxtb	r2, r3
+ 8000326:	4ba9      	ldr	r3, [pc, #676]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
+ 8000328:	72da      	strb	r2, [r3, #11]
+        erpa_buf[12] = ((erpa_raw & 0xFF00) >> 8);      // ERPA eADC MSB
+ 800032a:	4baa      	ldr	r3, [pc, #680]	; (80005d4 <HAL_TIM_OC_DelayElapsedCallback+0x390>)
+ 800032c:	681b      	ldr	r3, [r3, #0]
+ 800032e:	121b      	asrs	r3, r3, #8
  8000330:	b2da      	uxtb	r2, r3
  8000332:	4ba6      	ldr	r3, [pc, #664]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
  8000334:	731a      	strb	r2, [r3, #12]
-        erpa_buf[13] = (PA7 & 0xFF);          // SWP Monitored LSB
- 8000336:	183b      	adds	r3, r7, r0
- 8000338:	881b      	ldrh	r3, [r3, #0]
+        erpa_buf[13] = (erpa_raw & 0xFF);               // ERPA eADC LSB
+ 8000336:	4ba7      	ldr	r3, [pc, #668]	; (80005d4 <HAL_TIM_OC_DelayElapsedCallback+0x390>)
+ 8000338:	681b      	ldr	r3, [r3, #0]
  800033a:	b2da      	uxtb	r2, r3
  800033c:	4ba3      	ldr	r3, [pc, #652]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
  800033e:	735a      	strb	r2, [r3, #13]
@@ -450,7 +450,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  8000354:	499d      	ldr	r1, [pc, #628]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
  8000356:	48a0      	ldr	r0, [pc, #640]	; (80005d8 <HAL_TIM_OC_DelayElapsedCallback+0x394>)
  8000358:	2364      	movs	r3, #100	; 0x64
- 800035a:	2210      	movs	r2, #16
+ 800035a:	220e      	movs	r2, #14
  800035c:	f005 f960 	bl	8005620 <HAL_UART_Transmit>
         }
       }
@@ -854,11 +854,11 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  80005c4:	20000370 	.word	0x20000370
  80005c8:	20000044 	.word	0x20000044
  80005cc:	2000039c 	.word	0x2000039c
- 80005d0:	200003ac 	.word	0x200003ac
+ 80005d0:	200003aa 	.word	0x200003aa
  80005d4:	20000398 	.word	0x20000398
  80005d8:	20000280 	.word	0x20000280
  80005dc:	2000001a 	.word	0x2000001a
- 80005e0:	200003e0 	.word	0x200003e0
+ 80005e0:	200003dc 	.word	0x200003dc
  80005e4:	200000dc 	.word	0x200000dc
  80005e8:	08006d9c 	.word	0x08006d9c
  80005ec:	08006da8 	.word	0x08006da8
@@ -1366,15 +1366,15 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  800092a:	46c0      	nop			; (mov r8, r8)
  800092c:	20000370 	.word	0x20000370
  8000930:	20000044 	.word	0x20000044
- 8000934:	200003b8 	.word	0x200003b8
- 8000938:	200003de 	.word	0x200003de
+ 8000934:	200003b4 	.word	0x200003b4
+ 8000938:	200003da 	.word	0x200003da
  800093c:	2000001a 	.word	0x2000001a
  8000940:	20000280 	.word	0x20000280
- 8000944:	200003e0 	.word	0x200003e0
+ 8000944:	200003dc 	.word	0x200003dc
  8000948:	200001f0 	.word	0x200001f0
  800094c:	20000018 	.word	0x20000018
- 8000950:	200003b0 	.word	0x200003b0
- 8000954:	200003b6 	.word	0x200003b6
+ 8000950:	200003ac 	.word	0x200003ac
+ 8000954:	200003b2 	.word	0x200003b2
  8000958:	20000394 	.word	0x20000394
 
 0800095c <HAL_UART_RxCpltCallback>:
@@ -3305,9 +3305,9 @@ static void MX_USART1_UART_Init(void)
  80013b2:	46bd      	mov	sp, r7
  80013b4:	bd80      	pop	{r7, pc}
  80013b6:	46c0      	nop			; (mov r8, r8)
- 80013b8:	200003ac 	.word	0x200003ac
- 80013bc:	200003b6 	.word	0x200003b6
- 80013c0:	200003de 	.word	0x200003de
+ 80013b8:	200003aa 	.word	0x200003aa
+ 80013bc:	200003b2 	.word	0x200003b2
+ 80013c0:	200003da 	.word	0x200003da
  80013c4:	20000280 	.word	0x20000280
  80013c8:	40013800 	.word	0x40013800
 
@@ -4824,7 +4824,7 @@ LoopForever:
   ldr r2, =_sbss
  8001ba8:	20000028 	.word	0x20000028
   ldr r4, =_ebss
- 8001bac:	200003e8 	.word	0x200003e8
+ 8001bac:	200003e4 	.word	0x200003e4
 
 08001bb0 <ADC1_COMP_IRQHandler>:
  * @retval : None
@@ -4972,7 +4972,7 @@ __weak void HAL_IncTick(void)
  8001c5c:	bd80      	pop	{r7, pc}
  8001c5e:	46c0      	nop			; (mov r8, r8)
  8001c60:	20000024 	.word	0x20000024
- 8001c64:	200003e4 	.word	0x200003e4
+ 8001c64:	200003e0 	.word	0x200003e0
 
 08001c68 <HAL_GetTick>:
   * @note   This function is declared as __weak  to be overwritten  in case of other 
@@ -4991,7 +4991,7 @@ __weak uint32_t HAL_GetTick(void)
  8001c72:	46bd      	mov	sp, r7
  8001c74:	bd80      	pop	{r7, pc}
  8001c76:	46c0      	nop			; (mov r8, r8)
- 8001c78:	200003e4 	.word	0x200003e4
+ 8001c78:	200003e0 	.word	0x200003e0
 
 08001c7c <HAL_Delay>:
   *       implementations in user file.

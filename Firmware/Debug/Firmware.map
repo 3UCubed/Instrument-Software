@@ -4417,7 +4417,7 @@ LOAD /Applications/STM32CubeIDE.app/Contents/Eclipse/plugins/com.st.stm32cube.id
  .igot.plt      0x0000000020000028        0x0 /Applications/STM32CubeIDE.app/Contents/Eclipse/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.macos64_1.0.200.202301161003/tools/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v6-m/nofp/crtbegin.o
                 0x0000000020000028                . = ALIGN (0x4)
 
-.bss            0x0000000020000028      0x3c0 load address 0x0000000008006f6c
+.bss            0x0000000020000028      0x3bc load address 0x0000000008006f6c
                 0x0000000020000028                _sbss = .
                 0x0000000020000028                __bss_start__ = _sbss
  *(.bss)
@@ -4456,32 +4456,32 @@ LOAD /Applications/STM32CubeIDE.app/Contents/Eclipse/plugins/com.st.stm32cube.id
                 0x0000000020000394                pmt_raw
  .bss.erpa_raw  0x0000000020000398        0x4 ./Core/Src/main.o
                 0x0000000020000398                erpa_raw
- .bss.erpa_buf  0x000000002000039c       0x10 ./Core/Src/main.o
+ .bss.erpa_buf  0x000000002000039c        0xe ./Core/Src/main.o
                 0x000000002000039c                erpa_buf
- .bss.erpa_seq  0x00000000200003ac        0x2 ./Core/Src/main.o
-                0x00000000200003ac                erpa_seq
- *fill*         0x00000000200003ae        0x2 
- .bss.pmt_buf   0x00000000200003b0        0x6 ./Core/Src/main.o
-                0x00000000200003b0                pmt_buf
- .bss.pmt_seq   0x00000000200003b6        0x2 ./Core/Src/main.o
-                0x00000000200003b6                pmt_seq
- .bss.hk_buf    0x00000000200003b8       0x26 ./Core/Src/main.o
-                0x00000000200003b8                hk_buf
- .bss.hk_seq    0x00000000200003de        0x2 ./Core/Src/main.o
-                0x00000000200003de                hk_seq
+ .bss.erpa_seq  0x00000000200003aa        0x2 ./Core/Src/main.o
+                0x00000000200003aa                erpa_seq
+ .bss.pmt_buf   0x00000000200003ac        0x6 ./Core/Src/main.o
+                0x00000000200003ac                pmt_buf
+ .bss.pmt_seq   0x00000000200003b2        0x2 ./Core/Src/main.o
+                0x00000000200003b2                pmt_seq
+ .bss.hk_buf    0x00000000200003b4       0x26 ./Core/Src/main.o
+                0x00000000200003b4                hk_buf
+ .bss.hk_seq    0x00000000200003da        0x2 ./Core/Src/main.o
+                0x00000000200003da                hk_seq
  .bss.hk_counter
-                0x00000000200003e0        0x4 ./Core/Src/main.o
-                0x00000000200003e0                hk_counter
- .bss.uwTick    0x00000000200003e4        0x4 ./Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal.o
-                0x00000000200003e4                uwTick
+                0x00000000200003dc        0x4 ./Core/Src/main.o
+                0x00000000200003dc                hk_counter
+ .bss.uwTick    0x00000000200003e0        0x4 ./Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal.o
+                0x00000000200003e0                uwTick
  *(COMMON)
-                0x00000000200003e8                . = ALIGN (0x4)
-                0x00000000200003e8                _ebss = .
-                0x00000000200003e8                __bss_end__ = _ebss
+                0x00000000200003e4                . = ALIGN (0x4)
+                0x00000000200003e4                _ebss = .
+                0x00000000200003e4                __bss_end__ = _ebss
 
 ._user_heap_stack
-                0x00000000200003e8      0x600 load address 0x0000000008006f6c
+                0x00000000200003e4      0x604 load address 0x0000000008006f6c
                 0x00000000200003e8                . = ALIGN (0x8)
+ *fill*         0x00000000200003e4        0x4 
                 [!provide]                        PROVIDE (end = .)
                 0x00000000200003e8                PROVIDE (_end = .)
                 0x00000000200005e8                . = (. + _Min_Heap_Size)
