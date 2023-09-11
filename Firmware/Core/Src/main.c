@@ -52,19 +52,16 @@ const char *gpio_names[] =
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+
+/* Definition for any peripherals setup in CubeMX */
 ADC_HandleTypeDef hadc;
 DMA_HandleTypeDef hdma_adc;
-
 DAC_HandleTypeDef hdac1;
-
 I2C_HandleTypeDef hi2c1;
-
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
-
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
-
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
@@ -74,10 +71,45 @@ uint8_t rx_buf[BUFFER_SIZE];
 uint8_t rx_index;
 UART_WakeUpTypeDef WakeUpSelection;
 
-static const uint8_t ADT7410_1 = 0x48 << 1; // Use 8-bit address
+/* Hexadecimal Addresses for I2C Temperature Sensors */
+static const uint8_t ADT7410_1 = 0x48 << 1;
 static const uint8_t ADT7410_2 = 0x4A << 1;
 static const uint8_t ADT7410_3 = 0x49 << 1;
 static const uint8_t ADT7410_4 = 0x4B << 1;
+
+/* Internal ADC DMA variables */
+volatile uint16_t adcResultsDMA[17]; // array to store results of Internal ADC Poll (not sure if it has to be "volatile")
+const int adcChannelCount = sizeof(adcResultsDMA) / sizeof(adcResultsDMA[0]); // variable to store the number of ADCs in use
+
+/* DAC Variables for SWP */
+/* uint32_t DAC_OUT[] = {0, 683, 1365, 2048, 2730, 3413}; */
+uint32_t DAC_OUT[] = {0, 620, 1241, 1861,2482,3103}; // For 3.3 volts
+uint8_t step = 0;
+int up = 1;
+
+/* SPI Variables */
+int raw; // Stores raw value from SPI Transfer
+int pmt_raw;
+int erpa_raw;
+const int WRITE = 0x1; // Hex 0x1 that is sent to external ADC to trigger transfer of data
+
+/* UART Variables */
+uint8_t erpa_buf[14]; // buffer that is filled with ERPA packet info
+const uint8_t erpa_sync = 0xAA; // SYNC byte to let packet interpreter / OBC know which packet is which
+uint16_t erpa_seq = 0; // SEQ byte which keeps track of what # ERPA packet is being sent (0-65535)
+uint8_t pmt_buf[6]; // buffer that is filled with PMT packet info
+const uint8_t pmt_sync = 0xBB; // SYNC byte to let packet interpreter / OBC know which packet is which
+uint16_t pmt_seq = 0; // SEQ byte which keeps track of what # ERPA packet is being sent (0-65535)
+uint8_t hk_buf[38]; // buffer that is filled with HK packet info
+const uint8_t hk_sync = 0xCC; // SYNC byte to let packet interpreter / OBC know which packet is which
+uint16_t hk_seq = 0; // SEQ byte which keeps track of what # HK packet is being sent (0-65535)
+
+int hk_counter = 0; // counter to know when to send HK packet (sent every 50 ERPA packets)
+					// we put them in the same routine and send HK when this count == 50
+int startupTimer = 0;
+uint8_t PMT_ON = 1;
+uint8_t ERPA_ON = 1;
+uint8_t HK_ON = 1;
 
 static const uint8_t REG_TEMP = 0x00;
 /* USER CODE END PV */
@@ -104,38 +136,14 @@ static void MX_I2C1_Init(void);
 /* TS_CAL1 & TS_CAL2 */
 // #define TS_CAL1 *((uint16_t*) 0x1FFFF7B8)
 // #define TS_CAL2 *((uint16_t*) 0x1FFFF7C2)
-/* ADC DMA */
-volatile uint16_t adcResultsDMA[17];
-const int adcChannelCount = sizeof(adcResultsDMA) / sizeof(adcResultsDMA[0]);
 
-/* DAC Variables */
-//uint32_t DAC_OUT[] = {0, 683, 1365, 2048, 2730, 3413};
- uint32_t DAC_OUT[] = {0, 620, 1241, 1861,2482,3103}; // For 3.3 volts
-uint8_t step = 0;
-int up = 1;
 
-/* SPI Variables */
-int raw;
-int pmt_raw;
-int erpa_raw;
-const int WRITE = 0x1;
-
-/* UART Variables */
-uint8_t erpa_buf[14];
-const uint8_t erpa_sync = 0xAA;
-uint16_t erpa_seq = 0;
-uint8_t pmt_buf[6];
-const uint8_t pmt_sync = 0xBB;
-uint16_t pmt_seq = 0;
-uint8_t hk_buf[38];
-const uint8_t hk_sync = 0xCC;
-uint16_t hk_seq = 0;
-int hk_counter = 0;
-int startupTimer = 0;
-uint8_t PMT_ON = 1;
-uint8_t ERPA_ON = 1;
-uint8_t HK_ON = 1;
-
+/**
+ * Timer interrupt function
+ * This is where packets are sent
+ * Function should be called every 125ms for PMT and 100ms for ERPA
+ * HK will send every 50 ERPA packets or every 5 seconds
+ */
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim == &htim2)
@@ -152,34 +160,36 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
          */
 
         /* Write to SPI (begin transfer?) */
-//        HAL_SPI_Transmit(&hspi2, (uint8_t *)&WRITE, 1, 1);
-//
-//        while (!(SPI2->SR))
-//          ;
-//
-//        erpa_raw = SPI2->DR;
+    	/*
+        HAL_SPI_Transmit(&hspi2, (uint8_t *)&WRITE, 1, 1);
+
+        while (!(SPI2->SR))
+          ;
+
+        erpa_raw = SPI2->DR;
+        */
 
         DAC->DHR12R1 = DAC_OUT[step];
 
         HAL_ADC_Start_DMA(&hadc, (uint32_t *)adcResultsDMA,
                           adcChannelCount);
-        uint16_t PA0 = adcResultsDMA[0]; // ADC_IN0, END_mon: entrance/collimator monitor
-        uint16_t PA7 = adcResultsDMA[6]; // ADC_IN7, SWP_mon: Sweep voltage monitor
-        uint16_t PB0 = adcResultsDMA[7]; // ADC_IN8, TMP 1: Sweep temperature
-        uint16_t PB1 = adcResultsDMA[8]; // ADC_IN9, TMP 2: feedbacks
+        uint16_t PA0 = adcResultsDMA[0]; 				// ADC_IN0, END_mon: entrance/collimator monitor
+        uint16_t PA7 = adcResultsDMA[6]; 				// ADC_IN7, SWP_mon: Sweep voltage monitor
+        uint16_t PB0 = adcResultsDMA[7]; 				// ADC_IN8, TMP 1: Sweep temperature
+        uint16_t PB1 = adcResultsDMA[8]; 				// ADC_IN9, TMP 2: feedbacks
 
-        erpa_buf[0] = erpa_sync;                  // ERPA SYNC 0xAA MSB
-        erpa_buf[1] = erpa_sync;                  // ERPA SYNC 0xAA LSB
-        erpa_buf[2] = ((erpa_seq & 0xFF00) >> 8); // ERPA SEQ # MSB
-        erpa_buf[3] = (erpa_seq & 0xFF);          // ERPA SEQ # MSB
-        erpa_buf[4] = ((PA0 & 0xFF00) >> 8); // ENDmon MSB
-        erpa_buf[5] = (PA0 & 0xFF);          // ENDmon LSB
-        erpa_buf[6] = ((PA7 & 0xFF00) >> 8); // SWP Monitored MSB
-        erpa_buf[7] = (PA7 & 0xFF);          // SWP Monitored LSB
-        erpa_buf[8] = ((PB0 & 0xFF00) >> 8);  // TEMPURATURE 1 MSB
-        erpa_buf[9] = (PB0 & 0xFF);           // TEMPURATURE 1 LSB
-        erpa_buf[10] = ((PB1 & 0xFF00) >> 8); // TEMPURATURE 2 MSB
-        erpa_buf[11] = (PB1 & 0xFF);          // TEMPURATURE 2 LSB
+        erpa_buf[0] = erpa_sync;                  		// ERPA SYNC 0xAA MSB
+        erpa_buf[1] = erpa_sync;                  		// ERPA SYNC 0xAA LSB
+        erpa_buf[2] = ((erpa_seq & 0xFF00) >> 8); 		// ERPA SEQ # MSB
+        erpa_buf[3] = (erpa_seq & 0xFF);          		// ERPA SEQ # MSB
+        erpa_buf[4] = ((PA0 & 0xFF00) >> 8); 	  		// ENDmon MSB
+        erpa_buf[5] = (PA0 & 0xFF);               		// ENDmon LSB
+        erpa_buf[6] = ((PA7 & 0xFF00) >> 8);      		// SWP Monitored MSB
+        erpa_buf[7] = (PA7 & 0xFF);               		// SWP Monitored LSB
+        erpa_buf[8] = ((PB0 & 0xFF00) >> 8);      		// TEMPURATURE 1 MSB
+        erpa_buf[9] = (PB0 & 0xFF);               		// TEMPURATURE 1 LSB
+        erpa_buf[10] = ((PB1 & 0xFF00) >> 8);     		// TEMPURATURE 2 MSB
+        erpa_buf[11] = (PB1 & 0xFF);                    // TEMPURATURE 2 LSB
         erpa_buf[12] = ((erpa_raw & 0xFF00) >> 8);      // ERPA eADC MSB
         erpa_buf[13] = (erpa_raw & 0xFF);               // ERPA eADC LSB
 
@@ -392,12 +402,14 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
          */
 
         /* Write to SPI (begin transfer?) */
-//        HAL_SPI_Transmit(&hspi2, (uint8_t *)&WRITE, 1, 1);
-//
-//        while (!(SPI2->SR))
-//          ;
-//
-//        raw = SPI2->DR;
+    	/*
+        HAL_SPI_Transmit(&hspi2, (uint8_t *)&WRITE, 1, 1);
+
+        while (!(SPI2->SR))
+          ;
+
+        raw = SPI2->DR;
+        */
 
         pmt_buf[0] = pmt_sync;
         pmt_buf[1] = pmt_sync;
