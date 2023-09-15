@@ -355,24 +355,24 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
           hk_buf[17] = (PA1 & 0xFF);                // BUS_Vmon LSB
           hk_buf[18] = ((PA2 & 0xFF00) >> 8);       // BUS_Imon MSB			3 BUS_IMON PA2
           hk_buf[19] = (PA2 & 0xFF);                // BUS_Imon LSB
-          hk_buf[20] = ((PC0 & 0xFF00) >> 8);      // 2v5_mon MSB			7 2V5_MON PC0
-          hk_buf[21] = (PC0 & 0xFF);               // 2v5_mon LSB
+          hk_buf[20] = ((PC0 & 0xFF00) >> 8);      	// 2v5_mon MSB			7 2V5_MON PC0
+          hk_buf[21] = (PC0 & 0xFF);               	// 2v5_mon LSB
           hk_buf[22] = ((PA3 & 0xFF00) >> 8);       // 3v3_mon MSB			4 3v3_MON PA3
           hk_buf[23] = (PA3 & 0xFF);                // 3v3_mon LSB
-          hk_buf[24] = ((PC2 & 0xFF00) >> 8);      // 5v_mon MSB			9 5V_MON PC2
-          hk_buf[25] = (PC2 & 0xFF);               // 5v_mon LSB
-          hk_buf[26] = ((PC3 & 0xFF00) >> 8);      // n3v3_mon MSB			10 N3V3_MON PC3
-          hk_buf[27] = (PC3 & 0xFF);               // n3v3_mon LSB
-          hk_buf[28] = ((PC1 & 0xFF00) >> 8);      // n5v_mon MSB			8 N5V_MON PC1
-          hk_buf[29] = (PC1 & 0xFF);               // n5v_mon LSB
-          hk_buf[30] = ((PC5 & 0xFF00) >> 8);      // 15v_mon MSB			12 15V_MON PC5
-          hk_buf[31] = (PC5 & 0xFF);               // 15v_mon LSB
-          hk_buf[32] = ((PC4 & 0xFF00) >> 8);      // 5vref_mon MSB		11 5VREF_MON PC4
-          hk_buf[33] = (PC4 & 0xFF);               // 5vref_mon LSB
-          hk_buf[34] = ((PA5 & 0xFF00) >> 8);      // n150v_mon MSB		5 N150V_MON PA5
-          hk_buf[35] = (PA5 & 0xFF);               // n150v_mon LSB
-          hk_buf[36] = ((PA6 & 0xFF00) >> 8);      // n800v_mon MSB		6 N800V_MON PA6
-          hk_buf[37] = (PA6 & 0xFF);               // n800v_mon LSB
+          hk_buf[24] = ((PC2 & 0xFF00) >> 8);      	// 5v_mon MSB			9 5V_MON PC2
+          hk_buf[25] = (PC2 & 0xFF);               	// 5v_mon LSB
+          hk_buf[26] = ((PC3 & 0xFF00) >> 8);      	// n3v3_mon MSB			10 N3V3_MON PC3
+          hk_buf[27] = (PC3 & 0xFF);               	// n3v3_mon LSB
+          hk_buf[28] = ((PC1 & 0xFF00) >> 8);      	// n5v_mon MSB			8 N5V_MON PC1
+          hk_buf[29] = (PC1 & 0xFF);               	// n5v_mon LSB
+          hk_buf[30] = ((PC5 & 0xFF00) >> 8);      	// 15v_mon MSB			12 15V_MON PC5
+          hk_buf[31] = (PC5 & 0xFF);               	// 15v_mon LSB
+          hk_buf[32] = ((PC4 & 0xFF00) >> 8);      	// 5vref_mon MSB		11 5VREF_MON PC4
+          hk_buf[33] = (PC4 & 0xFF);               	// 5vref_mon LSB
+          hk_buf[34] = ((PA5 & 0xFF00) >> 8);      	// n150v_mon MSB		5 N150V_MON PA5
+          hk_buf[35] = (PA5 & 0xFF);               	// n150v_mon LSB
+          hk_buf[36] = ((PA6 & 0xFF00) >> 8);      	// n800v_mon MSB		6 N800V_MON PA6
+          hk_buf[37] = (PA6 & 0xFF);               	// n800v_mon LSB
 
           if (HK_ON)
           {
@@ -436,7 +436,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
   switch (key)
   {
-
   case 'G':
   {
     HAL_GPIO_WritePin(gpios[8].gpio, gpios[8].pin, GPIO_PIN_SET);
