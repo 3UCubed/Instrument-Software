@@ -39,11 +39,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  17 .debug_line   000185a4  00000000  00000000  0004eb86  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    00074e3a  00000000  00000000  0006712a  2**0
+ 18 .debug_str    00074e6c  00000000  00000000  0006712a  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000050  00000000  00000000  000dbf64  2**0
+ 19 .comment      00000050  00000000  00000000  000dbf96  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00004874  00000000  00000000  000dbfb4  2**2
+ 20 .debug_frame  00004874  00000000  00000000  000dbfe8  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -268,10 +268,10 @@ __STATIC_FORCEINLINE void __DSB(void)
  8000240:	05fa0004 	.word	0x05fa0004
 
 08000244 <HAL_TIM_OC_DelayElapsedCallback>:
-uint8_t PMT_ON = 1;
-uint8_t ERPA_ON = 1;
-uint8_t HK_ON = 1;
-
+ * This is where packets are sent
+ * Function should be called every 125ms for PMT and 100ms for ERPA
+ * HK will send every 50 ERPA packets or every 5 seconds
+ */
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 {
  8000244:	b5f0      	push	{r4, r5, r6, r7, lr}
@@ -293,10 +293,10 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  800025a:	2b00      	cmp	r3, #0
  800025c:	d100      	bne.n	8000260 <HAL_TIM_OC_DelayElapsedCallback+0x1c>
  800025e:	e07f      	b.n	8000360 <HAL_TIM_OC_DelayElapsedCallback+0x11c>
-//        while (!(SPI2->SR))
-//          ;
-//
-//        erpa_raw = SPI2->DR;
+          ;
+
+        erpa_raw = SPI2->DR;
+        */
 
         DAC->DHR12R1 = DAC_OUT[step];
  8000260:	4bd5      	ldr	r3, [pc, #852]	; (80005b8 <HAL_TIM_OC_DelayElapsedCallback+0x374>)
@@ -316,40 +316,40 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  8000278:	0018      	movs	r0, r3
  800027a:	f001 fe71 	bl	8001f60 <HAL_ADC_Start_DMA>
                           adcChannelCount);
-        uint16_t PA0 = adcResultsDMA[0]; // ADC_IN0, END_mon: entrance/collimator monitor
+        uint16_t PA0 = adcResultsDMA[0]; 				// ADC_IN0, END_mon: entrance/collimator monitor
  800027e:	212e      	movs	r1, #46	; 0x2e
  8000280:	187b      	adds	r3, r7, r1
  8000282:	4ad0      	ldr	r2, [pc, #832]	; (80005c4 <HAL_TIM_OC_DelayElapsedCallback+0x380>)
  8000284:	8812      	ldrh	r2, [r2, #0]
  8000286:	801a      	strh	r2, [r3, #0]
-        uint16_t PA7 = adcResultsDMA[6]; // ADC_IN7, SWP_mon: Sweep voltage monitor
+        uint16_t PA7 = adcResultsDMA[6]; 				// ADC_IN7, SWP_mon: Sweep voltage monitor
  8000288:	202c      	movs	r0, #44	; 0x2c
  800028a:	183b      	adds	r3, r7, r0
  800028c:	4acd      	ldr	r2, [pc, #820]	; (80005c4 <HAL_TIM_OC_DelayElapsedCallback+0x380>)
  800028e:	8992      	ldrh	r2, [r2, #12]
  8000290:	801a      	strh	r2, [r3, #0]
-        uint16_t PB0 = adcResultsDMA[7]; // ADC_IN8, TMP 1: Sweep temperature
+        uint16_t PB0 = adcResultsDMA[7]; 				// ADC_IN8, TMP 1: Sweep temperature
  8000292:	242a      	movs	r4, #42	; 0x2a
  8000294:	193b      	adds	r3, r7, r4
  8000296:	4acb      	ldr	r2, [pc, #812]	; (80005c4 <HAL_TIM_OC_DelayElapsedCallback+0x380>)
  8000298:	89d2      	ldrh	r2, [r2, #14]
  800029a:	801a      	strh	r2, [r3, #0]
-        uint16_t PB1 = adcResultsDMA[8]; // ADC_IN9, TMP 2: feedbacks
+        uint16_t PB1 = adcResultsDMA[8]; 				// ADC_IN9, TMP 2: feedbacks
  800029c:	2528      	movs	r5, #40	; 0x28
  800029e:	197b      	adds	r3, r7, r5
  80002a0:	4ac8      	ldr	r2, [pc, #800]	; (80005c4 <HAL_TIM_OC_DelayElapsedCallback+0x380>)
  80002a2:	8a12      	ldrh	r2, [r2, #16]
  80002a4:	801a      	strh	r2, [r3, #0]
 
-        erpa_buf[0] = erpa_sync;                  // ERPA SYNC 0xAA MSB
+        erpa_buf[0] = erpa_sync;                  		// ERPA SYNC 0xAA MSB
  80002a6:	22aa      	movs	r2, #170	; 0xaa
  80002a8:	4bc8      	ldr	r3, [pc, #800]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
  80002aa:	701a      	strb	r2, [r3, #0]
-        erpa_buf[1] = erpa_sync;                  // ERPA SYNC 0xAA LSB
+        erpa_buf[1] = erpa_sync;                  		// ERPA SYNC 0xAA LSB
  80002ac:	22aa      	movs	r2, #170	; 0xaa
  80002ae:	4bc7      	ldr	r3, [pc, #796]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
  80002b0:	705a      	strb	r2, [r3, #1]
-        erpa_buf[2] = ((erpa_seq & 0xFF00) >> 8); // ERPA SEQ # MSB
+        erpa_buf[2] = ((erpa_seq & 0xFF00) >> 8); 		// ERPA SEQ # MSB
  80002b2:	4bc7      	ldr	r3, [pc, #796]	; (80005d0 <HAL_TIM_OC_DelayElapsedCallback+0x38c>)
  80002b4:	881b      	ldrh	r3, [r3, #0]
  80002b6:	0a1b      	lsrs	r3, r3, #8
@@ -357,13 +357,13 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  80002ba:	b2da      	uxtb	r2, r3
  80002bc:	4bc3      	ldr	r3, [pc, #780]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
  80002be:	709a      	strb	r2, [r3, #2]
-        erpa_buf[3] = (erpa_seq & 0xFF);          // ERPA SEQ # MSB
+        erpa_buf[3] = (erpa_seq & 0xFF);          		// ERPA SEQ # MSB
  80002c0:	4bc3      	ldr	r3, [pc, #780]	; (80005d0 <HAL_TIM_OC_DelayElapsedCallback+0x38c>)
  80002c2:	881b      	ldrh	r3, [r3, #0]
  80002c4:	b2da      	uxtb	r2, r3
  80002c6:	4bc1      	ldr	r3, [pc, #772]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
  80002c8:	70da      	strb	r2, [r3, #3]
-        erpa_buf[4] = ((PA0 & 0xFF00) >> 8); // ENDmon MSB
+        erpa_buf[4] = ((PA0 & 0xFF00) >> 8); 	  		// ENDmon MSB
  80002ca:	187b      	adds	r3, r7, r1
  80002cc:	881b      	ldrh	r3, [r3, #0]
  80002ce:	0a1b      	lsrs	r3, r3, #8
@@ -371,13 +371,13 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  80002d2:	b2da      	uxtb	r2, r3
  80002d4:	4bbd      	ldr	r3, [pc, #756]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
  80002d6:	711a      	strb	r2, [r3, #4]
-        erpa_buf[5] = (PA0 & 0xFF);          // ENDmon LSB
+        erpa_buf[5] = (PA0 & 0xFF);               		// ENDmon LSB
  80002d8:	187b      	adds	r3, r7, r1
  80002da:	881b      	ldrh	r3, [r3, #0]
  80002dc:	b2da      	uxtb	r2, r3
  80002de:	4bbb      	ldr	r3, [pc, #748]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
  80002e0:	715a      	strb	r2, [r3, #5]
-        erpa_buf[6] = ((PA7 & 0xFF00) >> 8); // SWP Monitored MSB
+        erpa_buf[6] = ((PA7 & 0xFF00) >> 8);      		// SWP Monitored MSB
  80002e2:	183b      	adds	r3, r7, r0
  80002e4:	881b      	ldrh	r3, [r3, #0]
  80002e6:	0a1b      	lsrs	r3, r3, #8
@@ -385,13 +385,13 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  80002ea:	b2da      	uxtb	r2, r3
  80002ec:	4bb7      	ldr	r3, [pc, #732]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
  80002ee:	719a      	strb	r2, [r3, #6]
-        erpa_buf[7] = (PA7 & 0xFF);          // SWP Monitored LSB
+        erpa_buf[7] = (PA7 & 0xFF);               		// SWP Monitored LSB
  80002f0:	183b      	adds	r3, r7, r0
  80002f2:	881b      	ldrh	r3, [r3, #0]
  80002f4:	b2da      	uxtb	r2, r3
  80002f6:	4bb5      	ldr	r3, [pc, #724]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
  80002f8:	71da      	strb	r2, [r3, #7]
-        erpa_buf[8] = ((PB0 & 0xFF00) >> 8);  // TEMPURATURE 1 MSB
+        erpa_buf[8] = ((PB0 & 0xFF00) >> 8);      		// TEMPURATURE 1 MSB
  80002fa:	193b      	adds	r3, r7, r4
  80002fc:	881b      	ldrh	r3, [r3, #0]
  80002fe:	0a1b      	lsrs	r3, r3, #8
@@ -399,13 +399,13 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  8000302:	b2da      	uxtb	r2, r3
  8000304:	4bb1      	ldr	r3, [pc, #708]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
  8000306:	721a      	strb	r2, [r3, #8]
-        erpa_buf[9] = (PB0 & 0xFF);           // TEMPURATURE 1 LSB
+        erpa_buf[9] = (PB0 & 0xFF);               		// TEMPURATURE 1 LSB
  8000308:	193b      	adds	r3, r7, r4
  800030a:	881b      	ldrh	r3, [r3, #0]
  800030c:	b2da      	uxtb	r2, r3
  800030e:	4baf      	ldr	r3, [pc, #700]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
  8000310:	725a      	strb	r2, [r3, #9]
-        erpa_buf[10] = ((PB1 & 0xFF00) >> 8); // TEMPURATURE 2 MSB
+        erpa_buf[10] = ((PB1 & 0xFF00) >> 8);     		// TEMPURATURE 2 MSB
  8000312:	197b      	adds	r3, r7, r5
  8000314:	881b      	ldrh	r3, [r3, #0]
  8000316:	0a1b      	lsrs	r3, r3, #8
@@ -413,7 +413,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  800031a:	b2da      	uxtb	r2, r3
  800031c:	4bab      	ldr	r3, [pc, #684]	; (80005cc <HAL_TIM_OC_DelayElapsedCallback+0x388>)
  800031e:	729a      	strb	r2, [r3, #10]
-        erpa_buf[11] = (PB1 & 0xFF);          // TEMPURATURE 2 LSB
+        erpa_buf[11] = (PB1 & 0xFF);                    // TEMPURATURE 2 LSB
  8000320:	197b      	adds	r3, r7, r5
  8000322:	881b      	ldrh	r3, [r3, #0]
  8000324:	b2da      	uxtb	r2, r3
@@ -1122,7 +1122,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  8000796:	b2da      	uxtb	r2, r3
  8000798:	4b66      	ldr	r3, [pc, #408]	; (8000934 <HAL_TIM_OC_DelayElapsedCallback+0x6f0>)
  800079a:	74da      	strb	r2, [r3, #19]
-          hk_buf[20] = ((PC0 & 0xFF00) >> 8);      // 2v5_mon MSB			7 2V5_MON PC0
+          hk_buf[20] = ((PC0 & 0xFF00) >> 8);      	// 2v5_mon MSB			7 2V5_MON PC0
  800079c:	211a      	movs	r1, #26
  800079e:	187b      	adds	r3, r7, r1
  80007a0:	881b      	ldrh	r3, [r3, #0]
@@ -1131,7 +1131,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  80007a6:	b2da      	uxtb	r2, r3
  80007a8:	4b62      	ldr	r3, [pc, #392]	; (8000934 <HAL_TIM_OC_DelayElapsedCallback+0x6f0>)
  80007aa:	751a      	strb	r2, [r3, #20]
-          hk_buf[21] = (PC0 & 0xFF);               // 2v5_mon LSB
+          hk_buf[21] = (PC0 & 0xFF);               	// 2v5_mon LSB
  80007ac:	187b      	adds	r3, r7, r1
  80007ae:	881b      	ldrh	r3, [r3, #0]
  80007b0:	b2da      	uxtb	r2, r3
@@ -1151,7 +1151,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  80007c8:	b2da      	uxtb	r2, r3
  80007ca:	4b5a      	ldr	r3, [pc, #360]	; (8000934 <HAL_TIM_OC_DelayElapsedCallback+0x6f0>)
  80007cc:	75da      	strb	r2, [r3, #23]
-          hk_buf[24] = ((PC2 & 0xFF00) >> 8);      // 5v_mon MSB			9 5V_MON PC2
+          hk_buf[24] = ((PC2 & 0xFF00) >> 8);      	// 5v_mon MSB			9 5V_MON PC2
  80007ce:	2016      	movs	r0, #22
  80007d0:	183b      	adds	r3, r7, r0
  80007d2:	881b      	ldrh	r3, [r3, #0]
@@ -1160,13 +1160,13 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  80007d8:	b2da      	uxtb	r2, r3
  80007da:	4b56      	ldr	r3, [pc, #344]	; (8000934 <HAL_TIM_OC_DelayElapsedCallback+0x6f0>)
  80007dc:	761a      	strb	r2, [r3, #24]
-          hk_buf[25] = (PC2 & 0xFF);               // 5v_mon LSB
+          hk_buf[25] = (PC2 & 0xFF);               	// 5v_mon LSB
  80007de:	183b      	adds	r3, r7, r0
  80007e0:	881b      	ldrh	r3, [r3, #0]
  80007e2:	b2da      	uxtb	r2, r3
  80007e4:	4b53      	ldr	r3, [pc, #332]	; (8000934 <HAL_TIM_OC_DelayElapsedCallback+0x6f0>)
  80007e6:	765a      	strb	r2, [r3, #25]
-          hk_buf[26] = ((PC3 & 0xFF00) >> 8);      // n3v3_mon MSB			10 N3V3_MON PC3
+          hk_buf[26] = ((PC3 & 0xFF00) >> 8);      	// n3v3_mon MSB			10 N3V3_MON PC3
  80007e8:	2014      	movs	r0, #20
  80007ea:	183b      	adds	r3, r7, r0
  80007ec:	881b      	ldrh	r3, [r3, #0]
@@ -1175,13 +1175,13 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  80007f2:	b2da      	uxtb	r2, r3
  80007f4:	4b4f      	ldr	r3, [pc, #316]	; (8000934 <HAL_TIM_OC_DelayElapsedCallback+0x6f0>)
  80007f6:	769a      	strb	r2, [r3, #26]
-          hk_buf[27] = (PC3 & 0xFF);               // n3v3_mon LSB
+          hk_buf[27] = (PC3 & 0xFF);               	// n3v3_mon LSB
  80007f8:	183b      	adds	r3, r7, r0
  80007fa:	881b      	ldrh	r3, [r3, #0]
  80007fc:	b2da      	uxtb	r2, r3
  80007fe:	4b4d      	ldr	r3, [pc, #308]	; (8000934 <HAL_TIM_OC_DelayElapsedCallback+0x6f0>)
  8000800:	76da      	strb	r2, [r3, #27]
-          hk_buf[28] = ((PC1 & 0xFF00) >> 8);      // n5v_mon MSB			8 N5V_MON PC1
+          hk_buf[28] = ((PC1 & 0xFF00) >> 8);      	// n5v_mon MSB			8 N5V_MON PC1
  8000802:	2118      	movs	r1, #24
  8000804:	187b      	adds	r3, r7, r1
  8000806:	881b      	ldrh	r3, [r3, #0]
@@ -1190,13 +1190,13 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  800080c:	b2da      	uxtb	r2, r3
  800080e:	4b49      	ldr	r3, [pc, #292]	; (8000934 <HAL_TIM_OC_DelayElapsedCallback+0x6f0>)
  8000810:	771a      	strb	r2, [r3, #28]
-          hk_buf[29] = (PC1 & 0xFF);               // n5v_mon LSB
+          hk_buf[29] = (PC1 & 0xFF);               	// n5v_mon LSB
  8000812:	187b      	adds	r3, r7, r1
  8000814:	881b      	ldrh	r3, [r3, #0]
  8000816:	b2da      	uxtb	r2, r3
  8000818:	4b46      	ldr	r3, [pc, #280]	; (8000934 <HAL_TIM_OC_DelayElapsedCallback+0x6f0>)
  800081a:	775a      	strb	r2, [r3, #29]
-          hk_buf[30] = ((PC5 & 0xFF00) >> 8);      // 15v_mon MSB			12 15V_MON PC5
+          hk_buf[30] = ((PC5 & 0xFF00) >> 8);      	// 15v_mon MSB			12 15V_MON PC5
  800081c:	2110      	movs	r1, #16
  800081e:	187b      	adds	r3, r7, r1
  8000820:	881b      	ldrh	r3, [r3, #0]
@@ -1205,13 +1205,13 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  8000826:	b2da      	uxtb	r2, r3
  8000828:	4b42      	ldr	r3, [pc, #264]	; (8000934 <HAL_TIM_OC_DelayElapsedCallback+0x6f0>)
  800082a:	779a      	strb	r2, [r3, #30]
-          hk_buf[31] = (PC5 & 0xFF);               // 15v_mon LSB
+          hk_buf[31] = (PC5 & 0xFF);               	// 15v_mon LSB
  800082c:	187b      	adds	r3, r7, r1
  800082e:	881b      	ldrh	r3, [r3, #0]
  8000830:	b2da      	uxtb	r2, r3
  8000832:	4b40      	ldr	r3, [pc, #256]	; (8000934 <HAL_TIM_OC_DelayElapsedCallback+0x6f0>)
  8000834:	77da      	strb	r2, [r3, #31]
-          hk_buf[32] = ((PC4 & 0xFF00) >> 8);      // 5vref_mon MSB		11 5VREF_MON PC4
+          hk_buf[32] = ((PC4 & 0xFF00) >> 8);      	// 5vref_mon MSB		11 5VREF_MON PC4
  8000836:	2012      	movs	r0, #18
  8000838:	183b      	adds	r3, r7, r0
  800083a:	881b      	ldrh	r3, [r3, #0]
@@ -1221,14 +1221,14 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  8000842:	4b3c      	ldr	r3, [pc, #240]	; (8000934 <HAL_TIM_OC_DelayElapsedCallback+0x6f0>)
  8000844:	2220      	movs	r2, #32
  8000846:	5499      	strb	r1, [r3, r2]
-          hk_buf[33] = (PC4 & 0xFF);               // 5vref_mon LSB
+          hk_buf[33] = (PC4 & 0xFF);               	// 5vref_mon LSB
  8000848:	183b      	adds	r3, r7, r0
  800084a:	881b      	ldrh	r3, [r3, #0]
  800084c:	b2d9      	uxtb	r1, r3
  800084e:	4b39      	ldr	r3, [pc, #228]	; (8000934 <HAL_TIM_OC_DelayElapsedCallback+0x6f0>)
  8000850:	2221      	movs	r2, #33	; 0x21
  8000852:	5499      	strb	r1, [r3, r2]
-          hk_buf[34] = ((PA5 & 0xFF00) >> 8);      // n150v_mon MSB		5 N150V_MON PA5
+          hk_buf[34] = ((PA5 & 0xFF00) >> 8);      	// n150v_mon MSB		5 N150V_MON PA5
  8000854:	197b      	adds	r3, r7, r5
  8000856:	881b      	ldrh	r3, [r3, #0]
  8000858:	0a1b      	lsrs	r3, r3, #8
@@ -1237,14 +1237,14 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  800085e:	4b35      	ldr	r3, [pc, #212]	; (8000934 <HAL_TIM_OC_DelayElapsedCallback+0x6f0>)
  8000860:	2222      	movs	r2, #34	; 0x22
  8000862:	5499      	strb	r1, [r3, r2]
-          hk_buf[35] = (PA5 & 0xFF);               // n150v_mon LSB
+          hk_buf[35] = (PA5 & 0xFF);               	// n150v_mon LSB
  8000864:	197b      	adds	r3, r7, r5
  8000866:	881b      	ldrh	r3, [r3, #0]
  8000868:	b2d9      	uxtb	r1, r3
  800086a:	4b32      	ldr	r3, [pc, #200]	; (8000934 <HAL_TIM_OC_DelayElapsedCallback+0x6f0>)
  800086c:	2223      	movs	r2, #35	; 0x23
  800086e:	5499      	strb	r1, [r3, r2]
-          hk_buf[36] = ((PA6 & 0xFF00) >> 8);      // n800v_mon MSB		6 N800V_MON PA6
+          hk_buf[36] = ((PA6 & 0xFF00) >> 8);      	// n800v_mon MSB		6 N800V_MON PA6
  8000870:	19bb      	adds	r3, r7, r6
  8000872:	881b      	ldrh	r3, [r3, #0]
  8000874:	0a1b      	lsrs	r3, r3, #8
@@ -1253,7 +1253,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  800087a:	4b2e      	ldr	r3, [pc, #184]	; (8000934 <HAL_TIM_OC_DelayElapsedCallback+0x6f0>)
  800087c:	2224      	movs	r2, #36	; 0x24
  800087e:	5499      	strb	r1, [r3, r2]
-          hk_buf[37] = (PA6 & 0xFF);               // n800v_mon LSB
+          hk_buf[37] = (PA6 & 0xFF);               	// n800v_mon LSB
  8000880:	19bb      	adds	r3, r7, r6
  8000882:	881b      	ldrh	r3, [r3, #0]
  8000884:	b2d9      	uxtb	r1, r3
@@ -1407,7 +1407,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
  8000980:	681b      	ldr	r3, [r3, #0]
  8000982:	469f      	mov	pc, r3
   {
-
   case 'G':
   {
     HAL_GPIO_WritePin(gpios[8].gpio, gpios[8].pin, GPIO_PIN_SET);
@@ -4730,109 +4729,49 @@ void SystemInit(void)
 	...
 
 08001b60 <Reset_Handler>:
-
-  .section .text.Reset_Handler
-  .weak Reset_Handler
-  .type Reset_Handler, %function
-Reset_Handler:
-  ldr   r0, =_estack
  8001b60:	480d      	ldr	r0, [pc, #52]	; (8001b98 <LoopForever+0x2>)
-  mov   sp, r0          /* set stack pointer */
  8001b62:	4685      	mov	sp, r0
-
-/* Copy the data segment initializers from flash to SRAM */
-  ldr r0, =_sdata
  8001b64:	480d      	ldr	r0, [pc, #52]	; (8001b9c <LoopForever+0x6>)
-  ldr r1, =_edata
  8001b66:	490e      	ldr	r1, [pc, #56]	; (8001ba0 <LoopForever+0xa>)
-  ldr r2, =_sidata
  8001b68:	4a0e      	ldr	r2, [pc, #56]	; (8001ba4 <LoopForever+0xe>)
-  movs r3, #0
  8001b6a:	2300      	movs	r3, #0
-  b LoopCopyDataInit
  8001b6c:	e002      	b.n	8001b74 <LoopCopyDataInit>
 
 08001b6e <CopyDataInit>:
-
-CopyDataInit:
-  ldr r4, [r2, r3]
  8001b6e:	58d4      	ldr	r4, [r2, r3]
-  str r4, [r0, r3]
  8001b70:	50c4      	str	r4, [r0, r3]
-  adds r3, r3, #4
  8001b72:	3304      	adds	r3, #4
 
 08001b74 <LoopCopyDataInit>:
-
-LoopCopyDataInit:
-  adds r4, r0, r3
  8001b74:	18c4      	adds	r4, r0, r3
-  cmp r4, r1
  8001b76:	428c      	cmp	r4, r1
-  bcc CopyDataInit
  8001b78:	d3f9      	bcc.n	8001b6e <CopyDataInit>
-  
-/* Zero fill the bss segment. */
-  ldr r2, =_sbss
  8001b7a:	4a0b      	ldr	r2, [pc, #44]	; (8001ba8 <LoopForever+0x12>)
-  ldr r4, =_ebss
  8001b7c:	4c0b      	ldr	r4, [pc, #44]	; (8001bac <LoopForever+0x16>)
-  movs r3, #0
  8001b7e:	2300      	movs	r3, #0
-  b LoopFillZerobss
  8001b80:	e001      	b.n	8001b86 <LoopFillZerobss>
 
 08001b82 <FillZerobss>:
-
-FillZerobss:
-  str  r3, [r2]
  8001b82:	6013      	str	r3, [r2, #0]
-  adds r2, r2, #4
  8001b84:	3204      	adds	r2, #4
 
 08001b86 <LoopFillZerobss>:
-
-LoopFillZerobss:
-  cmp r2, r4
  8001b86:	42a2      	cmp	r2, r4
-  bcc FillZerobss
  8001b88:	d3fb      	bcc.n	8001b82 <FillZerobss>
-
-/* Call the clock system intitialization function.*/
-  bl  SystemInit
  8001b8a:	f7ff ffe3 	bl	8001b54 <SystemInit>
-/* Call static constructors */
-  bl __libc_init_array
  8001b8e:	f005 f88f 	bl	8006cb0 <__libc_init_array>
-/* Call the application's entry point.*/
-  bl main
  8001b92:	f7fe ffdd 	bl	8000b50 <main>
 
 08001b96 <LoopForever>:
-
-LoopForever:
-    b LoopForever
  8001b96:	e7fe      	b.n	8001b96 <LoopForever>
-  ldr   r0, =_estack
  8001b98:	20002000 	.word	0x20002000
-  ldr r0, =_sdata
  8001b9c:	20000000 	.word	0x20000000
-  ldr r1, =_edata
  8001ba0:	20000028 	.word	0x20000028
-  ldr r2, =_sidata
  8001ba4:	08006f44 	.word	0x08006f44
-  ldr r2, =_sbss
  8001ba8:	20000028 	.word	0x20000028
-  ldr r4, =_ebss
  8001bac:	200003e4 	.word	0x200003e4
 
 08001bb0 <ADC1_COMP_IRQHandler>:
- * @retval : None
-*/
-    .section .text.Default_Handler,"ax",%progbits
-Default_Handler:
-Infinite_Loop:
-  b Infinite_Loop
  8001bb0:	e7fe      	b.n	8001bb0 <ADC1_COMP_IRQHandler>
 	...
 
