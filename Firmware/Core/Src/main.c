@@ -83,7 +83,7 @@ const int adcChannelCount = sizeof(adcResultsDMA) / sizeof(adcResultsDMA[0]); //
 
 /* DAC Variables for SWP */
 /* uint32_t DAC_OUT[] = {0, 683, 1365, 2048, 2730, 3413}; */
-uint32_t DAC_OUT[8] = {0, 620, 1241, 1861,2482,3103, 3723, 4096}; // For 3.3 volts
+uint32_t DAC_OUT[8] = {0, 620, 1241, 1861, 2482, 3103, 3723, 4096}; // For 3.3 volts
 uint8_t step = 0;
 int up = 1;
 
