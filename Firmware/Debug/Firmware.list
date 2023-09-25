@@ -1454,10 +1454,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   }
   case '<':
   {
-    if (step < 5)
+    if (step < 7)
  80009bc:	4b5e      	ldr	r3, [pc, #376]	; (8000b38 <HAL_UART_RxCpltCallback+0x1dc>)
  80009be:	781b      	ldrb	r3, [r3, #0]
- 80009c0:	2b04      	cmp	r3, #4
+ 80009c0:	2b06      	cmp	r3, #6
  80009c2:	d900      	bls.n	80009c6 <HAL_UART_RxCpltCallback+0x6a>
  80009c4:	e0aa      	b.n	8000b1c <HAL_UART_RxCpltCallback+0x1c0>
     {
