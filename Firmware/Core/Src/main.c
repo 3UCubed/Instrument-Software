@@ -32,13 +32,8 @@ typedef struct
   uint16_t pin;
 } gpio_pins;
 const int HK_CADENCE = 1; //Should be set at 5
-int gpio_count = 0;
-int num_gpios = 10;
 const gpio_pins gpios[] = {{GPIOB, GPIO_PIN_5}, {GPIOB, GPIO_PIN_6}, {GPIOC, GPIO_PIN_10}, {GPIOC, GPIO_PIN_13}, {GPIOC, GPIO_PIN_7}, {GPIOC, GPIO_PIN_8}, {GPIOC, GPIO_PIN_9}, {GPIOC, GPIO_PIN_6}, {GPIOF, GPIO_PIN_6}, {GPIOF, GPIO_PIN_7}};
 
-const char *gpio_names[] =
-    {"sys_on PB5", "800v_en PB6", "5v_en PC10", "n150v_en PC13",
-     "3v3_en PC7", "n5v_en PC8", "15v_en PC9", "n3v3_en PC6", "SDN1 PF6", "SDN2 PF7"};
 
 /* USER CODE END PTD */
 
@@ -65,25 +60,25 @@ TIM_HandleTypeDef htim2;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-uint8_t data_in = 0;
 #define BUFFER_SIZE 100
 uint8_t rx_buf[BUFFER_SIZE];
-uint8_t rx_index;
 UART_WakeUpTypeDef WakeUpSelection;
 
 /* Hexadecimal Addresses for I2C Temperature Sensors */
+static const uint8_t I2C_addresses[4] = {(0x48 << 1), (0x4A << 1), (0x49 << 1), (0x4B << 1)};
 static const uint8_t ADT7410_1 = 0x48 << 1;
 static const uint8_t ADT7410_2 = 0x4A << 1;
 static const uint8_t ADT7410_3 = 0x49 << 1;
 static const uint8_t ADT7410_4 = 0x4B << 1;
 
 /* Internal ADC DMA variables */
-volatile uint16_t adcResultsDMA[17]; // array to store results of Internal ADC Poll (not sure if it has to be "volatile")
+#define ADCRESULTSDMA_LENGTH 17
+volatile uint16_t adcResultsDMA[ADCRESULTSDMA_LENGTH]; // array to store results of Internal ADC Poll (not sure if it has to be "volatile")
 const int adcChannelCount = sizeof(adcResultsDMA) / sizeof(adcResultsDMA[0]); // variable to store the number of ADCs in use
 
 /* DAC Variables for SWP */
 /* uint32_t DAC_OUT[] = {0, 683, 1365, 2048, 2730, 3413}; */
-uint32_t DAC_OUT[] = {0, 620, 1241, 1861,2482,3103}; // For 3.3 volts
+uint32_t DAC_OUT[8] = {0, 620, 1241, 1861,2482,3103, 3723, 4096}; // For 3.3 volts
 uint8_t step = 0;
 int up = 1;
 
@@ -415,7 +410,6 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
         pmt_buf[1] = pmt_sync;
         pmt_buf[2] = ((pmt_seq & 0xFF00) >> 8);
         pmt_buf[3] = (pmt_seq & 0xFF);
-        ;
         pmt_buf[4] = ((pmt_raw & 0xFF00) >> 8);
         pmt_buf[5] = (pmt_raw & 0xFF);
 
@@ -664,31 +658,31 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-//	  // ERPA adc handling
-//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
-//
-//      HAL_SPI_Transmit(&hspi1, (uint8_t *)&WRITE, 1, 1);
-//
-//      while (!(SPI2->SR))
-//        ;
-//
-//      erpa_raw = SPI2->DR;
-//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
-//
-//
-//      // PMT adc handling
-//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
-//
-//	  HAL_SPI_Transmit(&hspi2, (uint8_t*) &WRITE, 1, 1);
-//	  while (!(SPI1->SR));
-//	  pmt_raw = SPI1->DR;
-//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
-//
-//	  HAL_Delay(100);
-//
-//
-//
-//
+	  // ERPA adc handling
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+
+      HAL_SPI_Transmit(&hspi1, (uint8_t *)&WRITE, 1, 1);
+
+      while (!(SPI2->SR))
+        ;
+
+      erpa_raw = SPI2->DR;
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
+
+
+      // PMT adc handling
+	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
+
+	  HAL_SPI_Transmit(&hspi2, (uint8_t*) &WRITE, 1, 1);
+	  while (!(SPI1->SR));
+	  pmt_raw = SPI1->DR;
+	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
+
+	  HAL_Delay(100);
+
+
+
+
 	HAL_UART_Receive_IT(&huart1, rx_buf, 1);
 
     HAL_UART_Receive(&huart1, rx_buf, 1, 0);
