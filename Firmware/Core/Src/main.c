@@ -32,13 +32,8 @@ typedef struct
   uint16_t pin;
 } gpio_pins;
 const int HK_CADENCE = 1; //Should be set at 5
-int gpio_count = 0;
-int num_gpios = 10;
 const gpio_pins gpios[] = {{GPIOB, GPIO_PIN_5}, {GPIOB, GPIO_PIN_6}, {GPIOC, GPIO_PIN_10}, {GPIOC, GPIO_PIN_13}, {GPIOC, GPIO_PIN_7}, {GPIOC, GPIO_PIN_8}, {GPIOC, GPIO_PIN_9}, {GPIOC, GPIO_PIN_6}, {GPIOF, GPIO_PIN_6}, {GPIOF, GPIO_PIN_7}};
 
-const char *gpio_names[] =
-    {"sys_on PB5", "800v_en PB6", "5v_en PC10", "n150v_en PC13",
-     "3v3_en PC7", "n5v_en PC8", "15v_en PC9", "n3v3_en PC6", "SDN1 PF6", "SDN2 PF7"};
 
 /* USER CODE END PTD */
 
@@ -65,20 +60,20 @@ TIM_HandleTypeDef htim2;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-uint8_t data_in = 0;
 #define BUFFER_SIZE 100
 uint8_t rx_buf[BUFFER_SIZE];
-uint8_t rx_index;
 UART_WakeUpTypeDef WakeUpSelection;
 
 /* Hexadecimal Addresses for I2C Temperature Sensors */
+static const uint8_t I2C_addresses[4] = {(0x48 << 1), (0x4A << 1), (0x49 << 1), (0x4B << 1)};
 static const uint8_t ADT7410_1 = 0x48 << 1;
 static const uint8_t ADT7410_2 = 0x4A << 1;
 static const uint8_t ADT7410_3 = 0x49 << 1;
 static const uint8_t ADT7410_4 = 0x4B << 1;
 
 /* Internal ADC DMA variables */
-volatile uint16_t adcResultsDMA[17]; // array to store results of Internal ADC Poll (not sure if it has to be "volatile")
+#define ADCRESULTSDMA_LENGTH 17
+volatile uint16_t adcResultsDMA[ADCRESULTSDMA_LENGTH]; // array to store results of Internal ADC Poll (not sure if it has to be "volatile")
 const int adcChannelCount = sizeof(adcResultsDMA) / sizeof(adcResultsDMA[0]); // variable to store the number of ADCs in use
 
 /* DAC Variables for SWP */
