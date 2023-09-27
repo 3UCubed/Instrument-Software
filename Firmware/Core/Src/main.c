@@ -150,7 +150,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
   {
     if (1)
     { // check pin state
-      if (ERPA_ON)
+      if (1)
       {
         /**
          * TIM1_CH1 Interrupt
@@ -664,31 +664,31 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  // ERPA adc handling
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
-
-      HAL_SPI_Transmit(&hspi1, (uint8_t *)&WRITE, 1, 1);
-
-      while (!(SPI2->SR))
-        ;
-
-      erpa_raw = SPI2->DR;
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
-
-
-      // PMT adc handling
-	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
-
-	  HAL_SPI_Transmit(&hspi2, (uint8_t*) &WRITE, 1, 1);
-	  while (!(SPI1->SR));
-	  pmt_raw = SPI1->DR;
-	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
-
-	  HAL_Delay(100);
-
-
-
-
+//	  // ERPA adc handling
+//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+//
+//      HAL_SPI_Transmit(&hspi1, (uint8_t *)&WRITE, 1, 1);
+//
+//      while (!(SPI2->SR))
+//        ;
+//
+//      erpa_raw = SPI2->DR;
+//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
+//
+//
+//      // PMT adc handling
+//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
+//
+//	  HAL_SPI_Transmit(&hspi2, (uint8_t*) &WRITE, 1, 1);
+//	  while (!(SPI1->SR));
+//	  pmt_raw = SPI1->DR;
+//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
+//
+//	  HAL_Delay(100);
+//
+//
+//
+//
 	HAL_UART_Receive_IT(&huart1, rx_buf, 1);
 
     HAL_UART_Receive(&huart1, rx_buf, 1, 0);
