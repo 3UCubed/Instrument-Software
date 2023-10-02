@@ -19,13 +19,16 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include <stdlib.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+typedef struct erpa_data erpa_data;
+typedef struct pmt_data pmt_data;
+typedef struct hk_data hk_data;
 typedef struct
 {
   GPIO_TypeDef *gpio;
@@ -34,6 +37,10 @@ typedef struct
 const int HK_CADENCE = 1; //Should be set at 5
 const gpio_pins gpios[] = {{GPIOB, GPIO_PIN_5}, {GPIOB, GPIO_PIN_6}, {GPIOC, GPIO_PIN_10}, {GPIOC, GPIO_PIN_13}, {GPIOC, GPIO_PIN_7}, {GPIOC, GPIO_PIN_8}, {GPIOC, GPIO_PIN_9}, {GPIOC, GPIO_PIN_6}, {GPIOF, GPIO_PIN_6}, {GPIOF, GPIO_PIN_7}};
 
+struct pmt_data {
+	int pmt_raw;
+	int pmt_seq;
+};
 
 /* USER CODE END PTD */
 
@@ -132,6 +139,23 @@ static void MX_I2C1_Init(void);
 // #define TS_CAL1 *((uint16_t*) 0x1FFFF7B8)
 // #define TS_CAL2 *((uint16_t*) 0x1FFFF7C2)
 
+
+uint8_t* fill_pmt_data(pmt_data data) {
+	uint8_t* ret = (uint8_t*)malloc(6 * sizeof(uint8_t));
+
+	if (ret == NULL) {
+		// Handle memory allocation failure
+		return NULL;
+	}
+
+	ret[0] = pmt_sync;
+	ret[1] = pmt_sync;
+	ret[2] = ((data.pmt_seq & 0xFF00) >> 8);
+	ret[3] = (data.pmt_seq & 0xFF);
+	ret[4] = ((data.pmt_raw & 0xFF00) >> 8);
+	ret[5] = (data.pmt_raw & 0xFF);
+	return ret;
+}
 
 /**
  * Timer interrupt function
@@ -406,16 +430,23 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
         raw = SPI2->DR;
         */
 
-        pmt_buf[0] = pmt_sync;
-        pmt_buf[1] = pmt_sync;
-        pmt_buf[2] = ((pmt_seq & 0xFF00) >> 8);
-        pmt_buf[3] = (pmt_seq & 0xFF);
-        ;
-        pmt_buf[4] = ((pmt_raw & 0xFF00) >> 8);
-        pmt_buf[5] = (pmt_raw & 0xFF);
+    	/*
+    	pmt_data data;
+    	data.pmt_raw = raw;
+    	data.pmt_seq = pmt_seq;
 
-        pmt_seq++;
-        HAL_UART_Transmit(&huart1, pmt_buf, sizeof(pmt_buf), 100);
+    	uint8_t* abstraction_test_buf = fill_pmt_data(data);
+    	*/
+    	  pmt_buf[0] = pmt_sync;
+		  pmt_buf[1] = pmt_sync;
+		  pmt_buf[2] = ((pmt_seq & 0xFF00) >> 8);
+		  pmt_buf[3] = (pmt_seq & 0xFF);
+		  pmt_buf[4] = ((pmt_raw & 0xFF00) >> 8);
+		  pmt_buf[5] = (pmt_raw & 0xFF);
+
+		  pmt_seq++;
+		  HAL_UART_Transmit(&huart1, pmt_buf, sizeof(pmt_buf), 100);
+		  /*HAL_UART_Transmit(&huart1, abstraction_test_buf, sizeof(abstraction_test_buf), 100);*/
       }
     }
   }
