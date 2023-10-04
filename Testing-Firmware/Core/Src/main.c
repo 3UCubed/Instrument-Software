@@ -26,27 +26,21 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef struct gpio gpio;
-struct gpio
+typedef struct erpa_data erpa_data;
+typedef struct pmt_data pmt_data;
+typedef struct hk_data hk_data;
+typedef struct
 {
   GPIO_TypeDef *gpio;
   uint16_t pin;
-};
+} gpio_pins;
 const int HK_CADENCE = 1; //Should be set at 5
-/* Define GPIOs */
-gpio _SYS_ON = {GPIOB, GPIO_PIN_5};
-gpio _3V3_EN = {GPIOC, GPIO_PIN_7};
-gpio _5V_EN = {GPIOC, GPIO_PIN_10};
-gpio _N3V3_EN = {GPIOC, GPIO_PIN_6};
-gpio _N5V_EN = {GPIOC, GPIO_PIN_8};
-gpio _15V_EN = {GPIOC, GPIO_PIN_9};
-gpio _N200V_EN = {GPIOC, GPIO_PIN_13};
-gpio _N800V_EN = {GPIOB, GPIO_PIN_6};
-gpio _SDN1 = {GPIOF, GPIO_PIN_6};
-gpio _SDN2 = {GPIOF, GPIO_PIN_7};
-const gpio gpios[] = {_SYS_ON, _3V3_EN, _5V_EN, _N3V3_EN, _N5V_EN, _15V_EN, _N200V_EN, _N800V_EN, _SDN1, _SDN2};
-/* const gpio gpios[] = {{GPIOB, GPIO_PIN_5}, {GPIOB, GPIO_PIN_6}, {GPIOC, GPIO_PIN_10}, {GPIOC, GPIO_PIN_13}, {GPIOC, GPIO_PIN_7}, {GPIOC, GPIO_PIN_8}, {GPIOC, GPIO_PIN_9}, {GPIOC, GPIO_PIN_6}, {GPIOF, GPIO_PIN_6}, {GPIOF, GPIO_PIN_7}}; */
+const gpio_pins gpios[] = {{GPIOB, GPIO_PIN_5}, {GPIOB, GPIO_PIN_6}, {GPIOC, GPIO_PIN_10}, {GPIOC, GPIO_PIN_13}, {GPIOC, GPIO_PIN_7}, {GPIOC, GPIO_PIN_8}, {GPIOC, GPIO_PIN_9}, {GPIOC, GPIO_PIN_6}, {GPIOF, GPIO_PIN_6}, {GPIOF, GPIO_PIN_7}};
 
+struct pmt_data {
+	int pmt_raw;
+	int pmt_seq;
+};
 
 /* USER CODE END PTD */
 
@@ -60,40 +54,19 @@ const gpio gpios[] = {_SYS_ON, _3V3_EN, _5V_EN, _N3V3_EN, _N5V_EN, _15V_EN, _N20
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-
-/* Min and Max variables for internal ADC checks */
-uint16_t PA1_min = 0;
-uint16_t PA1_max = 0;
-uint16_t PA2_min = 0;
-uint16_t PA2_max = 0;
-uint16_t PA3_min = 0;
-uint16_t PA3_max = 0;
-uint16_t PA5_min = 0;
-uint16_t PA5_max = 0;
-uint16_t PA6_min = 0;
-uint16_t PA6_max = 0;
-uint16_t PC0_min = 0;
-uint16_t PC0_max = 0;
-uint16_t PC1_min = 0;
-uint16_t PC1_max = 0;
-uint16_t PC2_min = 0;
-uint16_t PC2_max = 0;
-uint16_t PC3_min = 0;
-uint16_t PC3_max = 0;
-uint16_t PC4_min = 0;
-uint16_t PC4_max = 0;
-uint16_t PC5_min = 0;
-uint16_t PC5_max = 0;
-
-/* Definition for any peripherals setup in CubeMX */
 ADC_HandleTypeDef hadc;
 DMA_HandleTypeDef hdma_adc;
+
 DAC_HandleTypeDef hdac1;
+
 I2C_HandleTypeDef hi2c1;
+
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
+
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
+
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
@@ -115,7 +88,7 @@ const int adcChannelCount = sizeof(adcResultsDMA) / sizeof(adcResultsDMA[0]); //
 
 /* DAC Variables for SWP */
 /* uint32_t DAC_OUT[] = {0, 683, 1365, 2048, 2730, 3413}; */
-uint32_t DAC_OUT[8] = {0, 620, 1241, 1861, 2482, 3103, 3723, 4095}; // For 3.3 volts
+uint32_t DAC_OUT[8] = {0, 620, 1241, 1861,2482,3103, 3723, 4096}; // For 3.3 volts
 uint8_t step = 0;
 int up = 1;
 
@@ -170,6 +143,23 @@ static void MX_I2C1_Init(void);
 // #define TS_CAL2 *((uint16_t*) 0x1FFFF7C2)
 
 
+uint8_t* fill_pmt_data(pmt_data data) {
+	uint8_t* ret = (uint8_t*)malloc(6 * sizeof(uint8_t));
+
+	if (ret == NULL) {
+		// Handle memory allocation failure
+		return NULL;
+	}
+
+	ret[0] = pmt_sync;
+	ret[1] = pmt_sync;
+	ret[2] = ((data.pmt_seq & 0xFF00) >> 8);
+	ret[3] = (data.pmt_seq & 0xFF);
+	ret[4] = ((data.pmt_raw & 0xFF00) >> 8);
+	ret[5] = (data.pmt_raw & 0xFF);
+	return ret;
+}
+
 /**
  * Timer interrupt function
  * This is where packets are sent
@@ -182,7 +172,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
   {
     if (1)
     { // check pin state
-      if (1)
+      if (ERPA_ON)
       {
         /**
          * TIM1_CH1 Interrupt
@@ -352,86 +342,17 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
           HAL_ADC_Start_DMA(&hadc, (uint32_t *)adcResultsDMA,
                             adcChannelCount);
 
-          /*
-		  uint16_t PA1 = adcResultsDMA[1];       // ADC_IN1, BUS_Vmon: instrument bus voltage monitor
-		  if (PA1 < PA1_min || PA1 > PA1_max) {
-			  // Turn off corresponding GPIO --> SYS_ON --> PB5
-			  HAL_GPIO_WritePin(_SYS_ON.gpio, _SYS_ON.pin, GPIO_PIN_RESET);
-			  // Reset system
-			  NVIC_SystemReset();
-		  }
-		  uint16_t PA2 = adcResultsDMA[2];       // ADC_IN2, BUS_Imon: instrument bus current monitor
-		  if (PA2 < PA2_min || PA1 > PA2_max) {
-			  // Turn off corresponding GPIO --> SYS_ON --> PB5
-			  HAL_GPIO_WritePin(_SYS_ON.gpio, _SYS_ON_.pin, GPIO_PIN_RESET);
-			  // Reset system
-			  NVIC_SystemReset();
-		   }
-		  uint16_t PA3 = adcResultsDMA[3];       // ADC_IN3, 3v3_mon: Accurate 5V for ADC monitor
-		  if (PA3 < PA3_min || PA3 > PA3_max) {
-			  // Turn off corresponding GPIO --> 3v3_EN --> PC7
-			  HAL_GPIO_WritePin(_3V3_EN.gpio, _3V3_EN.pin, GPIO_PIN_RESET);
-			  // Reset system
-			  NVIC_SystemReset();
-		   }
-          uint16_t PA5 = adcResultsDMA[4];       // ADC_IN5, n200v_mon: n200 voltage monitor
-          if (PA5 < PA5_min || PA5 > PA5_max) {
-			  // Turn off corresponding GPIO --> n200v_EN --> PC13
-        	  HAL_GPIO_WritePin(_N200V_EN.gpio, _N200V_EN.pin, GPIO_PIN_RESET);
-			  // Reset system
-        	  NVIC_SystemReset();
-          }
+          uint16_t PA1 = adcResultsDMA[1];       // ADC_IN1, BUS_Vmon: instrument bus voltage monitor
+          uint16_t PA2 = adcResultsDMA[2];       // ADC_IN2, BUS_Imon: instrument bus current monitor
+          uint16_t PA3 = adcResultsDMA[3];       // ADC_IN3, 3v3_mon: Accurate 5V for ADC monitor
+          uint16_t PA5 = adcResultsDMA[4];       // ADC_IN5, n150v_mon: n150 voltage monitor
           uint16_t PA6 = adcResultsDMA[5];       // ADC_IN6, n800v_mon: n800 voltage monitor
-          if (PA6 < PA6_min || PA6 > PA6_max) {
-			  // Turn off corresponding GPIO --> 800HVON --> PB6
-        	  HAL_GPIO_WritePin(_N800V_EN.gpio, _N800V_EN.pin, GPIO_PIN_RESET);
-			  // Reset system
-        	  NVIC_SystemReset();
-		  }
           uint16_t PC0 = adcResultsDMA[9];       // ADC_IN10, 2v5_mon: 2.5v voltage monitor
-          if (PC0 < PC0_min || PC0 > PC0_max) {
-			  // Turn off corresponding GPIO --> SYS_ON (No corresponding EN) --> PB5
-        	  HAL_GPIO_WritePin(_SYS_ON.gpio, _SYS_ON.pin, GPIO_PIN_RESET);
-			  // Reset system
-        	  NVIC_SystemReset();
-		  }
           uint16_t PC1 = adcResultsDMA[10];      // ADC_IN11, n5v_mon: n5v voltage monitor
-          if (PC1 < PC1_min || PC1 > PC1_max) {
-			  // Turn off corresponding GPIO --> n5v_EN --> PC8
-        	  HAL_GPIO_WritePin(_N5V_EN.gpio, _N5V_EN.pin, GPIO_PIN_RESET);
-			  // Reset system
-        	  NVIC_SystemReset();
-		  }
           uint16_t PC2 = adcResultsDMA[11];      // ADC_IN12, 5v_mon: 5v voltage monitor
-          if (PC2 < PC2_min || PC2 > PC2_max) {
-			  // Turn off corresponding GPIO --> 5v_EN --> PC10
-        	  HAL_GPIO_WritePin(_5V_EN.gpio, _5V_EN.pin, GPIO_PIN_RESET);
-			  // Reset system
-        	  NVIC_SystemReset();
-		  }
           uint16_t PC3 = adcResultsDMA[12];      // ADC_IN13, n3v3_mon: n3v3 voltage monitor
-          if (PC3 < PC3_min || PC3 > PC3_max) {
-			  // Turn off corresponding GPIO --> n3v3_EN --> PC6
-        	  HAL_GPIO_WritePin(_N3V3_EN.gpio, _N3V3_EN.pin, GPIO_PIN_RESET);
-			  // Reset system
-        	  NVIC_SystemReset();
-		  }
           uint16_t PC4 = adcResultsDMA[13];      // ADC_IN14, 5vref_mon: 5v reference voltage monitor
-          if (PC4 < PC4_min || PC4 > PC4_max) {
-			  // Turn off corresponding GPIO --> 15v_EN --> PC9
-        	  HAL_GPIO_WritePin(_15V_EN.gpio, _15V_EN.pin, GPIO_PIN_RESET);
-			  // Reset system
-        	  NVIC_SystemReset();
-		  }
           uint16_t PC5 = adcResultsDMA[14];      // ADC_IN15, 15v_mon: 15v voltage monitor
-          if (PC5 < PC5_min || PC5 > PC5_max) {
-			  // Turn off corresponding GPIO --> 15v_EN --> PC9
-        	  gpio _3V3_EN = {GPIOC, GPIO_PIN_7};
-			  // Reset system
-        	  NVIC_SystemReset();
-		  }
-		  */
-
           uint16_t MCU_TEMP = adcResultsDMA[15]; //(internally connected) ADC_IN16, VSENSE
           uint16_t MCU_VREF = adcResultsDMA[16]; //(internally connected) ADC_IN17, VREFINT
 
@@ -512,15 +433,23 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
         raw = SPI2->DR;
         */
 
-        pmt_buf[0] = pmt_sync;
-        pmt_buf[1] = pmt_sync;
-        pmt_buf[2] = ((pmt_seq & 0xFF00) >> 8);
-        pmt_buf[3] = (pmt_seq & 0xFF);
-        pmt_buf[4] = ((pmt_raw & 0xFF00) >> 8);
-        pmt_buf[5] = (pmt_raw & 0xFF);
+    	/*
+    	pmt_data data;
+    	data.pmt_raw = raw;
+    	data.pmt_seq = pmt_seq;
 
-        pmt_seq++;
-        HAL_UART_Transmit(&huart1, pmt_buf, sizeof(pmt_buf), 100);
+    	uint8_t* abstraction_test_buf = fill_pmt_data(data);
+    	*/
+    	  pmt_buf[0] = pmt_sync;
+		  pmt_buf[1] = pmt_sync;
+		  pmt_buf[2] = ((pmt_seq & 0xFF00) >> 8);
+		  pmt_buf[3] = (pmt_seq & 0xFF);
+		  pmt_buf[4] = ((pmt_raw & 0xFF00) >> 8);
+		  pmt_buf[5] = (pmt_raw & 0xFF);
+
+		  pmt_seq++;
+		  HAL_UART_Transmit(&huart1, pmt_buf, sizeof(pmt_buf), 100);
+		  /*HAL_UART_Transmit(&huart1, abstraction_test_buf, sizeof(abstraction_test_buf), 100);*/
       }
     }
   }
@@ -559,7 +488,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   }
   case '<':
   {
-    if (step < 7)
+    if (step < 5)
     {
       step++;
     }
@@ -735,14 +664,9 @@ int main(void)
   MX_DAC1_Init();
   MX_ADC_Init();
   MX_I2C1_Init();
-
   /* USER CODE BEGIN 2 */
-  HAL_DAC_Start(&hdac1, DAC_CHANNEL_1);
 
-  /* Pull All GPIOS Low at the begin */
-  for (int i = 0; i < (sizeof(gpios) / sizeof(gpios[0])); i++) {
-	  HAL_GPIO_WritePin(gpios[i].gpio, gpios[i].pin, GPIO_PIN_RESET);
-  }
+  HAL_DAC_Start(&hdac1, DAC_CHANNEL_1);
 
   /* Start Timers with OC & Interrupt */
   HAL_TIM_OC_Start_IT(&htim1, TIM_CHANNEL_1);
@@ -772,15 +696,16 @@ int main(void)
 	  // ERPA adc handling
 	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
 
-	  HAL_SPI_Transmit(&hspi1, (uint8_t *)&WRITE, 1, 1);
+      HAL_SPI_Transmit(&hspi1, (uint8_t *)&WRITE, 1, 1);
 
-	  while (!(SPI2->SR))
-		;
+      while (!(SPI2->SR))
+        ;
 
-	  erpa_raw = SPI2->DR;
+      erpa_raw = SPI2->DR;
 	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
 
-	  // PMT adc handling
+
+      // PMT adc handling
 	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
 
 	  HAL_SPI_Transmit(&hspi2, (uint8_t*) &WRITE, 1, 1);
@@ -790,13 +715,16 @@ int main(void)
 
 	  HAL_Delay(100);
 
-	  HAL_UART_Receive_IT(&huart1, rx_buf, 1);
 
-	  HAL_UART_Receive(&huart1, rx_buf, 1, 0);
-	  //HAL_UART_RxCpltCallback(&huart1);
-	  /* USER CODE END WHILE */
 
-	  /* USER CODE BEGIN 3 */
+
+	HAL_UART_Receive_IT(&huart1, rx_buf, 1);
+
+    HAL_UART_Receive(&huart1, rx_buf, 1, 0);
+    //HAL_UART_RxCpltCallback(&huart1);
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
   }
 
   /* USER CODE END 3 */

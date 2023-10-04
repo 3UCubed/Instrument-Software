@@ -1,7 +1,4 @@
 #MicroXplorer Configuration settings - do not modify
-CAD.formats=
-CAD.pinconfig=
-CAD.provider=
 DAC1.DAC_OutputBuffer=DAC_OUTPUTBUFFER_ENABLE
 DAC1.IPParameters=DAC_OutputBuffer
 Dma.ADC.0.Direction=DMA_PERIPH_TO_MEMORY
@@ -220,14 +217,14 @@ ProjectManager.FreePins=false
 ProjectManager.HalAssertFull=false
 ProjectManager.HeapSize=0x200
 ProjectManager.KeepUserCode=true
-ProjectManager.LastFirmware=true
+ProjectManager.LastFirmware=false
 ProjectManager.LibraryCopy=1
 ProjectManager.MainLocation=Core/Src
 ProjectManager.NoMain=false
 ProjectManager.PreviousToolchain=STM32CubeIDE
 ProjectManager.ProjectBuild=false
-ProjectManager.ProjectFileName=Firmware.ioc
-ProjectManager.ProjectName=Firmware
+ProjectManager.ProjectFileName=Testing-Firmware.ioc
+ProjectManager.ProjectName=Testing-Firmware
 ProjectManager.RegisterCallBack=
 ProjectManager.StackSize=0x400
 ProjectManager.TargetToolchain=STM32CubeIDE

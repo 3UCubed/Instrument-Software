@@ -34,39 +34,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := Firmware
+BUILD_ARTIFACT_NAME := Testing-Firmware
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-Firmware.elf \
+Testing-Firmware.elf \
 
 MAP_FILES += \
-Firmware.map \
+Testing-Firmware.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-Firmware.list \
+Testing-Firmware.list \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: Firmware.elf secondary-outputs
+main-build: Testing-Firmware.elf secondary-outputs
 
 # Tool invocations
-<<<<<<< HEAD:Firmware/Debug/makefile
-Firmware.elf Firmware.map: $(OBJS) $(USER_OBJS) /Users/shanewoods/cubesat/workspace/Instrument-Software/Firmware/STM32F051R8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Firmware.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"/Users/shanewoods/cubesat/workspace/Instrument-Software/Firmware/STM32F051R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
-=======
-Firmware.elf Firmware.map: $(OBJS) $(USER_OBJS) /Users/3ucubed/Desktop/testing-software/Instrument-Software/Firmware/STM32F051R8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Firmware.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"/Users/3ucubed/Desktop/testing-software/Instrument-Software/Firmware/STM32F051R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
->>>>>>> 645f287fa8849cb143f8c864080fa7b47ba7a79c:Testing-Firmware/Debug/makefile
+Testing-Firmware.elf Testing-Firmware.map: $(OBJS) $(USER_OBJS) /Users/shanewoods/cubesat/workspace/Instrument-Software/Testing-Firmware/STM32F051R8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Testing-Firmware.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"/Users/shanewoods/cubesat/workspace/Instrument-Software/Testing-Firmware/STM32F051R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Testing-Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -75,14 +70,14 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-Firmware.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "Firmware.list"
+Testing-Firmware.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "Testing-Firmware.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) Firmware.elf Firmware.list Firmware.map default.size.stdout
+	-$(RM) Testing-Firmware.elf Testing-Firmware.list Testing-Firmware.map default.size.stdout
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)
