@@ -331,7 +331,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
           HAL_ADC_Start_DMA(&hadc, (uint32_t *)adcResultsDMA,
                             adcChannelCount);
 
-          /*
+
 		  uint16_t PA1 = adcResultsDMA[1];       // ADC_IN1, BUS_Vmon: instrument bus voltage monitor
 		  if (PA1 < PA1_min || PA1 > PA1_max) {
 			  // Turn off corresponding GPIO --> SYS_ON --> PB5
@@ -409,7 +409,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 			  // Reset system
         	  NVIC_SystemReset();
 		  }
-		  */
+
 
           uint16_t MCU_TEMP = adcResultsDMA[15]; //(internally connected) ADC_IN16, VSENSE
           uint16_t MCU_VREF = adcResultsDMA[16]; //(internally connected) ADC_IN17, VREFINT
