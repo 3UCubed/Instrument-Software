@@ -183,12 +183,12 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 
         /* Write to SPI (begin transfer?) */
 
-        HAL_SPI_Transmit(&hspi2, (uint8_t *)&WRITE, 1, 1);
-
-        while (!(SPI2->SR))
-          ;
-
-        erpa_raw = SPI2->DR;
+//        HAL_SPI_Transmit(&hspi2, (uint8_t *)&WRITE, 1, 1);
+//
+//        while (!(SPI2->SR))
+//          ;
+//
+//        erpa_raw = SPI2->DR;
 
 
         DAC->DHR12R1 = DAC_OUT[step];
@@ -425,12 +425,12 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 
         /* Write to SPI (begin transfer?) */
 
-        HAL_SPI_Transmit(&hspi2, (uint8_t *)&WRITE, 1, 1);
-
-        while (!(SPI2->SR))
-          ;
-
-        raw = SPI2->DR;
+//        HAL_SPI_Transmit(&hspi2, (uint8_t *)&WRITE, 1, 1);
+//
+//        while (!(SPI2->SR))
+//          ;
+//
+//        raw = SPI2->DR;
 
 
     	/*
@@ -694,26 +694,26 @@ int main(void)
   while (1)
   {
 	  // ERPA adc handling
-//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
-//
-//      HAL_SPI_Transmit(&hspi1, (uint8_t *)&WRITE, 1, 1);
-//
-//      while (!(SPI2->SR))
-//        ;
-//
-//      erpa_raw = SPI2->DR;
-//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
-//
-//
-//      // PMT adc handling
-//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
-//
-//	  HAL_SPI_Transmit(&hspi2, (uint8_t*) &WRITE, 1, 1);
-//	  while (!(SPI1->SR));
-//	  pmt_raw = SPI1->DR;
-//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
-//
-//	  HAL_Delay(100);
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+
+      HAL_SPI_Transmit(&hspi1, (uint8_t *)&WRITE, 1, 1);
+
+      while (!(SPI2->SR))
+        ;
+
+      erpa_raw = SPI2->DR;
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
+
+
+      // PMT adc handling
+	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
+
+	  HAL_SPI_Transmit(&hspi2, (uint8_t*) &WRITE, 1, 1);
+	  while (!(SPI1->SR));
+	  pmt_raw = SPI1->DR;
+	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
+
+	  HAL_Delay(100);
 
 
 
