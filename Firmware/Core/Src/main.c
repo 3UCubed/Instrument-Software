@@ -54,6 +54,7 @@ TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 
 UART_HandleTypeDef huart1;
+
 /* USER CODE BEGIN PV */
 UART_WakeUpTypeDef WakeUpSelection;
 uint8_t Rx_data[1];  //  creating a buffer of 1 bytes
@@ -181,18 +182,18 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
             uint16_t PB0 = adcResultsDMA[5]; //ADC_IN8, TMP 1: Sweep temperature
             uint16_t PB1 = adcResultsDMA[6]; //ADC_IN9, TMP 2: feedbacks
 
-            erpaData data;
-            data.sync = 0xAA;
-            data.spiData = raw;
-            data.swpComm = DAC->DHR12R1;
-            data.swpMon = PA7;
-            data.endMon = PA0;
-            data.tmp1 = PB0;
-            data.tmp2 = PB1;
+//            erpaData data;
+//            data.sync = 0xAA;
+//            data.spiData = raw;
+//            data.swpComm = DAC->DHR12R1;
+//            data.swpMon = PA7;
+//            data.endMon = PA0;
+//            data.tmp1 = PB0;
+//            data.tmp2 = PB1;
+//
+//            erpa_buf = fillErpaBuffer(data);
 
-            erpa_buf = fillErpaBuffer(data);
-
-            //HAL_UART_Transmit(&huart1, erpa_buf, sizeof(erpa_buf), 100);
+            HAL_UART_Transmit(&huart1, erpa_buf, sizeof(erpa_buf), 100);
 
             if (step == 5) {
                 up = 0;
@@ -244,7 +245,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
                 hk_buf[24] = ((MCU_VREF & 0xFF00) >> 8); // VREFINT MSB
                 hk_buf[25] = (MCU_VREF & 0xFF); // VREFINT LSB
 
-                //HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), 100);
+                HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), 100);
 
                 hk_counter = 1;
 
@@ -281,7 +282,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 
             pmt_seq++;
 
-            //HAL_UART_Transmit(&huart1, pmt_buf, sizeof(pmt_buf), 100);
+            HAL_UART_Transmit(&huart1, pmt_buf, sizeof(pmt_buf), 100);
 
 
         }
@@ -377,6 +378,7 @@ int main(void)
     while (1) {
 
 
+    	/*
     	// Tell ADT7410_1 that we want to read from the temperature register
 		buf[0] = REG_TEMP;
 		ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_1, buf, 1, 1000);
@@ -450,6 +452,7 @@ int main(void)
 	   }
 
 	HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
+	*/
 
 
     /* USER CODE END WHILE */
