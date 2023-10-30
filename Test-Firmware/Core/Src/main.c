@@ -266,8 +266,10 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 
 		/* Write to SPI (begin transfer?) */
         HAL_SPI_Transmit(&hspi1, (uint8_t * ) &WRITE, 1, 1);
-
+        SPI1->CR1 &= ~(1<<10);
 		while (!(SPI1->SR));
+
+		//RXNE here
 
 		raw = SPI1->DR;
 
@@ -1190,7 +1192,7 @@ static void MX_SPI1_Init(void)
   /* SPI1 parameter configuration*/
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_1LINE;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES_RXONLY;
   hspi1.Init.DataSize = SPI_DATASIZE_16BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
