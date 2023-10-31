@@ -160,424 +160,311 @@ uint8_t* fill_pmt_data(pmt_data data) {
 	return ret;
 }
 
-/**
- * Timer interrupt function
- * This is where packets are sent
- * Function should be called every 125ms for PMT and 100ms for ERPA
- * HK will send every 50 ERPA packets or every 5 seconds
- */
-void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
-	if (htim == &htim2) {
-        while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11));
-        	//check pin state
+
+void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  if (htim == &htim2)
+  {
+    if (1)
+    { // check pin state
+      if (ERPA_ON)
+      {
+        /**
+         * TIM1_CH1 Interrupt
+         * Sets CNV and samples ERPA's ADC
+         * Steps DAC
+         * +/- 0.5v Every 100ms
+         */
+
+        /* Write to SPI (begin transfer?) */
+
+		while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11));
+					//check pin state
 
 		/**
 		 * TIM1_CH1 Interrupt
 		 * Sets CNV and samples ERPA's ADC
 		 * Steps DAC
 		 * +/- 0.5v Every 100ms
-		 */
+		*/
 
-		/* Write to SPI (begin transfer?) */
-        HAL_SPI_Transmit(&hspi2, (uint8_t * ) &WRITE, 1, 1);
+		  /* Write to SPI (begin transfer?) */
+		HAL_SPI_Transmit(&hspi2, (uint8_t * ) &WRITE, 1, 1);
+		SPI2->CR1 &= ~(1<<10); // THIS IS NEEDED TO STOP SPI1_SCK FROM GENERATING CLOCK PULSES
 		while (!(SPI2->SR));
-		raw = SPI2->DR;
+	    erpa_raw = SPI2->DR;
+
 
 		DAC->DHR12R1 = DAC_OUT[step];
 
-		HAL_ADC_Start_DMA(&hadc, (uint32_t *) adcResultsDMA, adcChannelCount);
-		uint16_t PA0 = adcResultsDMA[0]; //ADC_IN0, END_mon: entrance/collimator monitor
-		uint16_t PA7 = adcResultsDMA[4]; //ADC_IN7, SWP_mon: Sweep voltage monitor
-		uint16_t PB0 = adcResultsDMA[5]; //ADC_IN8, TMP 1: Sweep temperature
-		uint16_t PB1 = adcResultsDMA[6]; //ADC_IN9, TMP 2: feedbacks
+		HAL_ADC_Start_DMA(&hadc, (uint32_t *)adcResultsDMA,
+						  adcChannelCount);
+		uint16_t PA0 = adcResultsDMA[0]; 				// ADC_IN0, END_mon: entrance/collimator monitor
+		uint16_t PA7 = adcResultsDMA[6]; 				// ADC_IN7, SWP_mon: Sweep voltage monitor
+		uint16_t PB0 = adcResultsDMA[7]; 				// ADC_IN8, TMP 1: Sweep temperature
+		uint16_t PB1 = adcResultsDMA[8]; 				// ADC_IN9, TMP 2: feedbacks
 
+		erpa_buf[0] = erpa_sync;                  		// ERPA SYNC 0xAA MSB
+		erpa_buf[1] = erpa_sync;                  		// ERPA SYNC 0xAA LSB
+		erpa_buf[2] = ((erpa_seq & 0xFF00) >> 8); 		// ERPA SEQ # MSB
+		erpa_buf[3] = (erpa_seq & 0xFF);          		// ERPA SEQ # MSB
+		erpa_buf[4] = ((PA0 & 0xFF00) >> 8); 	  		// ENDmon MSB
+		erpa_buf[5] = (PA0 & 0xFF);               		// ENDmon LSB
+		erpa_buf[6] = ((PA7 & 0xFF00) >> 8);      		// SWP Monitored MSB
+		erpa_buf[7] = (PA7 & 0xFF);               		// SWP Monitored LSB
+		erpa_buf[8] = ((PB0 & 0xFF00) >> 8);      		// TEMPURATURE 1 MSB
+		erpa_buf[9] = (PB0 & 0xFF);               		// TEMPURATURE 1 LSB
+		erpa_buf[10] = ((PB1 & 0xFF00) >> 8);     		// TEMPURATURE 2 MSB
+		erpa_buf[11] = (PB1 & 0xFF);                    // TEMPURATURE 2 LSB
+		erpa_buf[12] = ((erpa_raw & 0xFF00) >> 8);      // ERPA eADC MSB
+		erpa_buf[13] = (erpa_raw & 0xFF);               // ERPA eADC LSB
 
-		//HAL_UART_Transmit(&huart1, erpa_buf, sizeof(erpa_buf), 100);
-
-		if (step == 5) {
-			up = 0;
-		} else if (step == 0) {
-			up = 1;
+		erpa_seq++;
+		if (ERPA_ON)
+		{
+		  HAL_UART_Transmit(&huart1, erpa_buf, sizeof(erpa_buf), 100);
 		}
+      }
+      if (HK_ON)
+      {
+        if (hk_counter == HK_CADENCE)
+        {
+          uint8_t buf[2];
+          int16_t val;
+          HAL_StatusTypeDef ret;
+          float temp_c;
+          int16_t output1;
+          int16_t output2;
+          int16_t output3;
+          int16_t output4;
 
-		up == 1 ? step++ : step--;
+          buf[0] = REG_TEMP;
+          ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_1, buf, 1,
+                                        1000);
+          //			I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
+          if (ret != HAL_OK)
+          {
+            strcpy((char *)buf, "Error Tx\r\n");
+          }
+          else
+          {
 
-		if (hk_counter == 50) {
-			HAL_ADC_Start_DMA(&hadc, (uint32_t *) adcResultsDMA, adcChannelCount);
+            //				 Read 2 bytes from the temperature register
+            ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_1, buf, 2,
+                                         1000);
+            if (ret != HAL_OK)
+            {
+              strcpy((char *)buf, "Error Rx\r\n");
+            }
+            else
+            {
 
-			uint16_t PA1 = adcResultsDMA[1]; //ADC_IN1, BUS_Vmon: instrument bus voltage monitor
-			uint16_t PA2 = adcResultsDMA[2]; //ADC_IN2, BUS_Imon: instrument bus current monitor
-			uint16_t PA3 = adcResultsDMA[3]; //ADC_IN3, 5vref_mon: Accurate 5V for ADC monitor
-			uint16_t PC0 = adcResultsDMA[7]; //ADC_IN10, 2v5_mon: power monitor
-			uint16_t PC1 = adcResultsDMA[8]; //ADC_IN11, 3v3_mon: power monitor
-			uint16_t PC2 = adcResultsDMA[9]; //ADC_IN12, 5v_mon: power monitor
-			uint16_t PC3 = adcResultsDMA[10]; //ADC_IN13, n3v3_mon: power monitor
-			uint16_t PC4 = adcResultsDMA[11]; //ADC_IN14, n5v_mon: power monitor
-			uint16_t PC5 = adcResultsDMA[12]; //ADC_IN15, 15v_mon: power monitor
-			uint16_t MCU_TEMP = adcResultsDMA[13]; //(internally connected) ADC_IN16, VSENSE
-			uint16_t MCU_VREF = adcResultsDMA[14]; //(internally connected) ADC_IN17, VREFINT
+              output1 = (int16_t)(buf[0] << 8);
+              output1 = (output1 | buf[1]) >> 3;
+            }
+          }
 
-			hk_buf[0] = hk_sync; // HK SYNC 0xCC MSB
-			hk_buf[1] = hk_sync; // HK SYNC 0xCC LSB
-			hk_buf[2] = ((hk_seq & 0xFF00) >> 8); // HK SEQ # MSB
-			hk_buf[3] = (hk_seq & 0xFF); // HK SEQ # LSB
-			hk_buf[4] = ((PA1 & 0xFF00) >> 8); // BUS_Vmon MSB
-			hk_buf[5] = (PA1 & 0xFF); // BUS_Vmon LSB
-			hk_buf[6] = ((PA2 & 0xFF00) >> 8); // BUS_Imon MSB
-			hk_buf[7] = (PA2 & 0xFF); // BUS_Imon LSB
-			hk_buf[8] = ((PC0 & 0xFF00) >> 8); // 2.5v_mon MSB
-			hk_buf[9] = (PC0 & 0xFF); // 2.5v_mon LSB
-			hk_buf[10] = ((PC1 & 0xFF00) >> 8); // 3v3_mon MSB
-			hk_buf[11] = (PC1 & 0xFF); // 3v3_mon LSB
-			hk_buf[12] = ((PC2 & 0xFF00) >> 8); // 5v_mon MSB
-			hk_buf[13] = (PC2 & 0xFF); // 5v_mon LSB
-			hk_buf[14] = ((PA3 & 0xFF00) >> 8); // 5vref_mon MSB
-			hk_buf[15] = (PA3 & 0xFF); // 5vref_mon LSB
-			hk_buf[16] = ((PC5 & 0xFF00) >> 8); // 15v_mon MSB
-			hk_buf[17] = (PC5 & 0xFF); // 15v_mon LSB
-			hk_buf[18] = ((PC3 & 0xFF00) >> 8); // n3v3_mon MSB
-			hk_buf[19] = (PC3 & 0xFF); // n3v3_mon LSB
-			hk_buf[20] = ((PC4 & 0xFF00) >> 8); // n5v_mon MSB
-			hk_buf[21] = (PC4 & 0xFF); // n5v_mon LSB
-			hk_buf[22] = ((MCU_TEMP & 0xFF00) >> 8); // VSENSE MSB
-			hk_buf[23] = (MCU_TEMP & 0xFF); // VSENSE LSB
-			hk_buf[24] = ((MCU_VREF & 0xFF00) >> 8); // VREFINT MSB
-			hk_buf[25] = (MCU_VREF & 0xFF); // VREFINT LSB
+          // Tell ADT7410_2 that we want to read from the temperature register
+          buf[0] = REG_TEMP;
+          ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_2, buf, 1,
+                                        1000);
+          //			I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
+          if (ret != HAL_OK)
+          {
+            strcpy((char *)buf, "Error Tx\r\n");
+          }
+          else
+          {
 
-			//HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), 100);
+            //				 Read 2 bytes from the temperature register
+            ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_2, buf, 2,
+                                         1000);
+            if (ret != HAL_OK)
+            {
+              strcpy((char *)buf, "Error Rx\r\n");
+            }
+            else
+            {
 
-			hk_counter = 1;
+              output2 = (int16_t)(buf[0] << 8);
+              output2 = (output2 | buf[1]) >> 3;
+            }
+          }
+          // TEMP SENSOR 3
+          buf[0] = REG_TEMP;
+          ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_3, buf, 1,
+                                        1000);
+          //			I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
+          if (ret != HAL_OK)
+          {
+            strcpy((char *)buf, "Error Tx\r\n");
+          }
+          else
+          {
 
-			hk_seq++;
+            //				 Read 2 bytes from the temperature register
+            ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_3, buf, 2,
+                                         1000);
+            if (ret != HAL_OK)
+            {
+              strcpy((char *)buf, "Error Rx\r\n");
+            }
+            else
+            {
 
-		} else {
-			hk_counter++;
-		}
+              output3 = (int16_t)(buf[0] << 8);
+              output3 = (output3 | buf[1]) >> 3;
+            }
+          }
+          // TEMP SENSOR 4
+          buf[0] = REG_TEMP;
+          ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_4, buf, 1,
+                                        1000);
+          //			I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
+          if (ret != HAL_OK)
+          {
+            strcpy((char *)buf, "Error Tx\r\n");
+          }
+          else
+          {
 
-    } else if (htim == &htim1) {
-        while(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8));
+            //				 Read 2 bytes from the temperature register
+            ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_4, buf, 2,
+                                         1000);
+            if (ret != HAL_OK)
+            {
+              strcpy((char *)buf, "Error Rx\r\n");
+            }
+            else
+            {
+
+              output4 = (int16_t)(buf[0] << 8);
+              output4 = (output4 | buf[1]) >> 3;
+            }
+          }
+
+          HAL_ADC_Start_DMA(&hadc, (uint32_t *)adcResultsDMA,
+                            adcChannelCount);
+
+          uint16_t PA1 = adcResultsDMA[1];       // ADC_IN1, BUS_Vmon: instrument bus voltage monitor
+          uint16_t PA2 = adcResultsDMA[2];       // ADC_IN2, BUS_Imon: instrument bus current monitor
+          uint16_t PA3 = adcResultsDMA[3];       // ADC_IN3, 3v3_mon: Accurate 5V for ADC monitor
+          uint16_t PA5 = adcResultsDMA[4];       // ADC_IN5, n150v_mon: n150 voltage monitor
+          uint16_t PA6 = adcResultsDMA[5];       // ADC_IN6, n800v_mon: n800 voltage monitor
+          uint16_t PC0 = adcResultsDMA[9];       // ADC_IN10, 2v5_mon: 2.5v voltage monitor
+          uint16_t PC1 = adcResultsDMA[10];      // ADC_IN11, n5v_mon: n5v voltage monitor
+          uint16_t PC2 = adcResultsDMA[11];      // ADC_IN12, 5v_mon: 5v voltage monitor
+          uint16_t PC3 = adcResultsDMA[12];      // ADC_IN13, n3v3_mon: n3v3 voltage monitor
+          uint16_t PC4 = adcResultsDMA[13];      // ADC_IN14, 5vref_mon: 5v reference voltage monitor
+          uint16_t PC5 = adcResultsDMA[14];      // ADC_IN15, 15v_mon: 15v voltage monitor
+          uint16_t MCU_TEMP = adcResultsDMA[15]; //(internally connected) ADC_IN16, VSENSE
+          uint16_t MCU_VREF = adcResultsDMA[16]; //(internally connected) ADC_IN17, VREFINT
+
+
+          hk_buf[0] = hk_sync;                     // HK SYNC 0xCC MSB					0 SYNC
+          hk_buf[1] = hk_sync;                     // HK SYNC 0xCC LSB
+          hk_buf[2] = ((hk_seq & 0xFF00) >> 8);    // HK SEQ # MSB		1 SEQUENCE
+          hk_buf[3] = (hk_seq & 0xFF);             // HK SEQ # LSB
+          hk_buf[4] = ((MCU_TEMP & 0xFF00) >> 8); // VSENSE MSB		13 VSENSE
+          hk_buf[5] = (MCU_TEMP & 0xFF);          // VSENSE LSB
+          hk_buf[6] = ((MCU_VREF & 0xFF00) >> 8);
+          hk_buf[7] = (MCU_VREF & 0xFF);
+          hk_buf[8] = ((output1 & 0xFF00) >> 8);
+          hk_buf[9] = (output1 & 0xFF);
+          hk_buf[10] = ((output2 & 0xFF00) >> 8);
+          hk_buf[11] = (output2 & 0xFF);
+          hk_buf[12] = ((output3 & 0xFF00) >> 8);
+          hk_buf[13] = (output3 & 0xFF);
+          hk_buf[14] = ((output4 & 0xFF00) >> 8);
+          hk_buf[15] = (output4 & 0xFF);
+          hk_buf[16] = ((PA1 & 0xFF00) >> 8);       // BUS_Vmon MSB			2 BUS_VMON PA1
+          hk_buf[17] = (PA1 & 0xFF);                // BUS_Vmon LSB
+          hk_buf[18] = ((PA2 & 0xFF00) >> 8);       // BUS_Imon MSB			3 BUS_IMON PA2
+          hk_buf[19] = (PA2 & 0xFF);                // BUS_Imon LSB
+          hk_buf[20] = ((PC0 & 0xFF00) >> 8);      	// 2v5_mon MSB			7 2V5_MON PC0
+          hk_buf[21] = (PC0 & 0xFF);               	// 2v5_mon LSB
+          hk_buf[22] = ((PA3 & 0xFF00) >> 8);       // 3v3_mon MSB			4 3v3_MON PA3
+          hk_buf[23] = (PA3 & 0xFF);                // 3v3_mon LSB
+          hk_buf[24] = ((PC2 & 0xFF00) >> 8);      	// 5v_mon MSB			9 5V_MON PC2
+          hk_buf[25] = (PC2 & 0xFF);               	// 5v_mon LSB
+          hk_buf[26] = ((PC3 & 0xFF00) >> 8);      	// n3v3_mon MSB			10 N3V3_MON PC3
+          hk_buf[27] = (PC3 & 0xFF);               	// n3v3_mon LSB
+          hk_buf[28] = ((PC1 & 0xFF00) >> 8);      	// n5v_mon MSB			8 N5V_MON PC1
+          hk_buf[29] = (PC1 & 0xFF);               	// n5v_mon LSB
+          hk_buf[30] = ((PC5 & 0xFF00) >> 8);      	// 15v_mon MSB			12 15V_MON PC5
+          hk_buf[31] = (PC5 & 0xFF);               	// 15v_mon LSB
+          hk_buf[32] = ((PC4 & 0xFF00) >> 8);      	// 5vref_mon MSB		11 5VREF_MON PC4
+          hk_buf[33] = (PC4 & 0xFF);               	// 5vref_mon LSB
+          hk_buf[34] = ((PA5 & 0xFF00) >> 8);      	// n150v_mon MSB		5 N150V_MON PA5
+          hk_buf[35] = (PA5 & 0xFF);               	// n150v_mon LSB
+          hk_buf[36] = ((PA6 & 0xFF00) >> 8);      	// n800v_mon MSB		6 N800V_MON PA6
+          hk_buf[37] = (PA6 & 0xFF);               	// n800v_mon LSB
+
+          if (HK_ON)
+          {
+//            HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), 100);
+          }
+          hk_counter = 1;
+          hk_seq++;
+        }
+        else
+        {
+          hk_counter++;
+        }
+      }
+    }
+  }
+  else if (htim == &htim1)
+  {
+    if (1)
+    {
+      if (PMT_ON)
+      { // check pin state
+
+    	while(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8));
 
 		/**
-		 * TIM2_CH4 Interrupt
+		 * TIM1_CH1 Interrupt
 		 * Sets CNV and samples UVPMT's ADC
 		 * Every 125ms
 		 */
 
 
 		/* Write to SPI (begin transfer?) */
-        HAL_SPI_Transmit(&hspi1, (uint8_t * ) &WRITE, 1, 1);
-        SPI1->CR1 &= ~(1<<10);
+		HAL_SPI_Transmit(&hspi1, (uint8_t * ) &WRITE, 1, 1);
+		SPI1->CR1 &= ~(1<<10); // THIS IS NEEDED TO STOP SPI1_SCK FROM GENERATING CLOCK PULSES
 		while (!(SPI1->SR));
 
 		//RXNE here
 
-		raw = SPI1->DR;
+		pmt_raw = SPI1->DR;
+
+		int r = pmt_raw;
 
 
-		pmt_buf[0] = pmt_sync;
-		pmt_buf[1] = pmt_sync;
-		pmt_buf[2] = ((pmt_seq & 0xFF00) >> 8);
-		pmt_buf[3] = (pmt_seq & 0xFF);;
-		pmt_buf[4] = ((raw & 0xFF00) >> 8);
-		pmt_buf[5] = (raw & 0xFF);
+    	/*
+    	pmt_data data;
+    	data.pmt_raw = raw;
+    	data.pmt_seq = pmt_seq;
 
-		pmt_seq++;
+    	uint8_t* abstraction_test_buf = fill_pmt_data(data);
+    	*/
+    	  pmt_buf[0] = pmt_sync;
+		  pmt_buf[1] = pmt_sync;
+		  pmt_buf[2] = ((pmt_seq & 0xFF00) >> 8);
+		  pmt_buf[3] = (pmt_seq & 0xFF);
+		  pmt_buf[4] = ((pmt_raw & 0xFF00) >> 8);
+		  pmt_buf[5] = (pmt_raw & 0xFF);
 
-		HAL_UART_Transmit(&huart1, pmt_buf, sizeof(pmt_buf), 100);
+		  pmt_seq++;
+		  HAL_UART_Transmit(&huart1, pmt_buf, sizeof(pmt_buf), 100);
+		  /*HAL_UART_Transmit(&huart1, abstraction_test_buf, sizeof(abstraction_test_buf), 100);*/
+      }
     }
-}
+  }
 
-//
-//void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
-//{
-//  if (htim == &htim2)
-//  {
-//    if (1)
-//    { // check pin state
-//      if (ERPA_ON)
-//      {
-//        /**
-//         * TIM1_CH1 Interrupt
-//         * Sets CNV and samples ERPA's ADC
-//         * Steps DAC
-//         * +/- 0.5v Every 100ms
-//         */
-//
-//        /* Write to SPI (begin transfer?) */
-//
-//        HAL_SPI_Transmit(&hspi2, (uint8_t *)&WRITE, 1, 1);
-//
-//        while (!(SPI2->SR))
-//          ;
-//
-//        erpa_raw = SPI2->DR;
-//
-//
-//        DAC->DHR12R1 = DAC_OUT[step];
-//
-//        HAL_ADC_Start_DMA(&hadc, (uint32_t *)adcResultsDMA,
-//                          adcChannelCount);
-//        uint16_t PA0 = adcResultsDMA[0]; 				// ADC_IN0, END_mon: entrance/collimator monitor
-//        uint16_t PA7 = adcResultsDMA[6]; 				// ADC_IN7, SWP_mon: Sweep voltage monitor
-//        uint16_t PB0 = adcResultsDMA[7]; 				// ADC_IN8, TMP 1: Sweep temperature
-//        uint16_t PB1 = adcResultsDMA[8]; 				// ADC_IN9, TMP 2: feedbacks
-//
-//        erpa_buf[0] = erpa_sync;                  		// ERPA SYNC 0xAA MSB
-//        erpa_buf[1] = erpa_sync;                  		// ERPA SYNC 0xAA LSB
-//        erpa_buf[2] = ((erpa_seq & 0xFF00) >> 8); 		// ERPA SEQ # MSB
-//        erpa_buf[3] = (erpa_seq & 0xFF);          		// ERPA SEQ # MSB
-//        erpa_buf[4] = ((PA0 & 0xFF00) >> 8); 	  		// ENDmon MSB
-//        erpa_buf[5] = (PA0 & 0xFF);               		// ENDmon LSB
-//        erpa_buf[6] = ((PA7 & 0xFF00) >> 8);      		// SWP Monitored MSB
-//        erpa_buf[7] = (PA7 & 0xFF);               		// SWP Monitored LSB
-//        erpa_buf[8] = ((PB0 & 0xFF00) >> 8);      		// TEMPURATURE 1 MSB
-//        erpa_buf[9] = (PB0 & 0xFF);               		// TEMPURATURE 1 LSB
-//        erpa_buf[10] = ((PB1 & 0xFF00) >> 8);     		// TEMPURATURE 2 MSB
-//        erpa_buf[11] = (PB1 & 0xFF);                    // TEMPURATURE 2 LSB
-//        erpa_buf[12] = ((erpa_raw & 0xFF00) >> 8);      // ERPA eADC MSB
-//        erpa_buf[13] = (erpa_raw & 0xFF);               // ERPA eADC LSB
-//
-//        erpa_seq++;
-//        if (ERPA_ON)
-//        {
-////          HAL_UART_Transmit(&huart1, erpa_buf, sizeof(erpa_buf), 100);
-//        }
-//      }
-//      if (HK_ON)
-//      {
-//        if (hk_counter == HK_CADENCE)
-//        {
-//          uint8_t buf[2];
-//          int16_t val;
-//          HAL_StatusTypeDef ret;
-//          float temp_c;
-//          int16_t output1;
-//          int16_t output2;
-//          int16_t output3;
-//          int16_t output4;
-//
-//          buf[0] = REG_TEMP;
-//          ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_1, buf, 1,
-//                                        1000);
-//          //			I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
-//          if (ret != HAL_OK)
-//          {
-//            strcpy((char *)buf, "Error Tx\r\n");
-//          }
-//          else
-//          {
-//
-//            //				 Read 2 bytes from the temperature register
-//            ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_1, buf, 2,
-//                                         1000);
-//            if (ret != HAL_OK)
-//            {
-//              strcpy((char *)buf, "Error Rx\r\n");
-//            }
-//            else
-//            {
-//
-//              output1 = (int16_t)(buf[0] << 8);
-//              output1 = (output1 | buf[1]) >> 3;
-//            }
-//          }
-//
-//          // Tell ADT7410_2 that we want to read from the temperature register
-//          buf[0] = REG_TEMP;
-//          ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_2, buf, 1,
-//                                        1000);
-//          //			I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
-//          if (ret != HAL_OK)
-//          {
-//            strcpy((char *)buf, "Error Tx\r\n");
-//          }
-//          else
-//          {
-//
-//            //				 Read 2 bytes from the temperature register
-//            ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_2, buf, 2,
-//                                         1000);
-//            if (ret != HAL_OK)
-//            {
-//              strcpy((char *)buf, "Error Rx\r\n");
-//            }
-//            else
-//            {
-//
-//              output2 = (int16_t)(buf[0] << 8);
-//              output2 = (output2 | buf[1]) >> 3;
-//            }
-//          }
-//          // TEMP SENSOR 3
-//          buf[0] = REG_TEMP;
-//          ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_3, buf, 1,
-//                                        1000);
-//          //			I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
-//          if (ret != HAL_OK)
-//          {
-//            strcpy((char *)buf, "Error Tx\r\n");
-//          }
-//          else
-//          {
-//
-//            //				 Read 2 bytes from the temperature register
-//            ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_3, buf, 2,
-//                                         1000);
-//            if (ret != HAL_OK)
-//            {
-//              strcpy((char *)buf, "Error Rx\r\n");
-//            }
-//            else
-//            {
-//
-//              output3 = (int16_t)(buf[0] << 8);
-//              output3 = (output3 | buf[1]) >> 3;
-//            }
-//          }
-//          // TEMP SENSOR 4
-//          buf[0] = REG_TEMP;
-//          ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_4, buf, 1,
-//                                        1000);
-//          //			I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
-//          if (ret != HAL_OK)
-//          {
-//            strcpy((char *)buf, "Error Tx\r\n");
-//          }
-//          else
-//          {
-//
-//            //				 Read 2 bytes from the temperature register
-//            ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_4, buf, 2,
-//                                         1000);
-//            if (ret != HAL_OK)
-//            {
-//              strcpy((char *)buf, "Error Rx\r\n");
-//            }
-//            else
-//            {
-//
-//              output4 = (int16_t)(buf[0] << 8);
-//              output4 = (output4 | buf[1]) >> 3;
-//            }
-//          }
-//
-//          HAL_ADC_Start_DMA(&hadc, (uint32_t *)adcResultsDMA,
-//                            adcChannelCount);
-//
-//          uint16_t PA1 = adcResultsDMA[1];       // ADC_IN1, BUS_Vmon: instrument bus voltage monitor
-//          uint16_t PA2 = adcResultsDMA[2];       // ADC_IN2, BUS_Imon: instrument bus current monitor
-//          uint16_t PA3 = adcResultsDMA[3];       // ADC_IN3, 3v3_mon: Accurate 5V for ADC monitor
-//          uint16_t PA5 = adcResultsDMA[4];       // ADC_IN5, n150v_mon: n150 voltage monitor
-//          uint16_t PA6 = adcResultsDMA[5];       // ADC_IN6, n800v_mon: n800 voltage monitor
-//          uint16_t PC0 = adcResultsDMA[9];       // ADC_IN10, 2v5_mon: 2.5v voltage monitor
-//          uint16_t PC1 = adcResultsDMA[10];      // ADC_IN11, n5v_mon: n5v voltage monitor
-//          uint16_t PC2 = adcResultsDMA[11];      // ADC_IN12, 5v_mon: 5v voltage monitor
-//          uint16_t PC3 = adcResultsDMA[12];      // ADC_IN13, n3v3_mon: n3v3 voltage monitor
-//          uint16_t PC4 = adcResultsDMA[13];      // ADC_IN14, 5vref_mon: 5v reference voltage monitor
-//          uint16_t PC5 = adcResultsDMA[14];      // ADC_IN15, 15v_mon: 15v voltage monitor
-//          uint16_t MCU_TEMP = adcResultsDMA[15]; //(internally connected) ADC_IN16, VSENSE
-//          uint16_t MCU_VREF = adcResultsDMA[16]; //(internally connected) ADC_IN17, VREFINT
-//
-//
-//          hk_buf[0] = hk_sync;                     // HK SYNC 0xCC MSB					0 SYNC
-//          hk_buf[1] = hk_sync;                     // HK SYNC 0xCC LSB
-//          hk_buf[2] = ((hk_seq & 0xFF00) >> 8);    // HK SEQ # MSB		1 SEQUENCE
-//          hk_buf[3] = (hk_seq & 0xFF);             // HK SEQ # LSB
-//          hk_buf[4] = ((MCU_TEMP & 0xFF00) >> 8); // VSENSE MSB		13 VSENSE
-//          hk_buf[5] = (MCU_TEMP & 0xFF);          // VSENSE LSB
-//          hk_buf[6] = ((MCU_VREF & 0xFF00) >> 8);
-//          hk_buf[7] = (MCU_VREF & 0xFF);
-//          hk_buf[8] = ((output1 & 0xFF00) >> 8);
-//          hk_buf[9] = (output1 & 0xFF);
-//          hk_buf[10] = ((output2 & 0xFF00) >> 8);
-//          hk_buf[11] = (output2 & 0xFF);
-//          hk_buf[12] = ((output3 & 0xFF00) >> 8);
-//          hk_buf[13] = (output3 & 0xFF);
-//          hk_buf[14] = ((output4 & 0xFF00) >> 8);
-//          hk_buf[15] = (output4 & 0xFF);
-//          hk_buf[16] = ((PA1 & 0xFF00) >> 8);       // BUS_Vmon MSB			2 BUS_VMON PA1
-//          hk_buf[17] = (PA1 & 0xFF);                // BUS_Vmon LSB
-//          hk_buf[18] = ((PA2 & 0xFF00) >> 8);       // BUS_Imon MSB			3 BUS_IMON PA2
-//          hk_buf[19] = (PA2 & 0xFF);                // BUS_Imon LSB
-//          hk_buf[20] = ((PC0 & 0xFF00) >> 8);      	// 2v5_mon MSB			7 2V5_MON PC0
-//          hk_buf[21] = (PC0 & 0xFF);               	// 2v5_mon LSB
-//          hk_buf[22] = ((PA3 & 0xFF00) >> 8);       // 3v3_mon MSB			4 3v3_MON PA3
-//          hk_buf[23] = (PA3 & 0xFF);                // 3v3_mon LSB
-//          hk_buf[24] = ((PC2 & 0xFF00) >> 8);      	// 5v_mon MSB			9 5V_MON PC2
-//          hk_buf[25] = (PC2 & 0xFF);               	// 5v_mon LSB
-//          hk_buf[26] = ((PC3 & 0xFF00) >> 8);      	// n3v3_mon MSB			10 N3V3_MON PC3
-//          hk_buf[27] = (PC3 & 0xFF);               	// n3v3_mon LSB
-//          hk_buf[28] = ((PC1 & 0xFF00) >> 8);      	// n5v_mon MSB			8 N5V_MON PC1
-//          hk_buf[29] = (PC1 & 0xFF);               	// n5v_mon LSB
-//          hk_buf[30] = ((PC5 & 0xFF00) >> 8);      	// 15v_mon MSB			12 15V_MON PC5
-//          hk_buf[31] = (PC5 & 0xFF);               	// 15v_mon LSB
-//          hk_buf[32] = ((PC4 & 0xFF00) >> 8);      	// 5vref_mon MSB		11 5VREF_MON PC4
-//          hk_buf[33] = (PC4 & 0xFF);               	// 5vref_mon LSB
-//          hk_buf[34] = ((PA5 & 0xFF00) >> 8);      	// n150v_mon MSB		5 N150V_MON PA5
-//          hk_buf[35] = (PA5 & 0xFF);               	// n150v_mon LSB
-//          hk_buf[36] = ((PA6 & 0xFF00) >> 8);      	// n800v_mon MSB		6 N800V_MON PA6
-//          hk_buf[37] = (PA6 & 0xFF);               	// n800v_mon LSB
-//
-//          if (HK_ON)
-//          {
-////            HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), 100);
-//          }
-//          hk_counter = 1;
-//          hk_seq++;
-//        }
-//        else
-//        {
-//          hk_counter++;
-//        }
-//      }
-//    }
-//  }
-//  else if (htim == &htim1)
-//  {
-//    if (PMT_ON)
-//    {
-//      if (1)
-//      { // check pin state
-//
-//
-//        /**
-//         * TIM2_CH4 Interrupt
-//         * Sets CNV and samples UVPMT's ADC
-//         * Every 125ms
-//         */
-//
-//        /* Write to SPI (begin transfer?) */
-//
-//        HAL_SPI_Transmit(&hspi1, (uint8_t *)&WRITE, 1, 1);
-//
-//        while (!(SPI1->SR));
-//
-//        raw = SPI1->DR;
-//
-//
-//    	/*
-//    	pmt_data data;
-//    	data.pmt_raw = raw;
-//    	data.pmt_seq = pmt_seq;
-//
-//    	uint8_t* abstraction_test_buf = fill_pmt_data(data);
-//    	*/
-//    	  pmt_buf[0] = pmt_sync;
-//		  pmt_buf[1] = pmt_sync;
-//		  pmt_buf[2] = ((pmt_seq & 0xFF00) >> 8);
-//		  pmt_buf[3] = (pmt_seq & 0xFF);
-//		  pmt_buf[4] = ((pmt_raw & 0xFF00) >> 8);
-//		  pmt_buf[5] = (pmt_raw & 0xFF);
-//
-//		  pmt_seq++;
-//		  HAL_UART_Transmit(&huart1, pmt_buf, sizeof(pmt_buf), 100);
-//		  /*HAL_UART_Transmit(&huart1, abstraction_test_buf, sizeof(abstraction_test_buf), 100);*/
-//      }
-//    }
-//  }
-//
-//  /* Timer 3 also called but doesn't need to do anything on IT */
-//}
+  /* Timer 3 also called but doesn't need to do anything on IT */
+}
 
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
