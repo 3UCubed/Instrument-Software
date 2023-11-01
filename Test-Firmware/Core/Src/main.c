@@ -241,7 +241,6 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
           buf[0] = REG_TEMP;
           ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_1, buf, 1,
                                         1000);
-          //			I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
           if (ret != HAL_OK)
           {
             strcpy((char *)buf, "Error Tx\r\n");
@@ -249,7 +248,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
           else
           {
 
-            //				 Read 2 bytes from the temperature register
+            /* Read 2 bytes from the temperature register */
             ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_1, buf, 2,
                                          1000);
             if (ret != HAL_OK)
@@ -258,17 +257,16 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
             }
             else
             {
-
               output1 = (int16_t)(buf[0] << 8);
               output1 = (output1 | buf[1]) >> 3;
             }
           }
 
-          // Tell ADT7410_2 that we want to read from the temperature register
+          /* Tell ADT7410_2 that we want to read from the temperature register */
           buf[0] = REG_TEMP;
           ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_2, buf, 1,
                                         1000);
-          //			I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
+          /* I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout) */
           if (ret != HAL_OK)
           {
             strcpy((char *)buf, "Error Tx\r\n");
@@ -276,7 +274,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
           else
           {
 
-            //				 Read 2 bytes from the temperature register
+            /* Read 2 bytes from the temperature register */
             ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_2, buf, 2,
                                          1000);
             if (ret != HAL_OK)
@@ -294,7 +292,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
           buf[0] = REG_TEMP;
           ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_3, buf, 1,
                                         1000);
-          //			I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
+          /* I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout) */
           if (ret != HAL_OK)
           {
             strcpy((char *)buf, "Error Tx\r\n");
@@ -302,7 +300,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
           else
           {
 
-            //				 Read 2 bytes from the temperature register
+            /* Read 2 bytes from the temperature register */
             ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_3, buf, 2,
                                          1000);
             if (ret != HAL_OK)
@@ -316,11 +314,11 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
               output3 = (output3 | buf[1]) >> 3;
             }
           }
-          // TEMP SENSOR 4
+          /* TEMP SENSOR 4 */
           buf[0] = REG_TEMP;
           ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_4, buf, 1,
                                         1000);
-          //			I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
+          /* I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout) */
           if (ret != HAL_OK)
           {
             strcpy((char *)buf, "Error Tx\r\n");
@@ -328,7 +326,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
           else
           {
 
-            //				 Read 2 bytes from the temperature register
+            /* Read 2 bytes from the temperature register */
             ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_4, buf, 2,
                                          1000);
             if (ret != HAL_OK)
@@ -402,7 +400,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 
           if (HK_ON)
           {
-//            HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), 100);
+           HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), 100);
           }
           hk_counter = 1;
           hk_seq++;
