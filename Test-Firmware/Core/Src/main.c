@@ -138,9 +138,6 @@ static void MX_I2C1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-/* TS_CAL1 & TS_CAL2 */
-// #define TS_CAL1 *((uint16_t*) 0x1FFFF7B8)
-// #define TS_CAL2 *((uint16_t*) 0x1FFFF7C2)
 
 
 uint8_t* fill_pmt_data(pmt_data data) {

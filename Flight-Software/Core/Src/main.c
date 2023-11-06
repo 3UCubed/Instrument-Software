@@ -548,7 +548,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
   /* Timer 3 also called but doesn't need to do anything on IT */
 }
 
-
+/*
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 
@@ -713,6 +713,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   }
   }
 }
+*/
 
 /* USER CODE END 0 */
 
