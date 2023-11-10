@@ -88,7 +88,7 @@ const int adcChannelCount = sizeof(adcResultsDMA) / sizeof(adcResultsDMA[0]); //
 
 /* DAC Variables for SWP */
 /* uint32_t DAC_OUT[] = {0, 683, 1365, 2048, 2730, 3413}; */
-uint32_t DAC_OUT[8] = {0, 620, 1241, 1861,2482,3103, 3723, 4096}; // For 3.3 volts
+uint32_t DAC_OUT[8] = {0, 620, 1241, 1861, 2482, 3103, 3723, 4095}; // For 3.3 volts
 uint8_t step = 0;
 int up = 1;
 
@@ -465,7 +465,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 
-//  HAL_UART_Receive_IT(&huart1, rx_buf, 1);
+  HAL_UART_Receive_IT(&huart1, rx_buf, 1);
   char key = rx_buf[0];
 
   switch (key)
@@ -493,7 +493,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   }
   case '<':
   {
-    if (step < 5)
+    if (step < 7)
     {
       step++;
     }
@@ -671,6 +671,10 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
+  for (int i = 0; i < (sizeof(gpios) / sizeof(gpios[0])); i++) {
+    	  HAL_GPIO_WritePin(gpios[i].gpio, gpios[i].pin, GPIO_PIN_RESET);
+    }
+
   HAL_DAC_Start(&hdac1, DAC_CHANNEL_1);
 
   /* Start Timers with OC & Interrupt */
@@ -698,6 +702,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+		HAL_UART_Receive_IT(&huart1, rx_buf, 1);
+
 	  /*
 	  // ERPA adc handling
 	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
@@ -725,7 +731,6 @@ int main(void)
 
 
 
-	HAL_UART_Receive_IT(&huart1, rx_buf, 1);
 
     HAL_UART_Receive(&huart1, rx_buf, 1, 0);
     */
