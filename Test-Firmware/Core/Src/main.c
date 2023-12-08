@@ -71,7 +71,7 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 #define BUFFER_SIZE 100
-uint8_t rx_buf[BUFFER_SIZE];
+unsigned char rx_buf[BUFFER_SIZE];
 UART_WakeUpTypeDef WakeUpSelection;
 
 /* Hexadecimal Addresses for I2C Temperature Sensors */
@@ -466,32 +466,32 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 
   HAL_UART_Receive_IT(&huart1, rx_buf, 1);
-  char key = rx_buf[0];
+  unsigned char key = rx_buf[0];
 
   switch (key)
   {
-  case 'G':
+  case 0x0B:
   {
     HAL_GPIO_WritePin(gpios[8].gpio, gpios[8].pin, GPIO_PIN_SET);
     break;
   }
-  case 'H':
+  case 0x0A:
   {
     HAL_GPIO_WritePin(gpios[8].gpio, gpios[8].pin, GPIO_PIN_RESET);
     break;
   }
 
-  case 'I':
+  case 0x08:
   {
     HAL_GPIO_WritePin(gpios[9].gpio, gpios[9].pin, GPIO_PIN_SET);
     break;
   }
-  case 'J':
+  case 0x09:
   {
     HAL_GPIO_WritePin(gpios[9].gpio, gpios[9].pin, GPIO_PIN_RESET);
     break;
   }
-  case '<':
+  case 0x1B:
   {
     if (step < 7)
     {
@@ -499,7 +499,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     }
     break;
   }
-  case '>':
+  case 0x1C:
   {
     if (step > 0)
     {
@@ -507,119 +507,119 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     }
     break;
   }
-  case 'a':
+  case 0x00:
   {
     HAL_GPIO_WritePin(gpios[0].gpio, gpios[0].pin, GPIO_PIN_SET);
     break;
   }
-  case '$':
+  case 0x13:
   {
     HAL_GPIO_WritePin(gpios[0].gpio, gpios[0].pin, GPIO_PIN_RESET);
     break;
   }
-  case 'b':
+  case 0x01:
   {
     HAL_GPIO_WritePin(gpios[1].gpio, gpios[1].pin, GPIO_PIN_SET);
     break;
   }
-  case '%':
+  case 0x14:
   {
     HAL_GPIO_WritePin(gpios[1].gpio, gpios[1].pin, GPIO_PIN_RESET);
     break;
   }
-  case 'c':
+  case 0x02:
   {
     HAL_GPIO_WritePin(gpios[2].gpio, gpios[2].pin, GPIO_PIN_SET);
     break;
   }
-  case '^':
+  case 0x15:
   {
     HAL_GPIO_WritePin(gpios[2].gpio, gpios[2].pin, GPIO_PIN_RESET);
     break;
   }
-  case 'd':
+  case 0x03:
   {
     HAL_GPIO_WritePin(gpios[3].gpio, gpios[3].pin, GPIO_PIN_SET);
     break;
   }
-  case '&':
+  case 0x16:
   {
     HAL_GPIO_WritePin(gpios[3].gpio, gpios[3].pin, GPIO_PIN_RESET);
     break;
   }
-  case 'e':
+  case 0x04:
   {
     HAL_GPIO_WritePin(gpios[4].gpio, gpios[4].pin, GPIO_PIN_SET);
     break;
   }
-  case '*':
+  case 0x17:
   {
     HAL_GPIO_WritePin(gpios[4].gpio, gpios[4].pin, GPIO_PIN_RESET);
     break;
   }
-  case 'f':
+  case 0x05:
   {
     HAL_GPIO_WritePin(gpios[5].gpio, gpios[5].pin, GPIO_PIN_SET);
     break;
   }
-  case '(':
+  case 0x18:
   {
     HAL_GPIO_WritePin(gpios[5].gpio, gpios[5].pin, GPIO_PIN_RESET);
     break;
   }
-  case 'g':
+  case 0x06:
   {
     HAL_GPIO_WritePin(gpios[6].gpio, gpios[6].pin, GPIO_PIN_SET);
     break;
   }
-  case ')':
+  case 0x19:
   {
     HAL_GPIO_WritePin(gpios[6].gpio, gpios[6].pin, GPIO_PIN_RESET);
     break;
   }
-  case 'h':
+  case 0x07:
   {
     HAL_GPIO_WritePin(gpios[7].gpio, gpios[7].pin, GPIO_PIN_SET);
     break;
   }
-  case '-':
+  case 0x1A:
   {
     HAL_GPIO_WritePin(gpios[7].gpio, gpios[7].pin, GPIO_PIN_RESET);
     break;
   }
-  case 's':
+  case 0x0C:
   {
       HAL_SuspendTick();
       HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
       NVIC_SystemReset();
       break;
   }
-  case '1':
+  case 0x0D:
   {
     PMT_ON = 1;
     break;
   }
-  case '!':
+  case 0x10:
   {
     PMT_ON = 0;
     break;
   }
-  case '2':
+  case 0x0E:
   {
     ERPA_ON = 1;
     break;
   }
-  case '@':
+  case 0x11:
   {
     ERPA_ON = 0;
     break;
   }
-  case '3':
+  case 0x0F:
   {
     HK_ON = 1;
     break;
   }
-  case '#':
+  case 0x12:
   {
     HK_ON = 0;
     break;
@@ -684,7 +684,7 @@ int main(void)
 
   WakeUpSelection.WakeUpEvent = UART_WAKEUP_ON_ADDRESS;
   WakeUpSelection.AddressLength = UART_ADDRESS_DETECT_7B;
-  WakeUpSelection.Address = 0x23; // send "£"
+  WakeUpSelection.Address = 0x5B; // send "["
 
   if (HAL_UARTEx_StopModeWakeUpSourceConfig(&huart1, WakeUpSelection) != HAL_OK) {
       Error_Handler();
