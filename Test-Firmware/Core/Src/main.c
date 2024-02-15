@@ -34,7 +34,6 @@ typedef struct
   GPIO_TypeDef *gpio;
   uint16_t pin;
 } gpio_pins;
-const int HK_CADENCE = 1; //Should be set at 5
 const gpio_pins gpios[] = {{GPIOB, GPIO_PIN_5}, {GPIOB, GPIO_PIN_6}, {GPIOC, GPIO_PIN_10}, {GPIOC, GPIO_PIN_13}, {GPIOC, GPIO_PIN_7}, {GPIOC, GPIO_PIN_8}, {GPIOC, GPIO_PIN_9}, {GPIOC, GPIO_PIN_6}, {GPIOF, GPIO_PIN_6}, {GPIOF, GPIO_PIN_7}};
 
 struct pmt_data {
@@ -71,7 +70,7 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 #define BUFFER_SIZE 100
-unsigned char rx_buf[BUFFER_SIZE];
+unsigned char rx_buf[2];
 UART_WakeUpTypeDef WakeUpSelection;
 
 /* Hexadecimal Addresses for I2C Temperature Sensors */
@@ -109,12 +108,19 @@ uint8_t hk_buf[38]; // buffer that is filled with HK packet info
 const uint8_t hk_sync = 0xCC; // SYNC byte to let packet interpreter / OBC know which packet is which
 uint16_t hk_seq = 0; // SEQ byte which keeps track of what # HK packet is being sent (0-65535)
 
-int hk_counter = 0; // counter to know when to send HK packet (sent every 50 ERPA packets)
-					// we put them in the same routine and send HK when this count == 50
+
 int startupTimer = 0;
 uint8_t PMT_ON = 1;
 uint8_t ERPA_ON = 1;
 uint8_t HK_ON = 1;
+
+/* Cadence Multiplier Logic Variables */
+uint8_t ERPA_CADENCE = 100; // DEFAULT VALUE 100ms
+int ERPA_COUNTER = 0;		// Counter to increase ERPA_COUNTER value. When equal to ERPA_CADENCE, packet will send
+uint8_t PMT_CADENCE = 125;  // DEFAULT VALUE 125ms
+int PMT_COUNTER = 0; 		// Counter to increase PMT_COUNTER value. When equal to PMT_CADENCE, packet will send
+uint8_t HK_CADENCE = 100; 	// DEFAULT VALUE 100ms
+int HK_COUNTER = 0; 		// Counter to increase HK_COUNTER value. When equal to HK_CADENCE, packet will send
 
 static const uint8_t REG_TEMP = 0x00;
 /* USER CODE END PV */
@@ -139,25 +145,6 @@ static void MX_I2C1_Init(void);
 /* USER CODE BEGIN 0 */
 
 
-
-uint8_t* fill_pmt_data(pmt_data data) {
-	uint8_t* ret = (uint8_t*)malloc(6 * sizeof(uint8_t));
-
-	if (ret == NULL) {
-		// Handle memory allocation failure
-		return NULL;
-	}
-
-	ret[0] = pmt_sync;
-	ret[1] = pmt_sync;
-	ret[2] = ((data.pmt_seq & 0xFF00) >> 8);
-	ret[3] = (data.pmt_seq & 0xFF);
-	ret[4] = ((data.pmt_raw & 0xFF00) >> 8);
-	ret[5] = (data.pmt_raw & 0xFF);
-	return ret;
-}
-
-
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim == &htim2)
@@ -166,65 +153,75 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
     { // check pin state
       if (ERPA_ON)
       {
-        /**
-         * TIM1_CH1 Interrupt
-         * Sets CNV and samples ERPA's ADC
-         * Steps DAC
-         * +/- 0.5v Every 100ms
-         */
+    	int current_count = ERPA_COUNTER;
+    	int current_cadence = ERPA_CADENCE;
+    	if (ERPA_COUNTER == ERPA_CADENCE) {
 
-        /* Write to SPI (begin transfer?) */
+			/**
+			 * TIM1_CH1 Interrupt
+			 * Sets CNV and samples ERPA's ADC
+			 * Steps DAC
+			 * +/- 0.5v Every 100ms
+			 */
 
-		while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11));
-					//check pin state
+			/* Write to SPI (begin transfer?) */
 
-		/**
-		 * TIM1_CH1 Interrupt
-		 * Sets CNV and samples ERPA's ADC
-		 * Steps DAC
-		 * +/- 0.5v Every 100ms
-		*/
+			while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11));
+						//check pin state
 
-		  /* Write to SPI (begin transfer?) */
-		HAL_SPI_Transmit(&hspi2, (uint8_t * ) &WRITE, 1, 1);
-		SPI2->CR1 &= ~(1<<10); // THIS IS NEEDED TO STOP SPI1_SCK FROM GENERATING CLOCK PULSES
-		while (!(SPI2->SR));
-	    erpa_raw = SPI2->DR;
+			/**
+			 * TIM1_CH1 Interrupt
+			 * Sets CNV and samples ERPA's ADC
+			 * Steps DAC
+			 * +/- 0.5v Every 100ms
+			*/
+
+			  /* Write to SPI (begin transfer?) */
+			HAL_SPI_Transmit(&hspi2, (uint8_t * ) &WRITE, 1, 1);
+			SPI2->CR1 &= ~(1<<10); // THIS IS NEEDED TO STOP SPI1_SCK FROM GENERATING CLOCK PULSES
+			while (!(SPI2->SR));
+			erpa_raw = SPI2->DR;
 
 
-		DAC->DHR12R1 = DAC_OUT[step];
+			DAC->DHR12R1 = DAC_OUT[step];
 
-		HAL_ADC_Start_DMA(&hadc, (uint32_t *)adcResultsDMA,
-						  adcChannelCount);
-		uint16_t PA0 = adcResultsDMA[0]; 				// ADC_IN0, END_mon: entrance/collimator monitor
-		uint16_t PA7 = adcResultsDMA[6]; 				// ADC_IN7, SWP_mon: Sweep voltage monitor
-		uint16_t PB0 = adcResultsDMA[7]; 				// ADC_IN8, TMP 1: Sweep temperature
-		uint16_t PB1 = adcResultsDMA[8]; 				// ADC_IN9, TMP 2: feedbacks
+			HAL_ADC_Start_DMA(&hadc, (uint32_t *)adcResultsDMA,
+							  adcChannelCount);
+			uint16_t PA0 = adcResultsDMA[0]; 				// ADC_IN0, END_mon: entrance/collimator monitor
+			uint16_t PA7 = adcResultsDMA[6]; 				// ADC_IN7, SWP_mon: Sweep voltage monitor
+			uint16_t PB0 = adcResultsDMA[7]; 				// ADC_IN8, TMP 1: Sweep temperature
+			uint16_t PB1 = adcResultsDMA[8]; 				// ADC_IN9, TMP 2: feedbacks
 
-		erpa_buf[0] = erpa_sync;                  		// ERPA SYNC 0xAA MSB
-		erpa_buf[1] = erpa_sync;                  		// ERPA SYNC 0xAA LSB
-		erpa_buf[2] = ((erpa_seq & 0xFF00) >> 8); 		// ERPA SEQ # MSB
-		erpa_buf[3] = (erpa_seq & 0xFF);          		// ERPA SEQ # MSB
-		erpa_buf[4] = ((PA0 & 0xFF00) >> 8); 	  		// ENDmon MSB
-		erpa_buf[5] = (PA0 & 0xFF);               		// ENDmon LSB
-		erpa_buf[6] = ((PA7 & 0xFF00) >> 8);      		// SWP Monitored MSB
-		erpa_buf[7] = (PA7 & 0xFF);               		// SWP Monitored LSB
-		erpa_buf[8] = ((PB0 & 0xFF00) >> 8);      		// TEMPURATURE 1 MSB
-		erpa_buf[9] = (PB0 & 0xFF);               		// TEMPURATURE 1 LSB
-		erpa_buf[10] = ((PB1 & 0xFF00) >> 8);     		// TEMPURATURE 2 MSB
-		erpa_buf[11] = (PB1 & 0xFF);                    // TEMPURATURE 2 LSB
-		erpa_buf[12] = ((erpa_raw & 0xFF00) >> 8);      // ERPA eADC MSB
-		erpa_buf[13] = (erpa_raw & 0xFF);               // ERPA eADC LSB
+			erpa_buf[0] = erpa_sync;                  		// ERPA SYNC 0xAA MSB
+			erpa_buf[1] = erpa_sync;                  		// ERPA SYNC 0xAA LSB
+			erpa_buf[2] = ((erpa_seq & 0xFF00) >> 8); 		// ERPA SEQ # MSB
+			erpa_buf[3] = (erpa_seq & 0xFF);          		// ERPA SEQ # MSB
+			erpa_buf[4] = ((PA0 & 0xFF00) >> 8); 	  		// ENDmon MSB
+			erpa_buf[5] = (PA0 & 0xFF);               		// ENDmon LSB
+			erpa_buf[6] = ((PA7 & 0xFF00) >> 8);      		// SWP Monitored MSB
+			erpa_buf[7] = (PA7 & 0xFF);               		// SWP Monitored LSB
+			erpa_buf[8] = ((PB0 & 0xFF00) >> 8);      		// TEMPURATURE 1 MSB
+			erpa_buf[9] = (PB0 & 0xFF);               		// TEMPURATURE 1 LSB
+			erpa_buf[10] = ((PB1 & 0xFF00) >> 8);     		// TEMPURATURE 2 MSB
+			erpa_buf[11] = (PB1 & 0xFF);                    // TEMPURATURE 2 LSB
+			erpa_buf[12] = ((erpa_raw & 0xFF00) >> 8);      // ERPA eADC MSB
+			erpa_buf[13] = (erpa_raw & 0xFF);               // ERPA eADC LSB
 
-		erpa_seq++;
-		if (ERPA_ON)
-		{
-		  HAL_UART_Transmit(&huart1, erpa_buf, sizeof(erpa_buf), 100);
-		}
+		    HAL_UART_Transmit(&huart1, erpa_buf, sizeof(erpa_buf), 100);
+
+			erpa_seq++;
+			ERPA_COUNTER = 0;
+			if (erpa_seq == 65535) {
+				erpa_seq = 0;
+			}
+
+    	} else {
+    		ERPA_COUNTER++;
+    	}
       }
       if (HK_ON)
       {
-        if (hk_counter == HK_CADENCE)
+        if (HK_COUNTER == HK_CADENCE)
         {
           uint8_t buf[2];
           int16_t val;
@@ -395,16 +392,19 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
           hk_buf[36] = ((PA6 & 0xFF00) >> 8);      	// n800v_mon MSB		6 N800V_MON PA6
           hk_buf[37] = (PA6 & 0xFF);               	// n800v_mon LSB
 
-          if (HK_ON)
-          {
-           HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), 100);
-          }
-          hk_counter = 1;
+
+          HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), 100);
+
+
           hk_seq++;
+          HK_COUNTER = 0;
+          if (hk_seq == 65535) {
+        	  hk_seq = 0;
+          }
         }
         else
         {
-          hk_counter++;
+          HK_COUNTER++;
         }
       }
     }
@@ -415,45 +415,44 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
     {
       if (PMT_ON)
       { // check pin state
-
-    	while(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8));
-
-		/**
-		 * TIM1_CH1 Interrupt
-		 * Sets CNV and samples UVPMT's ADC
-		 * Every 125ms
-		 */
+    	if (PMT_COUNTER == PMT_CADENCE) {
 
 
-		/* Write to SPI (begin transfer?) */
-		HAL_SPI_Transmit(&hspi1, (uint8_t * ) &WRITE, 1, 1);
-		SPI1->CR1 &= ~(1<<10); // THIS IS NEEDED TO STOP SPI1_SCK FROM GENERATING CLOCK PULSES
-		while (!(SPI1->SR));
+    		while(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8));
 
-		//RXNE here
-
-		pmt_raw = SPI1->DR;
-
-		int r = pmt_raw;
+    		/**
+    		 * TIM1_CH1 Interrupt
+    		 * Sets CNV and samples UVPMT's ADC
+    		 * Every 125ms
+    		 */
 
 
-    	/*
-    	pmt_data data;
-    	data.pmt_raw = raw;
-    	data.pmt_seq = pmt_seq;
+    		/* Write to SPI (begin transfer?) */
+    		HAL_SPI_Transmit(&hspi1, (uint8_t * ) &WRITE, 1, 1);
+    		SPI1->CR1 &= ~(1<<10); // THIS IS NEEDED TO STOP SPI1_SCK FROM GENERATING CLOCK PULSES
+    		while (!(SPI1->SR));
 
-    	uint8_t* abstraction_test_buf = fill_pmt_data(data);
-    	*/
-    	  pmt_buf[0] = pmt_sync;
-		  pmt_buf[1] = pmt_sync;
-		  pmt_buf[2] = ((pmt_seq & 0xFF00) >> 8);
-		  pmt_buf[3] = (pmt_seq & 0xFF);
-		  pmt_buf[4] = ((pmt_raw & 0xFF00) >> 8);
-		  pmt_buf[5] = (pmt_raw & 0xFF);
+    		//RXNE here
 
-		  pmt_seq++;
-		  HAL_UART_Transmit(&huart1, pmt_buf, sizeof(pmt_buf), 100);
-		  /*HAL_UART_Transmit(&huart1, abstraction_test_buf, sizeof(abstraction_test_buf), 100);*/
+    		pmt_raw = SPI1->DR;
+
+    		int r = pmt_raw;
+
+
+    		pmt_buf[0] = pmt_sync;
+    		pmt_buf[1] = pmt_sync;
+    		pmt_buf[2] = ((pmt_seq & 0xFF00) >> 8);
+    		pmt_buf[3] = (pmt_seq & 0xFF);
+    		pmt_buf[4] = ((pmt_raw & 0xFF00) >> 8);
+    		pmt_buf[5] = (pmt_raw & 0xFF);
+
+        	HAL_UART_Transmit(&huart1, pmt_buf, sizeof(pmt_buf), 100);
+
+    		pmt_seq++;
+    		PMT_COUNTER = 0;
+    	} else {
+    		PMT_COUNTER++;
+    	}
       }
     }
   }
@@ -465,9 +464,8 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 
-  HAL_UART_Receive_IT(&huart1, rx_buf, 1);
+  HAL_UART_Receive_IT(&huart1, rx_buf, 2);
   unsigned char key = rx_buf[0];
-
   switch (key)
   {
   case 0x0B:
@@ -506,6 +504,21 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
       step--;
     }
     break;
+  }
+  case 0x1E: { // ERPA Cadence Multiplier
+	  ERPA_CADENCE = rx_buf[1];
+	  ERPA_COUNTER = 0;
+	  break;
+  }
+  case 0x1F: { // PMT Cadence Multiplier
+	  PMT_CADENCE = rx_buf[1];
+	  PMT_COUNTER = 0;
+	  break;
+  }
+  case 0x20: { // HK Cadence Multiplier
+	  HK_CADENCE = rx_buf[1];
+	  HK_COUNTER = 0;
+	  break;
   }
   case 0x00:
   {
@@ -700,7 +713,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		HAL_UART_Receive_IT(&huart1, rx_buf, 1);
+		HAL_UART_Receive_IT(&huart1, rx_buf, 2);
 
 	  /*
 	  // ERPA adc handling
@@ -1162,7 +1175,7 @@ static void MX_TIM1_Init(void)
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = 100 - 1;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 48000 - 1;
+  htim1.Init.Period = 600 - 1;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
@@ -1186,7 +1199,7 @@ static void MX_TIM1_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 480 -1;
+  sConfigOC.Pulse = 7 -1;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
@@ -1236,7 +1249,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 100 - 1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 60000 - 1;
+  htim2.Init.Period = 480 - 1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -1259,7 +1272,7 @@ static void MX_TIM2_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 480 - 1;
+  sConfigOC.Pulse = 5 - 1;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
