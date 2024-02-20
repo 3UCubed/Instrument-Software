@@ -153,6 +153,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
     { // check pin state
       if (ERPA_ON)
       {
+    	int cadence = ERPA_CADENCE;
     	if (ERPA_COUNTER == ERPA_CADENCE) {
 
 			/**
@@ -464,6 +465,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
   HAL_UART_Receive_IT(&huart1, rx_buf, 2);
   unsigned char key = rx_buf[0];
+  unsigned char second = rx_buf[1];
   switch (key)
   {
   case 0x0B:
@@ -518,13 +520,15 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	  HK_COUNTER = 0;
 	  break;
   }
-  case 0x00:
+  case 0x21:
   {
+
     HAL_GPIO_WritePin(gpios[0].gpio, gpios[0].pin, GPIO_PIN_SET);
     break;
   }
   case 0x13:
   {
+
     HAL_GPIO_WritePin(gpios[0].gpio, gpios[0].pin, GPIO_PIN_RESET);
     break;
   }
