@@ -153,8 +153,6 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
     { // check pin state
       if (ERPA_ON)
       {
-    	int current_count = ERPA_COUNTER;
-    	int current_cadence = ERPA_CADENCE;
     	if (ERPA_COUNTER == ERPA_CADENCE) {
 
 			/**
@@ -658,10 +656,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  HAL_StatusTypeDef ret;
-  uint8_t buf[2];
-  int16_t val;
-  float temp_c;
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -713,7 +708,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		HAL_UART_Receive_IT(&huart1, rx_buf, 2);
+	  HAL_UART_Receive_IT(&huart1, rx_buf, 2);
 
 	  /*
 	  // ERPA adc handling
