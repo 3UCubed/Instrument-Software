@@ -115,12 +115,19 @@ uint8_t ERPA_ON = 1;
 uint8_t HK_ON = 1;
 
 /* Cadence Multiplier Logic Variables */
-uint8_t ERPA_CADENCE = 100; // DEFAULT VALUE 100ms
-int ERPA_COUNTER = 0;		// Counter to increase ERPA_COUNTER value. When equal to ERPA_CADENCE, packet will send
-uint8_t PMT_CADENCE = 125;  // DEFAULT VALUE 125ms
-int PMT_COUNTER = 0; 		// Counter to increase PMT_COUNTER value. When equal to PMT_CADENCE, packet will send
-uint8_t HK_CADENCE = 100; 	// DEFAULT VALUE 100ms
-int HK_COUNTER = 0; 		// Counter to increase HK_COUNTER value. When equal to HK_CADENCE, packet will send
+uint8_t ERPA_CADENCE = 100; 			// DEFAULT VALUE 100ms - How often ERPA Samples
+const uint8_t ERPA_PACKET_SPEED = 100;	// Speed to average ERPA packets at
+int ERPA_PACKET_COUNTER = 0;			// When equal to 100, averaged packet will send
+int ERPA_SAMPLE_COUNTER = 0;			// Counter to increase ERPA_COUNTER value. When equal to ERPA_CADENCE, packet will send
+int ERPA_ADC_AVG = 0;
+
+uint8_t PMT_CADENCE = 125;  			// DEFAULT VALUE 125ms - How often PMT Samples
+const uint8_t PMT_PACKET_SPEED = 125;   // Speed to average PMT packets at
+int PMT_COUNTER = 0; 					// Counter to increase PMT_COUNTER value. When equal to PMT_CADENCE, packet will send
+
+uint8_t HK_CADENCE = 100; 				// DEFAULT VALUE 100ms - How often HK Samples
+const uint8_t HK_PACKET_SPEED;			// Speed to average HK packets at
+int HK_COUNTER = 0; 					// Counter to increase HK_COUNTER value. When equal to HK_CADENCE, packet will send
 
 static const uint8_t REG_TEMP = 0x00;
 /* USER CODE END PV */
@@ -153,8 +160,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
     { // check pin state
       if (ERPA_ON)
       {
-    	int cadence = ERPA_CADENCE;
-    	if (ERPA_COUNTER == ERPA_CADENCE) {
+    	if (ERPA_SAMPLE_COUNTER == ERPA_CADENCE) {
 
 			/**
 			 * TIM1_CH1 Interrupt
@@ -181,41 +187,55 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 			while (!(SPI2->SR));
 			erpa_raw = SPI2->DR;
 
+			int erp = erpa_raw;
+			ERPA_ADC_AVG += erpa_raw;
+			int c = ERPA_ADC_AVG;
 
-			DAC->DHR12R1 = DAC_OUT[step];
 
-			HAL_ADC_Start_DMA(&hadc, (uint32_t *)adcResultsDMA,
-							  adcChannelCount);
-			uint16_t PA0 = adcResultsDMA[0]; 				// ADC_IN0, END_mon: entrance/collimator monitor
-			uint16_t PA7 = adcResultsDMA[6]; 				// ADC_IN7, SWP_mon: Sweep voltage monitor
-			uint16_t PB0 = adcResultsDMA[7]; 				// ADC_IN8, TMP 1: Sweep temperature
-			uint16_t PB1 = adcResultsDMA[8]; 				// ADC_IN9, TMP 2: feedbacks
+			if (ERPA_PACKET_COUNTER == ERPA_PACKET_SPEED) {
 
-			erpa_buf[0] = erpa_sync;                  		// ERPA SYNC 0xAA MSB
-			erpa_buf[1] = erpa_sync;                  		// ERPA SYNC 0xAA LSB
-			erpa_buf[2] = ((erpa_seq & 0xFF00) >> 8); 		// ERPA SEQ # MSB
-			erpa_buf[3] = (erpa_seq & 0xFF);          		// ERPA SEQ # MSB
-			erpa_buf[4] = ((PA0 & 0xFF00) >> 8); 	  		// ENDmon MSB
-			erpa_buf[5] = (PA0 & 0xFF);               		// ENDmon LSB
-			erpa_buf[6] = ((PA7 & 0xFF00) >> 8);      		// SWP Monitored MSB
-			erpa_buf[7] = (PA7 & 0xFF);               		// SWP Monitored LSB
-			erpa_buf[8] = ((PB0 & 0xFF00) >> 8);      		// TEMPURATURE 1 MSB
-			erpa_buf[9] = (PB0 & 0xFF);               		// TEMPURATURE 1 LSB
-			erpa_buf[10] = ((PB1 & 0xFF00) >> 8);     		// TEMPURATURE 2 MSB
-			erpa_buf[11] = (PB1 & 0xFF);                    // TEMPURATURE 2 LSB
-			erpa_buf[12] = ((erpa_raw & 0xFF00) >> 8);      // ERPA eADC MSB
-			erpa_buf[13] = (erpa_raw & 0xFF);               // ERPA eADC LSB
+				DAC->DHR12R1 = DAC_OUT[step];
 
-		    HAL_UART_Transmit(&huart1, erpa_buf, sizeof(erpa_buf), 100);
+				HAL_ADC_Start_DMA(&hadc, (uint32_t *)adcResultsDMA,
+								  adcChannelCount);
+				uint16_t PA0 = adcResultsDMA[0]; 				// ADC_IN0, END_mon: entrance/collimator monitor
+				uint16_t PA7 = adcResultsDMA[6]; 				// ADC_IN7, SWP_mon: Sweep voltage monitor
+				uint16_t PB0 = adcResultsDMA[7]; 				// ADC_IN8, TMP 1: Sweep temperature
+				uint16_t PB1 = adcResultsDMA[8]; 				// ADC_IN9, TMP 2: feedbacks
 
-			erpa_seq++;
-			ERPA_COUNTER = 0;
+				ERPA_ADC_AVG = ERPA_ADC_AVG / ERPA_PACKET_SPEED;
+				int check = ERPA_ADC_AVG;
+
+				erpa_buf[0] = erpa_sync;                  		// ERPA SYNC 0xAA MSB
+				erpa_buf[1] = erpa_sync;                  		// ERPA SYNC 0xAA LSB
+				erpa_buf[2] = ((erpa_seq & 0xFF00) >> 8); 		// ERPA SEQ # MSB
+				erpa_buf[3] = (erpa_seq & 0xFF);          		// ERPA SEQ # MSB
+				erpa_buf[4] = ((PA0 & 0xFF00) >> 8); 	  		// ENDmon MSB
+				erpa_buf[5] = (PA0 & 0xFF);               		// ENDmon LSB
+				erpa_buf[6] = ((PA7 & 0xFF00) >> 8);      		// SWP Monitored MSB
+				erpa_buf[7] = (PA7 & 0xFF);               		// SWP Monitored LSB
+				erpa_buf[8] = ((PB0 & 0xFF00) >> 8);      		// TEMPURATURE 1 MSB
+				erpa_buf[9] = (PB0 & 0xFF);               		// TEMPURATURE 1 LSB
+				erpa_buf[10] = ((PB1 & 0xFF00) >> 8);     		// TEMPURATURE 2 MSB
+				erpa_buf[11] = (PB1 & 0xFF);                    // TEMPURATURE 2 LSB
+				erpa_buf[12] = ((ERPA_ADC_AVG & 0xFF00) >> 8);      // ERPA eADC MSB
+				erpa_buf[13] = (ERPA_ADC_AVG & 0xFF);               // ERPA eADC LSB
+
+				ERPA_ADC_AVG = 0;
+
+				HAL_UART_Transmit(&huart1, erpa_buf, sizeof(erpa_buf), 100);
+				ERPA_PACKET_COUNTER = 0;
+				erpa_seq++;
+			}
+
+			ERPA_SAMPLE_COUNTER = 0;
 			if (erpa_seq == 65535) {
 				erpa_seq = 0;
 			}
 
     	} else {
-    		ERPA_COUNTER++;
+    		ERPA_SAMPLE_COUNTER++;
+    		ERPA_PACKET_COUNTER++;
     	}
       }
       if (HK_ON)
@@ -507,7 +527,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   }
   case 0x1E: { // ERPA Cadence Multiplier
 	  ERPA_CADENCE = rx_buf[1];
-	  ERPA_COUNTER = 0;
+	  ERPA_SAMPLE_COUNTER = 0;
 	  break;
   }
   case 0x1F: { // PMT Cadence Multiplier
