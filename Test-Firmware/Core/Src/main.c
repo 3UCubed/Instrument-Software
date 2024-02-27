@@ -115,10 +115,11 @@ uint8_t ERPA_ON = 1;
 uint8_t HK_ON = 1;
 
 /* Cadence Multiplier Logic Variables */
-uint8_t ERPA_CADENCE = 100; 			// DEFAULT VALUE 100ms - How often ERPA Samples
+uint8_t ERPA_SAMPLE_CADENCE = 100; 			// DEFAULT VALUE 100ms - How often ERPA Samples
 const uint8_t ERPA_PACKET_SPEED = 100;	// Speed to average ERPA packets at
 int ERPA_PACKET_COUNTER = 0;			// When equal to 100, averaged packet will send
 int ERPA_SAMPLE_COUNTER = 0;			// Counter to increase ERPA_COUNTER value. When equal to ERPA_CADENCE, packet will send
+int times_added = 0;
 int ERPA_ADC_AVG = 0;
 
 uint8_t PMT_CADENCE = 125;  			// DEFAULT VALUE 125ms - How often PMT Samples
@@ -160,7 +161,9 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
     { // check pin state
       if (ERPA_ON)
       {
-    	if (ERPA_SAMPLE_COUNTER == ERPA_CADENCE) {
+    	int es = ERPA_SAMPLE_COUNTER;
+    	int ec = ERPA_SAMPLE_CADENCE;
+    	if (ERPA_SAMPLE_COUNTER == ERPA_SAMPLE_CADENCE) {
 
 			/**
 			 * TIM1_CH1 Interrupt
@@ -187,10 +190,12 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 			while (!(SPI2->SR));
 			erpa_raw = SPI2->DR;
 
-			int erp = erpa_raw;
 			ERPA_ADC_AVG += erpa_raw;
-			int c = ERPA_ADC_AVG;
+			times_added++;
 
+
+			int pc = ERPA_PACKET_COUNTER;
+			int ps = ERPA_PACKET_SPEED;
 
 			if (ERPA_PACKET_COUNTER == ERPA_PACKET_SPEED) {
 
@@ -203,7 +208,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 				uint16_t PB0 = adcResultsDMA[7]; 				// ADC_IN8, TMP 1: Sweep temperature
 				uint16_t PB1 = adcResultsDMA[8]; 				// ADC_IN9, TMP 2: feedbacks
 
-				ERPA_ADC_AVG = ERPA_ADC_AVG / ERPA_PACKET_SPEED;
+				ERPA_ADC_AVG = ERPA_ADC_AVG / times_added;
 				int check = ERPA_ADC_AVG;
 
 				erpa_buf[0] = erpa_sync;                  		// ERPA SYNC 0xAA MSB
@@ -222,6 +227,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 				erpa_buf[13] = (ERPA_ADC_AVG & 0xFF);               // ERPA eADC LSB
 
 				ERPA_ADC_AVG = 0;
+				times_added = 0;
 
 				HAL_UART_Transmit(&huart1, erpa_buf, sizeof(erpa_buf), 100);
 				ERPA_PACKET_COUNTER = 0;
@@ -233,11 +239,10 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 				erpa_seq = 0;
 			}
 
-    	} else {
-    		ERPA_SAMPLE_COUNTER++;
-    		ERPA_PACKET_COUNTER++;
     	}
       }
+      ERPA_SAMPLE_COUNTER++;
+      ERPA_PACKET_COUNTER++;
       if (HK_ON)
       {
         if (HK_COUNTER == HK_CADENCE)
@@ -526,8 +531,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     break;
   }
   case 0x1E: { // ERPA Cadence Multiplier
-	  ERPA_CADENCE = rx_buf[1];
+	  ERPA_SAMPLE_CADENCE = rx_buf[1];
 	  ERPA_SAMPLE_COUNTER = 0;
+	  ERPA_PACKET_COUNTER = 0;
 	  break;
   }
   case 0x1F: { // PMT Cadence Multiplier
