@@ -3261,93 +3261,93 @@ static void MX_TIM2_Init(void)
  80013ae:	2280      	movs	r2, #128	; 0x80
  80013b0:	05d2      	lsls	r2, r2, #23
  80013b2:	601a      	str	r2, [r3, #0]
-  htim2.Init.Prescaler = 100 - 1;
+  htim2.Init.Prescaler = 1000 - 1;
  80013b4:	4b2e      	ldr	r3, [pc, #184]	; (8001470 <MX_TIM2_Init+0xf8>)
- 80013b6:	2263      	movs	r2, #99	; 0x63
+ 80013b6:	4a2f      	ldr	r2, [pc, #188]	; (8001474 <MX_TIM2_Init+0xfc>)
  80013b8:	605a      	str	r2, [r3, #4]
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
  80013ba:	4b2d      	ldr	r3, [pc, #180]	; (8001470 <MX_TIM2_Init+0xf8>)
  80013bc:	2200      	movs	r2, #0
  80013be:	609a      	str	r2, [r3, #8]
-  htim2.Init.Period = 60000 - 1;
+  htim2.Init.Period = 300 - 1;
  80013c0:	4b2b      	ldr	r3, [pc, #172]	; (8001470 <MX_TIM2_Init+0xf8>)
- 80013c2:	4a2c      	ldr	r2, [pc, #176]	; (8001474 <MX_TIM2_Init+0xfc>)
- 80013c4:	60da      	str	r2, [r3, #12]
+ 80013c2:	222c      	movs	r2, #44	; 0x2c
+ 80013c4:	32ff      	adds	r2, #255	; 0xff
+ 80013c6:	60da      	str	r2, [r3, #12]
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
- 80013c6:	4b2a      	ldr	r3, [pc, #168]	; (8001470 <MX_TIM2_Init+0xf8>)
- 80013c8:	2200      	movs	r2, #0
- 80013ca:	611a      	str	r2, [r3, #16]
+ 80013c8:	4b29      	ldr	r3, [pc, #164]	; (8001470 <MX_TIM2_Init+0xf8>)
+ 80013ca:	2200      	movs	r2, #0
+ 80013cc:	611a      	str	r2, [r3, #16]
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
- 80013cc:	4b28      	ldr	r3, [pc, #160]	; (8001470 <MX_TIM2_Init+0xf8>)
- 80013ce:	2280      	movs	r2, #128	; 0x80
- 80013d0:	619a      	str	r2, [r3, #24]
+ 80013ce:	4b28      	ldr	r3, [pc, #160]	; (8001470 <MX_TIM2_Init+0xf8>)
+ 80013d0:	2280      	movs	r2, #128	; 0x80
+ 80013d2:	619a      	str	r2, [r3, #24]
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
- 80013d2:	4b27      	ldr	r3, [pc, #156]	; (8001470 <MX_TIM2_Init+0xf8>)
- 80013d4:	0018      	movs	r0, r3
- 80013d6:	f003 fca3 	bl	8004d20 <HAL_TIM_Base_Init>
- 80013da:	1e03      	subs	r3, r0, #0
- 80013dc:	d001      	beq.n	80013e2 <MX_TIM2_Init+0x6a>
+ 80013d4:	4b26      	ldr	r3, [pc, #152]	; (8001470 <MX_TIM2_Init+0xf8>)
+ 80013d6:	0018      	movs	r0, r3
+ 80013d8:	f003 fca2 	bl	8004d20 <HAL_TIM_Base_Init>
+ 80013dc:	1e03      	subs	r3, r0, #0
+ 80013de:	d001      	beq.n	80013e4 <MX_TIM2_Init+0x6c>
   {
     Error_Handler();
- 80013de:	f000 f943 	bl	8001668 <Error_Handler>
+ 80013e0:	f000 f942 	bl	8001668 <Error_Handler>
   }
   sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
- 80013e2:	2128      	movs	r1, #40	; 0x28
- 80013e4:	187b      	adds	r3, r7, r1
- 80013e6:	2280      	movs	r2, #128	; 0x80
- 80013e8:	0152      	lsls	r2, r2, #5
- 80013ea:	601a      	str	r2, [r3, #0]
+ 80013e4:	2128      	movs	r1, #40	; 0x28
+ 80013e6:	187b      	adds	r3, r7, r1
+ 80013e8:	2280      	movs	r2, #128	; 0x80
+ 80013ea:	0152      	lsls	r2, r2, #5
+ 80013ec:	601a      	str	r2, [r3, #0]
   if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
- 80013ec:	187a      	adds	r2, r7, r1
- 80013ee:	4b20      	ldr	r3, [pc, #128]	; (8001470 <MX_TIM2_Init+0xf8>)
- 80013f0:	0011      	movs	r1, r2
- 80013f2:	0018      	movs	r0, r3
- 80013f4:	f004 f818 	bl	8005428 <HAL_TIM_ConfigClockSource>
- 80013f8:	1e03      	subs	r3, r0, #0
- 80013fa:	d001      	beq.n	8001400 <MX_TIM2_Init+0x88>
+ 80013ee:	187a      	adds	r2, r7, r1
+ 80013f0:	4b1f      	ldr	r3, [pc, #124]	; (8001470 <MX_TIM2_Init+0xf8>)
+ 80013f2:	0011      	movs	r1, r2
+ 80013f4:	0018      	movs	r0, r3
+ 80013f6:	f004 f817 	bl	8005428 <HAL_TIM_ConfigClockSource>
+ 80013fa:	1e03      	subs	r3, r0, #0
+ 80013fc:	d001      	beq.n	8001402 <MX_TIM2_Init+0x8a>
   {
     Error_Handler();
- 80013fc:	f000 f934 	bl	8001668 <Error_Handler>
+ 80013fe:	f000 f933 	bl	8001668 <Error_Handler>
   }
   if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
- 8001400:	4b1b      	ldr	r3, [pc, #108]	; (8001470 <MX_TIM2_Init+0xf8>)
- 8001402:	0018      	movs	r0, r3
- 8001404:	f003 fddc 	bl	8004fc0 <HAL_TIM_PWM_Init>
- 8001408:	1e03      	subs	r3, r0, #0
- 800140a:	d001      	beq.n	8001410 <MX_TIM2_Init+0x98>
+ 8001402:	4b1b      	ldr	r3, [pc, #108]	; (8001470 <MX_TIM2_Init+0xf8>)
+ 8001404:	0018      	movs	r0, r3
+ 8001406:	f003 fddb 	bl	8004fc0 <HAL_TIM_PWM_Init>
+ 800140a:	1e03      	subs	r3, r0, #0
+ 800140c:	d001      	beq.n	8001412 <MX_TIM2_Init+0x9a>
   {
     Error_Handler();
- 800140c:	f000 f92c 	bl	8001668 <Error_Handler>
+ 800140e:	f000 f92b 	bl	8001668 <Error_Handler>
   }
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
- 8001410:	2120      	movs	r1, #32
- 8001412:	187b      	adds	r3, r7, r1
- 8001414:	2200      	movs	r2, #0
- 8001416:	601a      	str	r2, [r3, #0]
+ 8001412:	2120      	movs	r1, #32
+ 8001414:	187b      	adds	r3, r7, r1
+ 8001416:	2200      	movs	r2, #0
+ 8001418:	601a      	str	r2, [r3, #0]
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
- 8001418:	187b      	adds	r3, r7, r1
- 800141a:	2200      	movs	r2, #0
- 800141c:	605a      	str	r2, [r3, #4]
+ 800141a:	187b      	adds	r3, r7, r1
+ 800141c:	2200      	movs	r2, #0
+ 800141e:	605a      	str	r2, [r3, #4]
   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
- 800141e:	187a      	adds	r2, r7, r1
- 8001420:	4b13      	ldr	r3, [pc, #76]	; (8001470 <MX_TIM2_Init+0xf8>)
- 8001422:	0011      	movs	r1, r2
- 8001424:	0018      	movs	r0, r3
- 8001426:	f004 fc2d 	bl	8005c84 <HAL_TIMEx_MasterConfigSynchronization>
- 800142a:	1e03      	subs	r3, r0, #0
- 800142c:	d001      	beq.n	8001432 <MX_TIM2_Init+0xba>
+ 8001420:	187a      	adds	r2, r7, r1
+ 8001422:	4b13      	ldr	r3, [pc, #76]	; (8001470 <MX_TIM2_Init+0xf8>)
+ 8001424:	0011      	movs	r1, r2
+ 8001426:	0018      	movs	r0, r3
+ 8001428:	f004 fc2c 	bl	8005c84 <HAL_TIMEx_MasterConfigSynchronization>
+ 800142c:	1e03      	subs	r3, r0, #0
+ 800142e:	d001      	beq.n	8001434 <MX_TIM2_Init+0xbc>
   {
     Error_Handler();
- 800142e:	f000 f91b 	bl	8001668 <Error_Handler>
+ 8001430:	f000 f91a 	bl	8001668 <Error_Handler>
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
- 8001432:	1d3b      	adds	r3, r7, #4
- 8001434:	2260      	movs	r2, #96	; 0x60
- 8001436:	601a      	str	r2, [r3, #0]
-  sConfigOC.Pulse = 480 - 1;
- 8001438:	1d3b      	adds	r3, r7, #4
- 800143a:	22e0      	movs	r2, #224	; 0xe0
- 800143c:	32ff      	adds	r2, #255	; 0xff
+ 8001434:	1d3b      	adds	r3, r7, #4
+ 8001436:	2260      	movs	r2, #96	; 0x60
+ 8001438:	601a      	str	r2, [r3, #0]
+  sConfigOC.Pulse = 30 - 1;
+ 800143a:	1d3b      	adds	r3, r7, #4
+ 800143c:	221d      	movs	r2, #29
  800143e:	605a      	str	r2, [r3, #4]
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
  8001440:	1d3b      	adds	r3, r7, #4
@@ -3382,7 +3382,7 @@ static void MX_TIM2_Init(void)
  800146c:	b00e      	add	sp, #56	; 0x38
  800146e:	bd80      	pop	{r7, pc}
  8001470:	20000240 	.word	0x20000240
- 8001474:	0000ea5f 	.word	0x0000ea5f
+ 8001474:	000003e7 	.word	0x000003e7
 
 08001478 <MX_USART1_UART_Init>:
   * @brief USART1 Initialization Function
