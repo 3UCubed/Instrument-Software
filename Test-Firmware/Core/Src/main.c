@@ -98,6 +98,27 @@ int pmt_raw;
 int erpa_raw;
 const int WRITE = 0x1; // Hex 0x1 that is sent to external ADC to trigger transfer of data
 
+/* ERPA Packet Variables */
+const int SAMPLING_FACTOR = 1;
+int erpa_packet_cadence = 128;
+int erpa_sample_count = 0;
+typedef struct erpa_sample_packet erpa_sample_packet;
+typedef struct row row;
+typedef struct column column;
+struct column {
+	int16_t data[3];
+};
+
+struct row {
+	column cols[4];
+};
+
+struct erpa_sample_packet {
+	row rows[8];
+};
+
+erpa_sample_packet erpa_packet;
+
 /* UART Variables */
 uint8_t erpa_buf[14]; // buffer that is filled with ERPA packet info
 const uint8_t erpa_sync = 0xAA; // SYNC byte to let packet interpreter / OBC know which packet is which
@@ -140,24 +161,6 @@ static void MX_I2C1_Init(void);
 
 
 
-uint8_t* fill_pmt_data(pmt_data data) {
-	uint8_t* ret = (uint8_t*)malloc(6 * sizeof(uint8_t));
-
-	if (ret == NULL) {
-		// Handle memory allocation failure
-		return NULL;
-	}
-
-	ret[0] = pmt_sync;
-	ret[1] = pmt_sync;
-	ret[2] = ((data.pmt_seq & 0xFF00) >> 8);
-	ret[3] = (data.pmt_seq & 0xFF);
-	ret[4] = ((data.pmt_raw & 0xFF00) >> 8);
-	ret[5] = (data.pmt_raw & 0xFF);
-	return ret;
-}
-
-
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim == &htim2)
@@ -194,33 +197,43 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 
 		DAC->DHR12R1 = DAC_OUT[step];
 
-		HAL_ADC_Start_DMA(&hadc, (uint32_t *)adcResultsDMA,
-						  adcChannelCount);
-		uint16_t PA0 = adcResultsDMA[0]; 				// ADC_IN0, END_mon: entrance/collimator monitor
-		uint16_t PA7 = adcResultsDMA[6]; 				// ADC_IN7, SWP_mon: Sweep voltage monitor
-		uint16_t PB0 = adcResultsDMA[7]; 				// ADC_IN8, TMP 1: Sweep temperature
-		uint16_t PB1 = adcResultsDMA[8]; 				// ADC_IN9, TMP 2: feedbacks
+		erpa_packet.rows[erpa_sample_count % 8].cols[0].data[0] = 0;
+		erpa_packet.rows[erpa_sample_count % 8].cols[0].data[1] = 0;
+		erpa_packet.rows[erpa_sample_count % 8].cols[0].data[2] = 0;
 
-		erpa_buf[0] = erpa_sync;                  		// ERPA SYNC 0xAA MSB
-		erpa_buf[1] = erpa_sync;                  		// ERPA SYNC 0xAA LSB
-		erpa_buf[2] = ((erpa_seq & 0xFF00) >> 8); 		// ERPA SEQ # MSB
-		erpa_buf[3] = (erpa_seq & 0xFF);          		// ERPA SEQ # MSB
-		erpa_buf[4] = ((PA0 & 0xFF00) >> 8); 	  		// ENDmon MSB
-		erpa_buf[5] = (PA0 & 0xFF);               		// ENDmon LSB
-		erpa_buf[6] = ((PA7 & 0xFF00) >> 8);      		// SWP Monitored MSB
-		erpa_buf[7] = (PA7 & 0xFF);               		// SWP Monitored LSB
-		erpa_buf[8] = ((PB0 & 0xFF00) >> 8);      		// TEMPURATURE 1 MSB
-		erpa_buf[9] = (PB0 & 0xFF);               		// TEMPURATURE 1 LSB
-		erpa_buf[10] = ((PB1 & 0xFF00) >> 8);     		// TEMPURATURE 2 MSB
-		erpa_buf[11] = (PB1 & 0xFF);                    // TEMPURATURE 2 LSB
-		erpa_buf[12] = ((erpa_raw & 0xFF00) >> 8);      // ERPA eADC MSB
-		erpa_buf[13] = (erpa_raw & 0xFF);               // ERPA eADC LSB
+		if (erpa_sample_count == erpa_packet_cadence) {
 
-		erpa_seq++;
-		if (ERPA_ON)
-		{
-		  HAL_UART_Transmit(&huart1, erpa_buf, sizeof(erpa_buf), 100);
+
+			HAL_ADC_Start_DMA(&hadc, (uint32_t *)adcResultsDMA,
+							  adcChannelCount);
+			uint16_t PA0 = adcResultsDMA[0]; 				// ADC_IN0, END_mon: entrance/collimator monitor
+			uint16_t PA7 = adcResultsDMA[6]; 				// ADC_IN7, SWP_mon: Sweep voltage monitor
+			uint16_t PB0 = adcResultsDMA[7]; 				// ADC_IN8, TMP 1: Sweep temperature
+			uint16_t PB1 = adcResultsDMA[8]; 				// ADC_IN9, TMP 2: feedbacks
+
+			erpa_buf[0] = erpa_sync;                  		// ERPA SYNC 0xAA MSB
+			erpa_buf[1] = erpa_sync;                  		// ERPA SYNC 0xAA LSB
+			erpa_buf[2] = ((erpa_seq & 0xFF00) >> 8); 		// ERPA SEQ # MSB
+			erpa_buf[3] = (erpa_seq & 0xFF);          		// ERPA SEQ # MSB
+			erpa_buf[4] = ((PA0 & 0xFF00) >> 8); 	  		// ENDmon MSB
+			erpa_buf[5] = (PA0 & 0xFF);               		// ENDmon LSB
+			erpa_buf[6] = ((PA7 & 0xFF00) >> 8);      		// SWP Monitored MSB
+			erpa_buf[7] = (PA7 & 0xFF);               		// SWP Monitored LSB
+			erpa_buf[8] = ((PB0 & 0xFF00) >> 8);      		// TEMPURATURE 1 MSB
+			erpa_buf[9] = (PB0 & 0xFF);               		// TEMPURATURE 1 LSB
+			erpa_buf[10] = ((PB1 & 0xFF00) >> 8);     		// TEMPURATURE 2 MSB
+			erpa_buf[11] = (PB1 & 0xFF);                    // TEMPURATURE 2 LSB
+			erpa_buf[12] = ((erpa_raw & 0xFF00) >> 8);      // ERPA eADC MSB
+			erpa_buf[13] = (erpa_raw & 0xFF);               // ERPA eADC LSB
+
+			erpa_seq++;
+			if (ERPA_ON)
+			{
+			  HAL_UART_Transmit(&huart1, erpa_buf, sizeof(erpa_buf), 100);
+			}
+			erpa_sample_count = 0;
 		}
+		erpa_sample_count++;
       }
       if (HK_ON)
       {
