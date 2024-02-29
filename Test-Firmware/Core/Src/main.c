@@ -90,6 +90,8 @@ const int adcChannelCount = sizeof(adcResultsDMA) / sizeof(adcResultsDMA[0]); //
 /* uint32_t DAC_OUT[] = {0, 683, 1365, 2048, 2730, 3413}; */
 uint32_t DAC_OUT[8] = {0, 620, 1241, 1861, 2482, 3103, 3723, 4095}; // For 3.3 volts
 uint8_t step = 0;
+int auto_sweep = 0;
+int is_increasing = 1;
 int up = 1;
 
 /* SPI Variables */
@@ -99,25 +101,8 @@ int erpa_raw;
 const int WRITE = 0x1; // Hex 0x1 that is sent to external ADC to trigger transfer of data
 
 /* ERPA Packet Variables */
-const int SAMPLING_FACTOR = 1;
-int erpa_packet_cadence = 128;
-int erpa_sample_count = 0;
-typedef struct erpa_sample_packet erpa_sample_packet;
-typedef struct row row;
-typedef struct column column;
-struct column {
-	int16_t data[3];
-};
-
-struct row {
-	column cols[4];
-};
-
-struct erpa_sample_packet {
-	row rows[8];
-};
-
-erpa_sample_packet erpa_packet;
+int SAMPLING_FACTOR = 1;
+int FACTOR_COUNTER = 0;
 
 /* UART Variables */
 uint8_t erpa_buf[14]; // buffer that is filled with ERPA packet info
@@ -169,39 +154,35 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
     { // check pin state
       if (ERPA_ON)
       {
-        /**
-         * TIM1_CH1 Interrupt
-         * Sets CNV and samples ERPA's ADC
-         * Steps DAC
-         * +/- 0.5v Every 100ms
-         */
+    	FACTOR_COUNTER++;
+    	if (FACTOR_COUNTER == SAMPLING_FACTOR) {
+			/**
+			 * TIM1_CH1 Interrupt
+			 * Sets CNV and samples ERPA's ADC
+			 * Steps DAC
+			 * +/- 0.5v Every 100ms
+			 */
 
-        /* Write to SPI (begin transfer?) */
+			/* Write to SPI (begin transfer?) */
 
-		while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11));
-					//check pin state
+			while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11));
+						//check pin state
 
-		/**
-		 * TIM1_CH1 Interrupt
-		 * Sets CNV and samples ERPA's ADC
-		 * Steps DAC
-		 * +/- 0.5v Every 100ms
-		*/
+			/**
+			 * TIM1_CH1 Interrupt
+			 * Sets CNV and samples ERPA's ADC
+			 * Steps DAC
+			 * +/- 0.5v Every 100ms
+			*/
 
-		  /* Write to SPI (begin transfer?) */
-		HAL_SPI_Transmit(&hspi2, (uint8_t * ) &WRITE, 1, 1);
-		SPI2->CR1 &= ~(1<<10); // THIS IS NEEDED TO STOP SPI1_SCK FROM GENERATING CLOCK PULSES
-		while (!(SPI2->SR));
-	    erpa_raw = SPI2->DR;
+			  /* Write to SPI (begin transfer?) */
+			HAL_SPI_Transmit(&hspi2, (uint8_t * ) &WRITE, 1, 1);
+			SPI2->CR1 &= ~(1<<10); // THIS IS NEEDED TO STOP SPI1_SCK FROM GENERATING CLOCK PULSES
+			while (!(SPI2->SR));
+			erpa_raw = SPI2->DR;
 
 
-		DAC->DHR12R1 = DAC_OUT[step];
-
-		erpa_packet.rows[erpa_sample_count % 8].cols[0].data[0] = 0;
-		erpa_packet.rows[erpa_sample_count % 8].cols[0].data[1] = 0;
-		erpa_packet.rows[erpa_sample_count % 8].cols[0].data[2] = 0;
-
-		if (erpa_sample_count == erpa_packet_cadence) {
+			DAC->DHR12R1 = DAC_OUT[step];
 
 
 			HAL_ADC_Start_DMA(&hadc, (uint32_t *)adcResultsDMA,
@@ -226,18 +207,30 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 			erpa_buf[12] = ((erpa_raw & 0xFF00) >> 8);      // ERPA eADC MSB
 			erpa_buf[13] = (erpa_raw & 0xFF);               // ERPA eADC LSB
 
+			if (auto_sweep) {
+				if (step == 7) {
+					is_increasing = 0;
+				} else if (step == 0) {
+					is_increasing = 1;
+				}
+
+				if (is_increasing) {
+					step++;
+				} else {
+					step--;
+				}
+			}
+
 			erpa_seq++;
 			if (ERPA_ON)
 			{
 			  HAL_UART_Transmit(&huart1, erpa_buf, sizeof(erpa_buf), 100);
 			}
-			erpa_sample_count = 0;
-		}
-		erpa_sample_count++;
+    	}
       }
       if (HK_ON)
       {
-        if (hk_counter == HK_CADENCE)
+        if (FACTOR_COUNTER == SAMPLING_FACTOR)
         {
           uint8_t buf[2];
           int16_t val;
@@ -408,6 +401,9 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
           hk_buf[36] = ((PA6 & 0xFF00) >> 8);      	// n800v_mon MSB		6 N800V_MON PA6
           hk_buf[37] = (PA6 & 0xFF);               	// n800v_mon LSB
 
+
+          FACTOR_COUNTER = 0;
+
           if (HK_ON)
           {
            HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), 100);
@@ -519,6 +515,30 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
       step--;
     }
     break;
+  }
+  case 0x1D: {
+	  if (!auto_sweep) {
+		  auto_sweep = 1;
+		  step = 0;
+	  } else {
+		  auto_sweep = 0;
+		  step = 0;
+	  }
+  }
+  case 0x24: {
+	  if (SAMPLING_FACTOR < 16) {
+		  SAMPLING_FACTOR *= 2;
+		  FACTOR_COUNTER = 0;
+	  }
+	  break;
+  }
+  case 0x25: {
+	  if (SAMPLING_FACTOR > 1) {
+		  SAMPLING_FACTOR /= 2;
+		  FACTOR_COUNTER = 0;
+	  }
+	  break;
+
   }
   case 0x00:
   {
