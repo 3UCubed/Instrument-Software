@@ -118,9 +118,9 @@ uint16_t hk_seq = 0; // SEQ byte which keeps track of what # HK packet is being 
 int hk_counter = 0; // counter to know when to send HK packet (sent every 50 ERPA packets)
 					// we put them in the same routine and send HK when this count == 50
 int startupTimer = 0;
-uint8_t PMT_ON = 1;
-uint8_t ERPA_ON = 1;
-uint8_t HK_ON = 1;
+uint8_t PMT_ON = 0;
+uint8_t ERPA_ON = 0;
+uint8_t HK_ON = 0;
 
 static const uint8_t REG_TEMP = 0x00;
 /* USER CODE END PV */
