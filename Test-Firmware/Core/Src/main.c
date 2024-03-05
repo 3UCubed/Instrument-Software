@@ -110,9 +110,9 @@ uint16_t hk_seq = 0; // SEQ byte which keeps track of what # HK packet is being 
 
 
 int startupTimer = 0;
-uint8_t PMT_ON = 1;
-uint8_t ERPA_ON = 1;
-uint8_t HK_ON = 1;
+uint8_t PMT_ON = 0;
+uint8_t ERPA_ON = 0;
+uint8_t HK_ON = 0;
 
 /* Cadence Multiplier Logic Variables */
 uint8_t ERPA_SAMPLE_CADENCE = 100; 			// DEFAULT VALUE 100ms - How often ERPA Samples
@@ -157,13 +157,11 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim == &htim2)
   {
-    if (1)
-    { // check pin state
-      if (ERPA_ON)
-      {
-    	int es = ERPA_SAMPLE_COUNTER;
-    	int ec = ERPA_SAMPLE_CADENCE;
-    	if (ERPA_SAMPLE_COUNTER == ERPA_SAMPLE_CADENCE) {
+	  if (ERPA_ON)
+	  {
+		int es = ERPA_SAMPLE_COUNTER;
+		int ec = ERPA_SAMPLE_CADENCE;
+		if (ERPA_SAMPLE_COUNTER == ERPA_SAMPLE_CADENCE) {
 
 			/**
 			 * TIM1_CH1 Interrupt
@@ -239,8 +237,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 				erpa_seq = 0;
 			}
 
-    	}
-      }
+		}
       ERPA_SAMPLE_COUNTER++;
       ERPA_PACKET_COUNTER++;
       if (HK_ON)
@@ -433,10 +430,8 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
       }
     }
   }
-  else if (htim == &htim1)
+  if (htim == &htim1)
   {
-    if (1)
-    {
       if (PMT_ON)
       { // check pin state
     	if (PMT_COUNTER == PMT_CADENCE) {
@@ -478,7 +473,6 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
     		PMT_COUNTER++;
     	}
       }
-    }
   }
 
   /* Timer 3 also called but doesn't need to do anything on IT */
@@ -638,21 +632,25 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   case 0x0D:
   {
     PMT_ON = 1;
+    HAL_TIM_OC_Start_IT(&htim1, TIM_CHANNEL_1);
     break;
   }
   case 0x10:
   {
     PMT_ON = 0;
+    HAL_TIM_OC_Stop_IT(&htim1, TIM_CHANNEL_1);
     break;
   }
   case 0x0E:
   {
     ERPA_ON = 1;
+    HAL_TIM_OC_Start_IT(&htim2, TIM_CHANNEL_4);
     break;
   }
   case 0x11:
   {
     ERPA_ON = 0;
+    HAL_TIM_OC_Stop_IT(&htim2, TIM_CHANNEL_4);
     break;
   }
   case 0x0F:
@@ -714,8 +712,6 @@ int main(void)
   HAL_DAC_Start(&hdac1, DAC_CHANNEL_1);
 
   /* Start Timers with OC & Interrupt */
-  HAL_TIM_OC_Start_IT(&htim1, TIM_CHANNEL_1);
-  HAL_TIM_OC_Start_IT(&htim2, TIM_CHANNEL_4);
 
   while (__HAL_UART_GET_FLAG(&huart1, USART_ISR_BUSY) == SET);
   while (__HAL_UART_GET_FLAG(&huart1, USART_ISR_REACK) == RESET);
