@@ -1,36 +1,36 @@
 # Instrument-Software
 
 ### Accepted Commands
-- '£' ------- Exit Stop Mode
-- 's' ------- Enter Stop Mode
-- 'G' ------- Toggle PF6 (SDN1) High
-- 'H' ------- Toggle PF6 Low
-- 'I' ------- Toggle PF7 (SDN2) High
-- 'J' ------- Toggle PF7 Low
-- '<' ------- ERPA Step Up
-- '>' ------- ERPA Step Down
-- 'a' ------- Toggle PB5 (sys_on) High
-- '$' ------- Toggle PB5 Low
-- 'b' ------- Toggle PB6 (800v_en) High
-- '%' ------- Toggle PB6 Low
-- 'c' ------- Toggle PC10 (3v3_en) High
-- '^' ------- Toggle PC10 Low
-- 'd' ------- Toggle PC13 (n150v_en) High
-- '&' ------- Toggle PC13 Low
-- 'e' ------- Toggle PC7 (15v_en) High
-- '*' ------- Toggle PC7 Low
-- 'f' ------- Toggle PC8 (n5v_en) High
-- '(' ------- Toggle PC8 Low
-- 'g' ------- Toggle PC9 (5v_en) High
-- ')' ------- Toggle PC9 Low
-- 'h' ------- Toggle PC6 (n3v3_en) High
-- '-' ------- Toggle PC6 Low
-- '1' ------- Turn on PMT Packet
-- '!' ------- Turn off PMT Packet
-- '2' ------- Turn on ERPA Packet
-- '@' ------- Turn off ERPA Packet
-- '3' ------- Turn on HK Packet
-- '#' ------- Turn off HK Packet
+- 0x5B ------- Exit Stop Mode
+- 0x0C ------- Enter Stop Mode
+- 0x0B ------- Toggle PF6 (SDN1) High
+- 0x0A ------- Toggle PF6 Low
+- 0x08 ------- Toggle PF7 (SDN2) High
+- 0x09 ------- Toggle PF7 Low
+- 0x1B ------- ERPA Step Up
+- 0x1C ------- ERPA Step Down
+- 0x00 ------- Toggle PB5 (sys_on) High
+- 0x13 ------- Toggle PB5 Low
+- 0x01 ------- Toggle PB6 (800v_en) High
+- 0x14 ------- Toggle PB6 Low
+- 0x02 ------- Toggle PC10 (3v3_en) High
+- 0x15 ------- Toggle PC10 Low
+- 0x03 ------- Toggle PC13 (n150v_en) High
+- 0x16 ------- Toggle PC13 Low
+- 0x04 ------- Toggle PC7 (15v_en) High
+- 0x17 ------- Toggle PC7 Low
+- 0x05 ------- Toggle PC8 (n5v_en) High
+- 0x18 ------- Toggle PC8 Low
+- 0x06 ------- Toggle PC9 (5v_en) High
+- 0x19 ------- Toggle PC9 Low
+- 0x07 ------- Toggle PC6 (n3v3_en) High
+- 0x1A ------- Toggle PC6 Low
+- 0x0D ------- Turn on PMT Packet
+- 0x10 ------- Turn off PMT Packet
+- 0x0E ------- Turn on ERPA Packet
+- 0x11 ------- Turn off ERPA Packet
+- 0x0F ------- Turn on HK Packet
+- 0x12 ------- Turn off HK Packet
 
 #
 
