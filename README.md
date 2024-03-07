@@ -5,6 +5,16 @@
 Quick Test implementation is in quick-test branch
 Firmware implementation is in non-experimental-firmware branch
 
+## Standard procedure for updating the main branch ##
+This main branch will now act as the production branch for both repositories. So now the standard operating procedure is that if you need to just test the most up to date firmware and GUI on the F0 use the main branch for both. In the future, if we need to add a feature that will go into production, you will create a feature branch from the main branch and merge the feature back into main when the feature is complete (and you have ensured that this doesn't break the production branch). The process I️ follow for this, in order to not break production, is to:
+
+i). have the most up to date main branch and your feature branch
+ii). create a branch off of main called (merge-featureX-to-main)
+iii). git merge your feature branch into merge-featureX-to-main
+iv). resolve any merge conflicts
+v). git merge merge-featureX-to-main into the production branch (once you have resolved any issues)
+vi). finally push your local main branch changes to the remote main branch
+
 ### Accepted Commands
 
 - 0x5B ------- Exit Stop Mode
