@@ -60,13 +60,8 @@ all: main-build
 main-build: Test-Firmware.elf secondary-outputs
 
 # Tool invocations
-<<<<<<< HEAD:Firmware/Debug/makefile
-Firmware.elf Firmware.map: $(OBJS) $(USER_OBJS) /Users/shanewoods/cubesat/workspace/Instrument-Software/Firmware/STM32F051R8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Firmware.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"/Users/shanewoods/cubesat/workspace/Instrument-Software/Firmware/STM32F051R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
-=======
 Test-Firmware.elf Test-Firmware.map: $(OBJS) $(USER_OBJS) /Users/shanewoods/cubesat/workspace/Instrument-Software/Test-Firmware/STM32F051R8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	arm-none-eabi-gcc -o "Test-Firmware.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"/Users/shanewoods/cubesat/workspace/Instrument-Software/Test-Firmware/STM32F051R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Test-Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
->>>>>>> vacuum-test:Test-Firmware/Debug/makefile
 	@echo 'Finished building target: $@'
 	@echo ' '
 

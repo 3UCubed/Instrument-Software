@@ -22,6 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdlib.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -75,7 +76,6 @@ unsigned char rx_buf[BUFFER_SIZE];
 UART_WakeUpTypeDef WakeUpSelection;
 
 /* Hexadecimal Addresses for I2C Temperature Sensors */
-static const uint8_t I2C_addresses[4] = {(0x48 << 1), (0x4A << 1), (0x49 << 1), (0x4B << 1)};
 static const uint8_t ADT7410_1 = 0x48 << 1;
 static const uint8_t ADT7410_2 = 0x4A << 1;
 static const uint8_t ADT7410_3 = 0x49 << 1;
@@ -111,13 +111,11 @@ uint16_t erpa_seq = 0; // SEQ byte which keeps track of what # ERPA packet is be
 uint8_t pmt_buf[6]; // buffer that is filled with PMT packet info
 const uint8_t pmt_sync = 0xBB; // SYNC byte to let packet interpreter / OBC know which packet is which
 uint16_t pmt_seq = 0; // SEQ byte which keeps track of what # ERPA packet is being sent (0-65535)
-uint8_t hk_buf[38]; // buffer that is filled with HK packet info
 const uint8_t hk_sync = 0xCC; // SYNC byte to let packet interpreter / OBC know which packet is which
 uint16_t hk_seq = 0; // SEQ byte which keeps track of what # HK packet is being sent (0-65535)
 
 int hk_counter = 0; // counter to know when to send HK packet (sent every 50 ERPA packets)
 					// we put them in the same routine and send HK when this count == 50
-int startupTimer = 0;
 uint8_t PMT_ON = 0;
 uint8_t ERPA_ON = 0;
 uint8_t HK_ON = 0;
@@ -143,6 +141,135 @@ static void MX_I2C1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+int16_t poll_i2c_sensor(const uint8_t TEMP_ADDR) {
+	int16_t output;
+	uint8_t buf[2];
+	HAL_StatusTypeDef ret;
+	buf[0] = REG_TEMP;
+	ret = HAL_I2C_Master_Transmit(&hi2c1, TEMP_ADDR, buf, 1,
+				1000);
+	if (ret != HAL_OK)
+	{
+		strcpy((char *)buf, "Error Tx\r\n");
+	} else {
+		/* Read 2 bytes from the temperature register */
+		ret = HAL_I2C_Master_Receive(&hi2c1, TEMP_ADDR, buf, 2,
+			1000);
+		if (ret != HAL_OK)
+		{
+			strcpy((char *)buf, "Error Rx\r\n");
+		} else {
+			output = (int16_t)(buf[0] << 8);
+			output = (output | buf[1]) >> 3;
+		}
+	}
+	return output;
+}
+
+
+int16_t* i2c() {
+	int16_t output1 = poll_i2c_sensor(ADT7410_1);
+	int16_t output2 = poll_i2c_sensor(ADT7410_2);
+	int16_t output3 = poll_i2c_sensor(ADT7410_3);
+	int16_t output4 = poll_i2c_sensor(ADT7410_4);
+
+	int16_t* results = malloc(4 * sizeof(int16_t));
+	results[0] = output1;
+	results[1] = output2;
+	results[2] = output3;
+	results[3] = output4;
+	return results;
+}
+
+uint16_t* hk_adc(ADC_HandleTypeDef *adc) {
+	HAL_ADC_Start_DMA(adc, (uint32_t *)adcResultsDMA,
+							adcChannelCount);
+
+	uint16_t PA1 = adcResultsDMA[1];       // ADC_IN1, BUS_Vmon: instrument bus voltage monitor
+	uint16_t PA2 = adcResultsDMA[2];       // ADC_IN2, BUS_Imon: instrument bus current monitor
+	uint16_t PA3 = adcResultsDMA[3];       // ADC_IN3, 3v3_mon: Accurate 5V for ADC monitor
+	uint16_t PA5 = adcResultsDMA[4];       // ADC_IN5, n150v_mon: n150 voltage monitor
+	uint16_t PA6 = adcResultsDMA[5];       // ADC_IN6, n800v_mon: n800 voltage monitor
+	uint16_t PC0 = adcResultsDMA[9];       // ADC_IN10, 2v5_mon: 2.5v voltage monitor
+	uint16_t PC1 = adcResultsDMA[10];      // ADC_IN11, n5v_mon: n5v voltage monitor
+	uint16_t PC2 = adcResultsDMA[11];      // ADC_IN12, 5v_mon: 5v voltage monitor
+	uint16_t PC3 = adcResultsDMA[12];      // ADC_IN13, n3v3_mon: n3v3 voltage monitor
+	uint16_t PC4 = adcResultsDMA[13];      // ADC_IN14, 5vref_mon: 5v reference voltage monitor
+	uint16_t PC5 = adcResultsDMA[14];      // ADC_IN15, 15v_mon: 15v voltage monitor
+	uint16_t MCU_TEMP = adcResultsDMA[15]; //(internally connected) ADC_IN16, VSENSE
+	uint16_t MCU_VREF = adcResultsDMA[16]; //(internally connected) ADC_IN17, VREFINT
+
+	uint16_t* results = malloc(13 * sizeof(uint16_t));
+	results[0] = MCU_TEMP;
+	results[1] = MCU_VREF;
+	results[2] = PA1;
+	results[3] = PA2;
+	results[4] = PC0;
+	results[5] = PA3;
+	results[6] = PC2;
+	results[7] = PC3;
+	results[8] = PC1;
+	results[9] = PC5;
+	results[10] = PC4;
+	results[11] = PA5;
+	results[12] = PA6;
+
+	return results;
+
+}
+
+void send_hk_packet (int16_t * i2c_values, uint16_t* hk_adc_results) {
+
+
+	uint8_t hk_buf[38]; // buffer that is filled with HK packet info
+	hk_buf[0] = hk_sync;                     // HK SYNC 0xCC MSB					0 SYNC
+	hk_buf[1] = hk_sync;                     // HK SYNC 0xCC LSB
+	hk_buf[2] = ((hk_seq & 0xFF00) >> 8);    // HK SEQ # MSB		1 SEQUENCE
+	hk_buf[3] = (hk_seq & 0xFF);             // HK SEQ # LSB
+	hk_buf[4] = ((hk_adc_results[0] & 0xFF00) >> 8); // VSENSE MSB		13 VSENSE
+	hk_buf[5] = (hk_adc_results[0] & 0xFF);          // VSENSE LSB
+	hk_buf[6] = ((hk_adc_results[1] & 0xFF00) >> 8);
+	hk_buf[7] = (hk_adc_results[1] & 0xFF);
+	hk_buf[8] = ((i2c_values[0] & 0xFF00) >> 8);
+	hk_buf[9] = (i2c_values[0] & 0xFF);
+	hk_buf[10] = ((i2c_values[1] & 0xFF00) >> 8);
+	hk_buf[11] = (i2c_values[1] & 0xFF);
+	hk_buf[12] = ((i2c_values[2] & 0xFF00) >> 8);
+	hk_buf[13] = (i2c_values[2] & 0xFF);
+	hk_buf[14] = ((i2c_values[3] & 0xFF00) >> 8);
+	hk_buf[15] = (i2c_values[3] & 0xFF);
+	hk_buf[16] = ((hk_adc_results[2] & 0xFF00) >> 8);       // BUS_Vmon MSB			2 BUS_VMON PA1
+	hk_buf[17] = (hk_adc_results[2] & 0xFF);                // BUS_Vmon LSB
+	hk_buf[18] = ((hk_adc_results[3] & 0xFF00) >> 8);       // BUS_Imon MSB			3 BUS_IMON PA2
+	hk_buf[19] = (hk_adc_results[3] & 0xFF);                // BUS_Imon LSB
+	hk_buf[20] = ((hk_adc_results[4] & 0xFF00) >> 8);      	// 2v5_mon MSB			7 2V5_MON PC0
+	hk_buf[21] = (hk_adc_results[4] & 0xFF);               	// 2v5_mon LSB
+	hk_buf[22] = ((hk_adc_results[5] & 0xFF00) >> 8);       // 3v3_mon MSB			4 3v3_MON PA3
+	hk_buf[23] = (hk_adc_results[5] & 0xFF);                // 3v3_mon LSB
+	hk_buf[24] = ((hk_adc_results[6]) >> 8);      	// 5v_mon MSB			9 5V_MON PC2
+	hk_buf[25] = (hk_adc_results[6] & 0xFF);               	// 5v_mon LSB
+	hk_buf[26] = ((hk_adc_results[7] & 0xFF00) >> 8);      	// n3v3_mon MSB			10 N3V3_MON PC3
+	hk_buf[27] = (hk_adc_results[7] & 0xFF);               	// n3v3_mon LSB
+	hk_buf[28] = ((hk_adc_results[8] & 0xFF00) >> 8);      	// n5v_mon MSB			8 N5V_MON PC1
+	hk_buf[29] = (hk_adc_results[8] & 0xFF);               	// n5v_mon LSB
+	hk_buf[30] = ((hk_adc_results[9] & 0xFF00) >> 8);      	// 15v_mon MSB			12 15V_MON PC5
+	hk_buf[31] = (hk_adc_results[9] & 0xFF);               	// 15v_mon LSB
+	hk_buf[32] = ((hk_adc_results[10] & 0xFF00) >> 8);      	// 5vref_mon MSB		11 5VREF_MON PC4
+	hk_buf[33] = (hk_adc_results[10] & 0xFF);               	// 5vref_mon LSB
+	hk_buf[34] = ((hk_adc_results[11] & 0xFF00) >> 8);      	// n150v_mon MSB		5 N150V_MON PA5
+	hk_buf[35] = (hk_adc_results[11] & 0xFF);               	// n150v_mon LSB
+	hk_buf[36] = ((hk_adc_results[12] & 0xFF00) >> 8);      	// n800v_mon MSB		6 N800V_MON PA6
+	hk_buf[37] = (hk_adc_results[12] & 0xFF);               	// n800v_mon LSB
+
+	if (HK_ON)
+	{
+		HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), 100);
+	}
+	hk_counter = 1;
+	hk_seq++;
+
+}
 
 
 
@@ -229,182 +356,14 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 		  }
 		  if (HK_ON)
 		  {
-			  uint8_t buf[2];
-			  int16_t val;
-			  HAL_StatusTypeDef ret;
-			  float temp_c;
-			  int16_t output1;
-			  int16_t output2;
-			  int16_t output3;
-			  int16_t output4;
+	          int16_t* i2c_values = i2c();
 
-			  buf[0] = REG_TEMP;
-			  ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_1, buf, 1,
-											1000);
-			  if (ret != HAL_OK)
-			  {
-				strcpy((char *)buf, "Error Tx\r\n");
-			  }
-			  else
-			  {
+	          uint16_t* hk_adc_results = hk_adc(&hadc);
+			  send_hk_packet(i2c_values, hk_adc_results);
 
-				/* Read 2 bytes from the temperature register */
-				ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_1, buf, 2,
-											 1000);
-				if (ret != HAL_OK)
-				{
-				  strcpy((char *)buf, "Error Rx\r\n");
-				}
-				else
-				{
-				  output1 = (int16_t)(buf[0] << 8);
-				  output1 = (output1 | buf[1]) >> 3;
-				}
-			  }
+			  free(i2c_values);
+			  free(hk_adc_results);
 
-			  /* Tell ADT7410_2 that we want to read from the temperature register */
-			  buf[0] = REG_TEMP;
-			  ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_2, buf, 1,
-											1000);
-			  /* I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout) */
-			  if (ret != HAL_OK)
-			  {
-				strcpy((char *)buf, "Error Tx\r\n");
-			  }
-			  else
-			  {
-
-				/* Read 2 bytes from the temperature register */
-				ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_2, buf, 2,
-											 1000);
-				if (ret != HAL_OK)
-				{
-				  strcpy((char *)buf, "Error Rx\r\n");
-				}
-				else
-				{
-
-				  output2 = (int16_t)(buf[0] << 8);
-				  output2 = (output2 | buf[1]) >> 3;
-				}
-			  }
-			  // TEMP SENSOR 3
-			  buf[0] = REG_TEMP;
-			  ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_3, buf, 1,
-											1000);
-			  /* I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout) */
-			  if (ret != HAL_OK)
-			  {
-				strcpy((char *)buf, "Error Tx\r\n");
-			  }
-			  else
-			  {
-
-				/* Read 2 bytes from the temperature register */
-				ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_3, buf, 2,
-											 1000);
-				if (ret != HAL_OK)
-				{
-				  strcpy((char *)buf, "Error Rx\r\n");
-				}
-				else
-				{
-
-				  output3 = (int16_t)(buf[0] << 8);
-				  output3 = (output3 | buf[1]) >> 3;
-				}
-			  }
-			  /* TEMP SENSOR 4 */
-			  buf[0] = REG_TEMP;
-			  ret = HAL_I2C_Master_Transmit(&hi2c1, ADT7410_4, buf, 1,
-											1000);
-			  /* I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout) */
-			  if (ret != HAL_OK)
-			  {
-				strcpy((char *)buf, "Error Tx\r\n");
-			  }
-			  else
-			  {
-
-				/* Read 2 bytes from the temperature register */
-				ret = HAL_I2C_Master_Receive(&hi2c1, ADT7410_4, buf, 2,
-											 1000);
-				if (ret != HAL_OK)
-				{
-				  strcpy((char *)buf, "Error Rx\r\n");
-				}
-				else
-				{
-
-				  output4 = (int16_t)(buf[0] << 8);
-				  output4 = (output4 | buf[1]) >> 3;
-				}
-			  }
-
-			  HAL_ADC_Start_DMA(&hadc, (uint32_t *)adcResultsDMA,
-								adcChannelCount);
-
-			  uint16_t PA1 = adcResultsDMA[1];       // ADC_IN1, BUS_Vmon: instrument bus voltage monitor
-			  uint16_t PA2 = adcResultsDMA[2];       // ADC_IN2, BUS_Imon: instrument bus current monitor
-			  uint16_t PA3 = adcResultsDMA[3];       // ADC_IN3, 3v3_mon: Accurate 5V for ADC monitor
-			  uint16_t PA5 = adcResultsDMA[4];       // ADC_IN5, n150v_mon: n150 voltage monitor
-			  uint16_t PA6 = adcResultsDMA[5];       // ADC_IN6, n800v_mon: n800 voltage monitor
-			  uint16_t PC0 = adcResultsDMA[9];       // ADC_IN10, 2v5_mon: 2.5v voltage monitor
-			  uint16_t PC1 = adcResultsDMA[10];      // ADC_IN11, n5v_mon: n5v voltage monitor
-			  uint16_t PC2 = adcResultsDMA[11];      // ADC_IN12, 5v_mon: 5v voltage monitor
-			  uint16_t PC3 = adcResultsDMA[12];      // ADC_IN13, n3v3_mon: n3v3 voltage monitor
-			  uint16_t PC4 = adcResultsDMA[13];      // ADC_IN14, 5vref_mon: 5v reference voltage monitor
-			  uint16_t PC5 = adcResultsDMA[14];      // ADC_IN15, 15v_mon: 15v voltage monitor
-			  uint16_t MCU_TEMP = adcResultsDMA[15]; //(internally connected) ADC_IN16, VSENSE
-			  uint16_t MCU_VREF = adcResultsDMA[16]; //(internally connected) ADC_IN17, VREFINT
-
-
-			  hk_buf[0] = hk_sync;                     // HK SYNC 0xCC MSB					0 SYNC
-			  hk_buf[1] = hk_sync;                     // HK SYNC 0xCC LSB
-			  hk_buf[2] = ((hk_seq & 0xFF00) >> 8);    // HK SEQ # MSB		1 SEQUENCE
-			  hk_buf[3] = (hk_seq & 0xFF);             // HK SEQ # LSB
-			  hk_buf[4] = ((MCU_TEMP & 0xFF00) >> 8); // VSENSE MSB		13 VSENSE
-			  hk_buf[5] = (MCU_TEMP & 0xFF);          // VSENSE LSB
-			  hk_buf[6] = ((MCU_VREF & 0xFF00) >> 8);
-			  hk_buf[7] = (MCU_VREF & 0xFF);
-			  hk_buf[8] = ((output1 & 0xFF00) >> 8);
-			  hk_buf[9] = (output1 & 0xFF);
-			  hk_buf[10] = ((output2 & 0xFF00) >> 8);
-			  hk_buf[11] = (output2 & 0xFF);
-			  hk_buf[12] = ((output3 & 0xFF00) >> 8);
-			  hk_buf[13] = (output3 & 0xFF);
-			  hk_buf[14] = ((output4 & 0xFF00) >> 8);
-			  hk_buf[15] = (output4 & 0xFF);
-			  hk_buf[16] = ((PA1 & 0xFF00) >> 8);       // BUS_Vmon MSB			2 BUS_VMON PA1
-			  hk_buf[17] = (PA1 & 0xFF);                // BUS_Vmon LSB
-			  hk_buf[18] = ((PA2 & 0xFF00) >> 8);       // BUS_Imon MSB			3 BUS_IMON PA2
-			  hk_buf[19] = (PA2 & 0xFF);                // BUS_Imon LSB
-			  hk_buf[20] = ((PC0 & 0xFF00) >> 8);      	// 2v5_mon MSB			7 2V5_MON PC0
-			  hk_buf[21] = (PC0 & 0xFF);               	// 2v5_mon LSB
-			  hk_buf[22] = ((PA3 & 0xFF00) >> 8);       // 3v3_mon MSB			4 3v3_MON PA3
-			  hk_buf[23] = (PA3 & 0xFF);                // 3v3_mon LSB
-			  hk_buf[24] = ((PC2 & 0xFF00) >> 8);      	// 5v_mon MSB			9 5V_MON PC2
-			  hk_buf[25] = (PC2 & 0xFF);               	// 5v_mon LSB
-			  hk_buf[26] = ((PC3 & 0xFF00) >> 8);      	// n3v3_mon MSB			10 N3V3_MON PC3
-			  hk_buf[27] = (PC3 & 0xFF);               	// n3v3_mon LSB
-			  hk_buf[28] = ((PC1 & 0xFF00) >> 8);      	// n5v_mon MSB			8 N5V_MON PC1
-			  hk_buf[29] = (PC1 & 0xFF);               	// n5v_mon LSB
-			  hk_buf[30] = ((PC5 & 0xFF00) >> 8);      	// 15v_mon MSB			12 15V_MON PC5
-			  hk_buf[31] = (PC5 & 0xFF);               	// 15v_mon LSB
-			  hk_buf[32] = ((PC4 & 0xFF00) >> 8);      	// 5vref_mon MSB		11 5VREF_MON PC4
-			  hk_buf[33] = (PC4 & 0xFF);               	// 5vref_mon LSB
-			  hk_buf[34] = ((PA5 & 0xFF00) >> 8);      	// n150v_mon MSB		5 N150V_MON PA5
-			  hk_buf[35] = (PA5 & 0xFF);               	// n150v_mon LSB
-			  hk_buf[36] = ((PA6 & 0xFF00) >> 8);      	// n800v_mon MSB		6 N800V_MON PA6
-			  hk_buf[37] = (PA6 & 0xFF);               	// n800v_mon LSB
-
-
-			  if (HK_ON)
-			  {
-			   HAL_UART_Transmit(&huart1, hk_buf, sizeof(hk_buf), 100);
-			  }
-			  hk_counter = 1;
-			  hk_seq++;
 			}
 			else
 			{
