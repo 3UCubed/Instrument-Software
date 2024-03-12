@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdlib.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -87,34 +88,30 @@ volatile uint16_t adcResultsDMA[ADCRESULTSDMA_LENGTH]; // array to store results
 const int adcChannelCount = sizeof(adcResultsDMA) / sizeof(adcResultsDMA[0]); // variable to store the number of ADCs in use
 
 /* DAC Variables for SWP */
-/* uint32_t DAC_OUT[] = {0, 683, 1365, 2048, 2730, 3413}; */
 uint32_t DAC_OUT[8] = {0, 620, 1241, 1861, 2482, 3103, 3723, 4095}; // For 3.3 volts
 uint8_t step = 0;
 int auto_sweep = 0;
 int is_increasing = 1;
-int up = 1;
 
 /* SPI Variables */
-int raw; // Stores raw value from SPI Transfer
-int pmt_raw;
-int erpa_raw;
-const int WRITE = 0x1; // Hex 0x1 that is sent to external ADC to trigger transfer of data
+int pmt_raw;							// Stores raw pmt SPI value
+int erpa_raw;							// Stores raw epra SPI value
+const int WRITE = 0x1; 					// Hex 0x1 that is sent to external ADC to trigger transfer of data
 
 /* ERPA Packet Variables */
 int SAMPLING_FACTOR = 1;
 int FACTOR_COUNTER = 0;
 
 /* UART Variables */
-const uint8_t erpa_sync = 0xAA; // SYNC byte to let packet interpreter / OBC know which packet is which
-uint16_t erpa_seq = 0; // SEQ byte which keeps track of what # ERPA packet is being sent (0-65535)
-uint8_t pmt_buf[6]; // buffer that is filled with PMT packet info
-const uint8_t pmt_sync = 0xBB; // SYNC byte to let packet interpreter / OBC know which packet is which
-uint16_t pmt_seq = 0; // SEQ byte which keeps track of what # ERPA packet is being sent (0-65535)
-const uint8_t hk_sync = 0xCC; // SYNC byte to let packet interpreter / OBC know which packet is which
-uint16_t hk_seq = 0; // SEQ byte which keeps track of what # HK packet is being sent (0-65535)
+const uint8_t erpa_sync = 0xAA; 		// SYNC byte to let packet interpreter / OBC know which packet is which
+uint16_t erpa_seq = 0; 					// SEQ byte which keeps track of what # ERPA packet is being sent (0-65535)
+const uint8_t pmt_sync = 0xBB; 			// SYNC byte to let packet interpreter / OBC know which packet is which
+uint16_t pmt_seq = 0; 					// SEQ byte which keeps track of what # ERPA packet is being sent (0-65535)
+const uint8_t hk_sync = 0xCC; 			// SYNC byte to let packet interpreter / OBC know which packet is which
+uint16_t hk_seq = 0; 					// SEQ byte which keeps track of what # HK packet is being sent (0-65535)
 
-int hk_counter = 0; // counter to know when to send HK packet (sent every 50 ERPA packets)
-					// we put them in the same routine and send HK when this count == 50
+int hk_counter = 0; 					// counter to know when to send HK packet (sent every 50 ERPA packets)
+										// we put them in the same routine and send HK when this count == 50
 uint8_t PMT_ON = 0;
 uint8_t ERPA_ON = 0;
 uint8_t HK_ON = 0;
@@ -219,10 +216,7 @@ uint16_t* hk_adc(ADC_HandleTypeDef *adc) {
 
 }
 
-uint16_t* erpa_adc(ADC_HandleTypeDef *adc) {
-
-	uint8_t erpa_buf[14]; // buffer that is filled with ERPA packet info
-
+uint16_t* erpa_adc() {
 
 	HAL_ADC_Start_DMA(&hadc, (uint32_t *)adcResultsDMA,
 					  adcChannelCount);
@@ -245,14 +239,37 @@ void set_erpa_sweep() {
 	DAC->DHR12R1 = DAC_OUT[step];
 }
 
+void do_auto_sweep() {
+	if (step == 7) {
+		is_increasing = 0;
+	} else if (step == 0) {
+		is_increasing = 1;
+	}
+
+	if (is_increasing) {
+		step++;
+	} else {
+		step--;
+	}
+}
+
+uint16_t spi(SPI_HandleTypeDef spi) {
+	/* Write to SPI (begin transfer?) */
+	HAL_SPI_Transmit(&spi, (uint8_t * ) &WRITE, 1, 1);
+	spi.Instance->CR1 &= ~(1<<10); // THIS IS NEEDED TO STOP SPI1_SCK FROM GENERATING CLOCK PULSES
+	while (!(spi.Instance->SR));
+	uint16_t raw = spi.Instance->DR;
+	return raw;
+}
+
 void send_erpa_packet(int erpa_spi, uint16_t* erpa_adc_results) {
 
 	uint8_t erpa_buf[14];
-	erpa_buf[0] = erpa_sync;                  		// ERPA SYNC 0xAA MSB
-	erpa_buf[1] = erpa_sync;                  		// ERPA SYNC 0xAA LSB
-	erpa_buf[2] = ((erpa_seq & 0xFF00) >> 8); 		// ERPA SEQ # MSB
-	erpa_buf[3] = (erpa_seq & 0xFF);          		// ERPA SEQ # MSB
-	erpa_buf[4] = ((erpa_adc_results[0]) >> 8); 	  		// ENDmon MSB
+	erpa_buf[0] = erpa_sync;                  						// ERPA SYNC 0xAA MSB
+	erpa_buf[1] = erpa_sync;                  						// ERPA SYNC 0xAA LSB
+	erpa_buf[2] = ((erpa_seq & 0xFF00) >> 8); 						// ERPA SEQ # MSB
+	erpa_buf[3] = (erpa_seq & 0xFF);          						// ERPA SEQ # MSB
+	erpa_buf[4] = ((erpa_adc_results[0]) >> 8); 	  				// ENDmon MSB
 	erpa_buf[5] = (erpa_adc_results[0] & 0xFF);               		// ENDmon LSB
 	erpa_buf[6] = ((erpa_adc_results[1] & 0xFF00) >> 8);      		// SWP Monitored MSB
 	erpa_buf[7] = (erpa_adc_results[1] & 0xFF);               		// SWP Monitored LSB
@@ -260,24 +277,24 @@ void send_erpa_packet(int erpa_spi, uint16_t* erpa_adc_results) {
 	erpa_buf[9] = (erpa_adc_results[2] & 0xFF);               		// TEMPURATURE 1 LSB
 	erpa_buf[10] = ((erpa_adc_results[3] & 0xFF00) >> 8);     		// TEMPURATURE 2 MSB
 	erpa_buf[11] = (erpa_adc_results[3] & 0xFF);                    // TEMPURATURE 2 LSB
-	erpa_buf[12] = ((erpa_spi & 0xFF00) >> 8);      // ERPA eADC MSB
-	erpa_buf[13] = (erpa_spi & 0xFF);               // ERPA eADC LSB
+	erpa_buf[12] = ((erpa_spi & 0xFF00) >> 8);      				// ERPA eADC MSB
+	erpa_buf[13] = (erpa_spi & 0xFF);               				// ERPA eADC LSB
 
+	HAL_UART_Transmit(&huart1, erpa_buf, sizeof(erpa_buf), 100);
 
 	erpa_seq++;
-	HAL_UART_Transmit(&huart1, erpa_buf, sizeof(erpa_buf), 100);
 }
 
 void send_hk_packet (int16_t * i2c_values, uint16_t* hk_adc_results) {
 
 
-	uint8_t hk_buf[38]; // buffer that is filled with HK packet info
-	hk_buf[0] = hk_sync;                     // HK SYNC 0xCC MSB					0 SYNC
-	hk_buf[1] = hk_sync;                     // HK SYNC 0xCC LSB
-	hk_buf[2] = ((hk_seq & 0xFF00) >> 8);    // HK SEQ # MSB		1 SEQUENCE
-	hk_buf[3] = (hk_seq & 0xFF);             // HK SEQ # LSB
-	hk_buf[4] = ((hk_adc_results[0] & 0xFF00) >> 8); // VSENSE MSB		13 VSENSE
-	hk_buf[5] = (hk_adc_results[0] & 0xFF);          // VSENSE LSB
+	uint8_t hk_buf[38]; 										// buffer that is filled with HK packet info
+	hk_buf[0] = hk_sync;                     					// HK SYNC 0xCC MSB					0 SYNC
+	hk_buf[1] = hk_sync;                     					// HK SYNC 0xCC LSB
+	hk_buf[2] = ((hk_seq & 0xFF00) >> 8);    					// HK SEQ # MSB		1 SEQUENCE
+	hk_buf[3] = (hk_seq & 0xFF);             					// HK SEQ # LSB
+	hk_buf[4] = ((hk_adc_results[0] & 0xFF00) >> 8); 			// VSENSE MSB		13 VSENSE
+	hk_buf[5] = (hk_adc_results[0] & 0xFF);          			// VSENSE LSB
 	hk_buf[6] = ((hk_adc_results[1] & 0xFF00) >> 8);
 	hk_buf[7] = (hk_adc_results[1] & 0xFF);
 	hk_buf[8] = ((i2c_values[0] & 0xFF00) >> 8);
@@ -288,22 +305,22 @@ void send_hk_packet (int16_t * i2c_values, uint16_t* hk_adc_results) {
 	hk_buf[13] = (i2c_values[2] & 0xFF);
 	hk_buf[14] = ((i2c_values[3] & 0xFF00) >> 8);
 	hk_buf[15] = (i2c_values[3] & 0xFF);
-	hk_buf[16] = ((hk_adc_results[2] & 0xFF00) >> 8);       // BUS_Vmon MSB			2 BUS_VMON PA1
-	hk_buf[17] = (hk_adc_results[2] & 0xFF);                // BUS_Vmon LSB
-	hk_buf[18] = ((hk_adc_results[3] & 0xFF00) >> 8);       // BUS_Imon MSB			3 BUS_IMON PA2
-	hk_buf[19] = (hk_adc_results[3] & 0xFF);                // BUS_Imon LSB
-	hk_buf[20] = ((hk_adc_results[4] & 0xFF00) >> 8);      	// 2v5_mon MSB			7 2V5_MON PC0
-	hk_buf[21] = (hk_adc_results[4] & 0xFF);               	// 2v5_mon LSB
-	hk_buf[22] = ((hk_adc_results[5] & 0xFF00) >> 8);       // 3v3_mon MSB			4 3v3_MON PA3
-	hk_buf[23] = (hk_adc_results[5] & 0xFF);                // 3v3_mon LSB
-	hk_buf[24] = ((hk_adc_results[6]) >> 8);      	// 5v_mon MSB			9 5V_MON PC2
-	hk_buf[25] = (hk_adc_results[6] & 0xFF);               	// 5v_mon LSB
-	hk_buf[26] = ((hk_adc_results[7] & 0xFF00) >> 8);      	// n3v3_mon MSB			10 N3V3_MON PC3
-	hk_buf[27] = (hk_adc_results[7] & 0xFF);               	// n3v3_mon LSB
-	hk_buf[28] = ((hk_adc_results[8] & 0xFF00) >> 8);      	// n5v_mon MSB			8 N5V_MON PC1
-	hk_buf[29] = (hk_adc_results[8] & 0xFF);               	// n5v_mon LSB
-	hk_buf[30] = ((hk_adc_results[9] & 0xFF00) >> 8);      	// 15v_mon MSB			12 15V_MON PC5
-	hk_buf[31] = (hk_adc_results[9] & 0xFF);               	// 15v_mon LSB
+	hk_buf[16] = ((hk_adc_results[2] & 0xFF00) >> 8);       	// BUS_Vmon MSB			2 BUS_VMON PA1
+	hk_buf[17] = (hk_adc_results[2] & 0xFF);                	// BUS_Vmon LSB
+	hk_buf[18] = ((hk_adc_results[3] & 0xFF00) >> 8);       	// BUS_Imon MSB			3 BUS_IMON PA2
+	hk_buf[19] = (hk_adc_results[3] & 0xFF);                	// BUS_Imon LSB
+	hk_buf[20] = ((hk_adc_results[4] & 0xFF00) >> 8);      		// 2v5_mon MSB			7 2V5_MON PC0
+	hk_buf[21] = (hk_adc_results[4] & 0xFF);               		// 2v5_mon LSB
+	hk_buf[22] = ((hk_adc_results[5] & 0xFF00) >> 8);       	// 3v3_mon MSB			4 3v3_MON PA3
+	hk_buf[23] = (hk_adc_results[5] & 0xFF);                	// 3v3_mon LSB
+	hk_buf[24] = ((hk_adc_results[6]) >> 8);      				// 5v_mon MSB			9 5V_MON PC2
+	hk_buf[25] = (hk_adc_results[6] & 0xFF);               		// 5v_mon LSB
+	hk_buf[26] = ((hk_adc_results[7] & 0xFF00) >> 8);      		// n3v3_mon MSB			10 N3V3_MON PC3
+	hk_buf[27] = (hk_adc_results[7] & 0xFF);               		// n3v3_mon LSB
+	hk_buf[28] = ((hk_adc_results[8] & 0xFF00) >> 8);      		// n5v_mon MSB			8 N5V_MON PC1
+	hk_buf[29] = (hk_adc_results[8] & 0xFF);               		// n5v_mon LSB
+	hk_buf[30] = ((hk_adc_results[9] & 0xFF00) >> 8);      		// 15v_mon MSB			12 15V_MON PC5
+	hk_buf[31] = (hk_adc_results[9] & 0xFF);               		// 15v_mon LSB
 	hk_buf[32] = ((hk_adc_results[10] & 0xFF00) >> 8);      	// 5vref_mon MSB		11 5VREF_MON PC4
 	hk_buf[33] = (hk_adc_results[10] & 0xFF);               	// 5vref_mon LSB
 	hk_buf[34] = ((hk_adc_results[11] & 0xFF00) >> 8);      	// n150v_mon MSB		5 N150V_MON PA5
@@ -317,122 +334,72 @@ void send_hk_packet (int16_t * i2c_values, uint16_t* hk_adc_results) {
 
 }
 
+void send_pmt_packet(uint16_t pmt_spi) {
+
+	uint8_t pmt_buf[6];
+	pmt_buf[0] = pmt_sync;
+	pmt_buf[1] = pmt_sync;
+	pmt_buf[2] = ((pmt_seq & 0xFF00) >> 8);
+	pmt_buf[3] = (pmt_seq & 0xFF);
+	pmt_buf[4] = ((pmt_raw & 0xFF00) >> 8);
+	pmt_buf[5] = (pmt_raw & 0xFF);
+
+	HAL_UART_Transmit(&huart1, pmt_buf, sizeof(pmt_buf), 100);
+	pmt_seq++;
+
+}
+
 
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  if (htim == &htim2)
-  {
-	  FACTOR_COUNTER++;
-	  if (FACTOR_COUNTER == SAMPLING_FACTOR) {
-		  FACTOR_COUNTER = 0;
-		  if (ERPA_ON)
-		  {
+	if (htim == &htim2)
+	{
+		FACTOR_COUNTER++;
+		if (FACTOR_COUNTER == SAMPLING_FACTOR) {
+			FACTOR_COUNTER = 0;
+			if (ERPA_ON)
+			{
+				while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11));
 
-				/**
-				 * TIM1_CH1 Interrupt
-				 * Sets CNV and samples ERPA's ADC
-				 * Steps DAC
-				 * +/- 0.5v Every 100ms
-				 */
-
-				while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11)); //check pin state
-
-
-				/* Write to SPI (begin transfer?) */
-				HAL_SPI_Transmit(&hspi2, (uint8_t * ) &WRITE, 1, 1);
-				SPI2->CR1 &= ~(1<<10); // THIS IS NEEDED TO STOP SPI1_SCK FROM GENERATING CLOCK PULSES
-				while (!(SPI2->SR));
-				erpa_raw = SPI2->DR;
-
-				uint16_t* erpa_adc_results = erpa_adc(&hadc);
-
+				erpa_raw = spi(hspi2);
+				uint16_t* erpa_adc_results = erpa_adc();
 				set_erpa_sweep();
+
+				if (auto_sweep) {
+					do_auto_sweep();
+				}
 
 				send_erpa_packet(erpa_raw, erpa_adc_results);
 
-
-				if (auto_sweep) {
-					if (step == 7) {
-						is_increasing = 0;
-					} else if (step == 0) {
-						is_increasing = 1;
-					}
-
-					if (is_increasing) {
-						step++;
-					} else {
-						step--;
-					}
-				}
-
 				free(erpa_adc_results);
+			}
+			if (HK_ON)
+			{
+				int16_t* i2c_values = i2c();
+				uint16_t* hk_adc_results = hk_adc(&hadc);
 
+				send_hk_packet(i2c_values, hk_adc_results);
 
-		  }
-		  if (HK_ON)
-		  {
-	          int16_t* i2c_values = i2c();
-	          uint16_t* hk_adc_results = hk_adc(&hadc);
-
-			  send_hk_packet(i2c_values, hk_adc_results);
-
-			  free(i2c_values);
-			  free(hk_adc_results);
-
+				free(i2c_values);
+				free(hk_adc_results);
 			}
 			else
 			{
-			  hk_counter++;
+				hk_counter++;
 			}
 	  }
   }
-  if (htim == &htim1)
-  {
-      if (PMT_ON)
-      { // check pin state
+	if (htim == &htim1)
+	{
+		if (PMT_ON)
+		{
+			while(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8));
 
-    	while(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8));
+			pmt_raw = spi(hspi1);
 
-		/**
-		 * TIM1_CH1 Interrupt
-		 * Sets CNV and samples UVPMT's ADC
-		 * Every 125ms
-		 */
-
-
-		/* Write to SPI (begin transfer?) */
-		HAL_SPI_Transmit(&hspi1, (uint8_t * ) &WRITE, 1, 1);
-		SPI1->CR1 &= ~(1<<10); // THIS IS NEEDED TO STOP SPI1_SCK FROM GENERATING CLOCK PULSES
-		while (!(SPI1->SR));
-
-		//RXNE here
-
-		pmt_raw = SPI1->DR;
-
-		int r = pmt_raw;
-
-
-    	/*
-    	pmt_data data;
-    	data.pmt_raw = raw;
-    	data.pmt_seq = pmt_seq;
-
-    	uint8_t* abstraction_test_buf = fill_pmt_data(data);
-    	*/
-    	  pmt_buf[0] = pmt_sync;
-		  pmt_buf[1] = pmt_sync;
-		  pmt_buf[2] = ((pmt_seq & 0xFF00) >> 8);
-		  pmt_buf[3] = (pmt_seq & 0xFF);
-		  pmt_buf[4] = ((pmt_raw & 0xFF00) >> 8);
-		  pmt_buf[5] = (pmt_raw & 0xFF);
-
-		  pmt_seq++;
-		  HAL_UART_Transmit(&huart1, pmt_buf, sizeof(pmt_buf), 100);
-		  /*HAL_UART_Transmit(&huart1, abstraction_test_buf, sizeof(abstraction_test_buf), 100);*/
-      }
-  }
-
-  /* Timer 3 also called but doesn't need to do anything on IT */
+			send_pmt_packet(pmt_raw);
+		}
+	}
 }
 
 
