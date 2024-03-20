@@ -418,6 +418,7 @@ void send_pmt_packet(uint16_t pmt_spi)
   pmt_seq++;
 }
 
+
 /**
  * @brief timer interrupt function
  * will either be passed htim1 or htim2
@@ -427,41 +428,10 @@ void send_pmt_packet(uint16_t pmt_spi)
  */
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	if (htim == &htim2)
-	{
-		FACTOR_COUNTER++;
-		if (FACTOR_COUNTER == SAMPLING_FACTOR)
-		{
-			FACTOR_COUNTER = 0;
-			if (ERPA_ON)
-			{
-				while (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11));
-
-				erpa_raw = spi(hspi2);
-				uint16_t *erpa_adc_results = erpa_adc();
-				set_erpa_sweep();
-
-				if (auto_sweep)
-				{
-					do_auto_sweep();
-				}
-
-				send_erpa_packet(erpa_raw, erpa_adc_results);
-				free(erpa_adc_results);
-			}
-		}
-	} else if (htim == &htim1)
-	{
-		if (PMT_ON)
-		{
-			while (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8));
-
-			pmt_raw = spi(hspi1);
-
-			send_pmt_packet(pmt_raw);
-
-		}
-	} else if (htim == &htim3) {
+	int erpa_on = ERPA_ON;
+	int pmt_on = PMT_ON;
+	int hk_on = HK_ON;
+	if (htim == &htim3) {
 		if (HK_ON)
 		{
 			int16_t *i2c_values = i2c();
@@ -471,7 +441,41 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 			free(i2c_values);
 			free(hk_adc_results);
 		}
-	}
+	} else if (htim == &htim2)
+		{
+			FACTOR_COUNTER++;
+			if (FACTOR_COUNTER == SAMPLING_FACTOR)
+			{
+				FACTOR_COUNTER = 0;
+				if (ERPA_ON)
+				{
+					while (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11));
+
+					erpa_raw = spi(hspi2);
+					uint16_t *erpa_adc_results = erpa_adc();
+					set_erpa_sweep();
+
+					if (auto_sweep)
+					{
+						do_auto_sweep();
+					}
+
+					send_erpa_packet(erpa_raw, erpa_adc_results);
+					free(erpa_adc_results);
+				}
+			}
+		} else if (htim == &htim1)
+		{
+			if (PMT_ON)
+			{
+				while (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8));
+
+				pmt_raw = spi(hspi1);
+
+				send_pmt_packet(pmt_raw);
+
+			}
+		}
 }
 
 /**
@@ -669,13 +673,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   case 0x0F:
   {
     HK_ON = 1;
-    HAL_TIM_OC_Start_IT(&htim3, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start_IT(&htim3, TIM_CHANNEL_1);
     break;
   }
   case 0x12:
   {
     HK_ON = 0;
-    HAL_TIM_OC_Stop_IT(&htim3, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Stop_IT(&htim3, TIM_CHANNEL_1);
     break;
   }
   }
@@ -1303,6 +1307,7 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 0 */
 
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
   TIM_OC_InitTypeDef sConfigOC = {0};
 
@@ -1312,10 +1317,19 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 100-1;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 480 - 1;
+  htim3.Init.Period = 4800 - 1;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_OC_Init(&htim3) != HAL_OK)
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
   {
     Error_Handler();
   }
@@ -1325,11 +1339,11 @@ static void MX_TIM3_Init(void)
   {
     Error_Handler();
   }
-  sConfigOC.OCMode = TIM_OCMODE_TIMING;
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
   sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_OC_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
   {
     Error_Handler();
   }
