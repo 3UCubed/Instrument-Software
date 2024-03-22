@@ -75,7 +75,7 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 #define BUFFER_SIZE 100
-unsigned char rx_buf[BUFFER_SIZE];
+unsigned char rx_buf[3];
 UART_WakeUpTypeDef WakeUpSelection;
 
 /* Hexadecimal Addresses for I2C Temperature Sensors */
@@ -103,6 +103,10 @@ const int WRITE = 0x1; // Hex 0x1 that is sent to external ADC to trigger transf
 /* ERPA Packet Variables */
 int SAMPLING_FACTOR = 1;
 int FACTOR_COUNTER = 0;
+
+/* HK Packet Variables */
+uint16_t hk_speed = 1;
+uint16_t hk_counter = 0;
 
 /* UART Variables */
 const uint8_t erpa_sync = 0xAA; // SYNC byte to let packet interpreter / OBC know which packet is which
@@ -428,18 +432,19 @@ void send_pmt_packet(uint16_t pmt_spi)
  */
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	int erpa_on = ERPA_ON;
-	int pmt_on = PMT_ON;
-	int hk_on = HK_ON;
 	if (htim == &htim3) {
 		if (HK_ON)
 		{
-			int16_t *i2c_values = i2c();
-			uint16_t *hk_adc_results = hk_adc(&hadc);
+			hk_counter++;
+			if (hk_counter == hk_speed) {
+				int16_t *i2c_values = i2c();
+				uint16_t *hk_adc_results = hk_adc(&hadc);
 
-			send_hk_packet(i2c_values, hk_adc_results);
-			free(i2c_values);
-			free(hk_adc_results);
+				send_hk_packet(i2c_values, hk_adc_results);
+				free(i2c_values);
+				free(hk_adc_results);
+				hk_counter = 0;
+			}
 		}
 	} else if (htim == &htim2)
 		{
@@ -486,9 +491,8 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 
-  HAL_UART_Receive_IT(&huart1, rx_buf, 1);
+  HAL_UART_Receive_IT(&huart1, rx_buf, 3);
   unsigned char key = rx_buf[0];
-
   switch (key)
   {
   case 0x0B:
@@ -558,6 +562,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
       FACTOR_COUNTER = 0;
     }
     break;
+  }
+  case 0x26: {
+	  unsigned char b1 = rx_buf[1];
+	  unsigned char b2 = rx_buf[2];
+	  hk_speed = ((uint16_t)b1 << 8) | b2;
+	  hk_counter = 0;
+	  break;
   }
   case 0x00:
   {
@@ -754,7 +765,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    HAL_UART_Receive_IT(&huart1, rx_buf, 1);
+    HAL_UART_Receive_IT(&huart1, rx_buf, 3);
 
     /* USER CODE END WHILE */
 
