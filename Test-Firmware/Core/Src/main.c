@@ -296,6 +296,8 @@ void do_auto_sweep()
   {
     step--;
   }
+
+  DAC->DHR12R1 = DAC_OUT[step];
 }
 
 /**
@@ -431,6 +433,9 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
   if (htim == &htim2)
   {
     FACTOR_COUNTER++;
+    int fc = FACTOR_COUNTER;
+    int sc = SAMPLING_FACTOR;
+
     if (FACTOR_COUNTER == SAMPLING_FACTOR)
     {
       FACTOR_COUNTER = 0;
@@ -441,11 +446,12 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 
         erpa_raw = spi(hspi2);
         uint16_t *erpa_adc_results = erpa_adc();
-        set_erpa_sweep();
 
         if (auto_sweep)
         {
           do_auto_sweep();
+        } else {
+          set_erpa_sweep();
         }
 
         send_erpa_packet(erpa_raw, erpa_adc_results);
@@ -544,6 +550,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
       auto_sweep = 0;
       step = 0;
     }
+    break;
   }
   case 0x24:
   {
