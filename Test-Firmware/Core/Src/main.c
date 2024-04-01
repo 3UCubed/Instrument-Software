@@ -89,7 +89,7 @@ volatile uint16_t adcResultsDMA[ADCRESULTSDMA_LENGTH];                        //
 const int adcChannelCount = sizeof(adcResultsDMA) / sizeof(adcResultsDMA[0]); // variable to store the number of ADCs in use
 
 /* DAC Variables for SWP */
-uint32_t DAC_OUT[8] = {0, 620, 1241, 1861, 2482, 3103, 3723, 4095}; // For 3.3 volts
+uint32_t DAC_OUT[10] = {0, 0, 620, 1241, 1861, 2482, 3103, 3723, 4095, 4095}; // For 3.3 volts
 uint8_t step = 0;
 int auto_sweep = 0;
 int is_increasing = 1;
@@ -279,13 +279,15 @@ void set_erpa_sweep()
  */
 void do_auto_sweep()
 {
-  if (step == 7)
+  if (step == 9)
   {
-    is_increasing = 0;
+	  is_increasing = 0;
+	  step--;
   }
   else if (step == 0)
   {
     is_increasing = 1;
+    step++;
   }
 
   if (is_increasing)
@@ -524,7 +526,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   }
   case 0x1B:
   {
-    if (step < 7)
+    if (step < 9)
     {
       step++;
     }
