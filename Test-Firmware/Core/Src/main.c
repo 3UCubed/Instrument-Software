@@ -94,6 +94,7 @@ const int WRITE = 0x1; // Hex 0x1 that is sent to external ADC to trigger transf
 /* ERPA Packet Variables */
 int SAMPLING_FACTOR = 1;
 int FACTOR_COUNTER = 0;
+int SWP_FACTOR_COUNTER = 0;
 
 /* UART Variables */
 const uint8_t erpa_sync = 0xAA; // SYNC byte to let packet interpreter / OBC know which packet is which
@@ -427,8 +428,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
   if (htim == &htim2)
   {
     FACTOR_COUNTER++;
-    int fc = FACTOR_COUNTER;
-    int sc = SAMPLING_FACTOR;
+    SWP_FACTOR_COUNTER++;
 
     if (FACTOR_COUNTER == SAMPLING_FACTOR)
     {
@@ -438,15 +438,19 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
         while (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11))
           ;
 
-        erpa_raw = spi(hspi2);
-        uint16_t *erpa_adc_results = erpa_adc();
+		erpa_raw = spi(hspi2);
+		uint16_t *erpa_adc_results = erpa_adc();
 
-        if (auto_sweep)
-        {
-          do_auto_sweep();
-        } else {
-          set_erpa_sweep();
-        }
+
+		if (SWP_FACTOR_COUNTER == (SAMPLING_FACTOR * 2)) {
+			if (auto_sweep)
+			{
+			  do_auto_sweep();
+			} else {
+			  set_erpa_sweep();
+			}
+			SWP_FACTOR_COUNTER = 0;
+		}
 
         send_erpa_packet(erpa_raw, erpa_adc_results);
 
@@ -552,6 +556,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     {
       SAMPLING_FACTOR *= 2;
       FACTOR_COUNTER = 0;
+      SWP_FACTOR_COUNTER = 0;
     }
     break;
   }
@@ -561,6 +566,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     {
       SAMPLING_FACTOR /= 2;
       FACTOR_COUNTER = 0;
+      SWP_FACTOR_COUNTER = 0;
     }
     break;
   }
