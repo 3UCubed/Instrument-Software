@@ -28,9 +28,6 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef struct erpa_data erpa_data;
-typedef struct pmt_data pmt_data;
-typedef struct hk_data hk_data;
 typedef struct
 {
   GPIO_TypeDef *gpio;
@@ -39,11 +36,6 @@ typedef struct
 const int HK_CADENCE = 1; // Should be set at 5
 const gpio_pins gpios[] = {{GPIOB, GPIO_PIN_5}, {GPIOB, GPIO_PIN_6}, {GPIOC, GPIO_PIN_10}, {GPIOC, GPIO_PIN_13}, {GPIOC, GPIO_PIN_7}, {GPIOC, GPIO_PIN_8}, {GPIOC, GPIO_PIN_9}, {GPIOC, GPIO_PIN_6}, {GPIOF, GPIO_PIN_6}, {GPIOF, GPIO_PIN_7}};
 
-struct pmt_data
-{
-  int pmt_raw;
-  int pmt_seq;
-};
 
 /* USER CODE END PTD */
 
